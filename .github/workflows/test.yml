@@ -73,6 +73,13 @@ jobs:
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
     - name: use vault actions
       uses: ./
+      with:
+        vaultUrl: http://localhost:${{ job.services.vault.ports[8200] }}
+        vaultToken: testtoken
+        keys: |
+          test a ;
+          test a | NAMED_TOKEN ;
+          nested/test e ;
     - name: verify
       run: npm run test:e2e
 
