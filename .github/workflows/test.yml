@@ -42,8 +42,7 @@ jobs:
         run: npm ci
       - name: test connection
         run: node quicktest.js
-
-    env:
-      VAULT_HOST: localhost
-      VAULT_PORT: ${{ job.services.vault.ports[8200] }}
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: ${{ job.services.vault.ports[8200] }}
 
