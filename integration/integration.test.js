@@ -85,4 +85,19 @@ describe('integration', () => {
 
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
     });
+
+    it('get multiple secrets', async () => {
+        mockInput(`
+        test secret ;
+        test secret | NAMED_SECRET ;
+        nested/test otherSecret ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(3);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+        expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET');
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
+    });
 });

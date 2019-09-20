@@ -10,7 +10,7 @@ async function exportSecrets() {
     const keys = parseKeysInput(keysInput);
 
     for (const key of keys) {
-        const [keyPath, { outputName, dataKey }] = key;
+        const { keyPath, outputName, dataKey } = key;
         const result = await got(`${vaultUrl}/v1/secret/data/${keyPath}`, {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -38,8 +38,8 @@ function parseKeysInput(keys) {
         .map(key => key.trim())
         .filter(key => key.length !== 0);
 
-    /** @type {Map<string, { outputName: string; dataKey: string; }>} */
-    const output = new Map();
+    /** @type {{ keyPath: string; outputName: string; dataKey: string; }[]} */
+    const output = [];
     for (const keyPair of keyPairs) {
         let path = keyPair;
         let outputName = null;
@@ -63,14 +63,15 @@ function parseKeysInput(keys) {
             throw Error(`You must provide a valid path and key. Input: "${keyPair}"`)
         }
 
-        const [secretPath, dataKey] = pathParts;
+        const [keyPath, dataKey] = pathParts;
 
         // If we're not using a mapped name, normalize the key path into a variable name.
         if (!outputName) {
             outputName = normalizeKeyName(dataKey);
         }
-        
-        output.set(secretPath, {
+
+        output.push({
+            keyPath,
             outputName,
             dataKey
         });

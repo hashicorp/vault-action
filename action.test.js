@@ -14,17 +14,18 @@ const { when } = require('jest-when');
 describe('parseKeysInput', () => {
     it('parses simple key', () => {
         const output = parseKeysInput('test key');
-        expect(output.has('test')).toBeTruthy();
-        expect(output.get('test')).toMatchObject({
+        expect(output).toContainEqual({
+            keyPath: 'test',
+            dataKey: 'key',
             outputName: 'KEY',
-            dataKey: 'key'
         });
     });
 
     it('parses mapped key', () => {
         const output = parseKeysInput('test key|testName');
-        expect(output.get('test')).toMatchObject({
-            outputName: 'testName'
+        expect(output).toHaveLength(1);
+        expect(output[0]).toMatchObject({
+            outputName: 'testName',
         });
     });
 
@@ -41,29 +42,43 @@ describe('parseKeysInput', () => {
     it('parses multiple keys', () => {
         const output = parseKeysInput('first a;second b;');
 
-        expect(output.size).toBe(2);
-        expect(output.has('first')).toBeTruthy();
-        expect(output.has('second')).toBeTruthy();
+        expect(output).toHaveLength(2);
+        expect(output[0]).toMatchObject({
+            keyPath: 'first',
+        });
+        expect(output[1]).toMatchObject({
+            keyPath: 'second',
+        });
     });
 
     it('parses multiple complex keys', () => {
         const output = parseKeysInput('first a;second b|secondName');
 
-        expect(output.size).toBe(2);
-        expect(output.get('first')).toMatchObject({
-            dataKey: 'a'
+        expect(output).toHaveLength(2);
+        expect(output[0]).toMatchObject({
+            outputName: 'A',
         });
-        expect(output.get('second')).toMatchObject({
-            outputName: 'secondName'
+        expect(output[1]).toMatchObject({
+            outputName: 'secondName',
         });
     });
 
     it('parses multiline input', () => {
-        const output = parseKeysInput('\nfirst a;\nsecond b;\n');
+        const output = parseKeysInput(`
+        first a;
+        second b;
+        third c | SOME_C;`);
 
-        expect(output.size).toBe(2);
-        expect(output.has('first')).toBeTruthy();
-        expect(output.has('second')).toBeTruthy();
+        expect(output).toHaveLength(3);
+        expect(output[0]).toMatchObject({
+            keyPath: 'first',
+        });
+        expect(output[1]).toMatchObject({
+            outputName: 'B',
+        });
+        expect(output[2]).toMatchObject({
+            outputName: 'SOME_C',
+        });
     })
 });
 
