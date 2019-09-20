@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "test:integration": "jest -c integration/jest.config.js",
-    "test:e2e": "jest -c e2e/jest.config.js"
+    "test:e2e": "jest -c e2e/jest.config.js",
+    "release": "auto shipit"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
+    "auto": "^7.6.0",
     "jest": "^24.9.0",
     "jest-when": "^2.7.0"
   }
