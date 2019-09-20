@@ -67,7 +67,7 @@ jobs:
           test secret | NAMED_SECRET ;
           nested/test otherSecret ;
     - name: verify
-      run: npm run test:e2e=
+      run: npm run test:e2e
 
   publish:
     runs-on: ubuntu-latest
