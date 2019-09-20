@@ -83,4 +83,6 @@ jobs:
     - name: release
       if: success() && endsWith(github.ref, 'master')
       run: npm run release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
