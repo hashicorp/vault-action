@@ -12,55 +12,33 @@ const { when } = require('jest-when');
 
 describe('parseKeysInput', () => {
     it('parses simple key', () => {
-        const output = parseKeysInput('test');
+        const output = parseKeysInput('test key');
         expect(output.has('test')).toBeTruthy();
         expect(output.get('test')).toMatchObject({
-            name: 'TEST',
-            query: null
+            outputName: 'KEY',
+            dataKey: 'key'
         });
     });
 
     it('parses mapped key', () => {
-        const output = parseKeysInput('test|testName');
+        const output = parseKeysInput('test key|testName');
         expect(output.get('test')).toMatchObject({
-            name: 'testName',
-            query: null
+            outputName: 'testName'
         });
     });
 
     it('fails on invalid mapped name', () => {
-        expect(() => parseKeysInput('test|'))
-            .toThrowError(`You must provide a value when mapping a secret to a name. Input: "test|"`)
+        expect(() => parseKeysInput('test key|'))
+            .toThrowError(`You must provide a value when mapping a secret to a name. Input: "test key|"`)
     });
 
     it('fails on invalid path for mapped', () => {
         expect(() => parseKeysInput('|testName'))
-            .toThrowError(`You must provide a valid path. Input: "|testName"`)
-    });
-
-    it('parses queried key', () => {
-        const output = parseKeysInput('test>$.test');
-        expect(output.get('test')).toMatchObject({
-            name: 'TEST',
-            query: '$.test'
-        });
-    });
-
-    it('fails on invalid query', () => {
-        expect(() => parseKeysInput('test>#'))
-            .toThrowError(`Invalid query expression provided "#" from "test>#".`)
-    });
-
-    it('parses queried and mapped key', () => {
-        const output = parseKeysInput('test>$.test|testName');
-        expect(output.get('test')).toMatchObject({
-            name: 'testName',
-            query: '$.test'
-        });
+            .toThrowError(`You must provide a valid path and key. Input: "|testName"`)
     });
 
     it('parses multiple keys', () => {
-        const output = parseKeysInput('first;second;');
+        const output = parseKeysInput('first a;second b;');
 
         expect(output.size).toBe(2);
         expect(output.has('first')).toBeTruthy();
@@ -68,20 +46,19 @@ describe('parseKeysInput', () => {
     });
 
     it('parses multiple complex keys', () => {
-        const output = parseKeysInput('first;second|secondName;third>$.third');
+        const output = parseKeysInput('first a;second b|secondName');
 
-        expect(output.size).toBe(3);
-        expect(output.has('first')).toBeTruthy();
-        expect(output.get('second')).toMatchObject({
-            name: 'secondName'
+        expect(output.size).toBe(2);
+        expect(output.get('first')).toMatchObject({
+            dataKey: 'a'
         });
-        expect(output.get('third')).toMatchObject({
-            query: '$.third'
+        expect(output.get('second')).toMatchObject({
+            outputName: 'secondName'
         });
     });
 
     it('parses multiline input', () => {
-        const output = parseKeysInput('\nfirst;\nsecond;\n');
+        const output = parseKeysInput('\nfirst a;\nsecond b;\n');
 
         expect(output.size).toBe(2);
         expect(output.has('first')).toBeTruthy();
@@ -96,7 +73,7 @@ describe('exportSecrets', () => {
 
         when(core.getInput)
             .calledWith('vaultUrl')
-            .mockReturnValue('https://vault');
+            .mockReturnValue('http://vault:8200');
 
         when(core.getInput)
             .calledWith('vaultToken')
@@ -119,31 +96,24 @@ describe('exportSecrets', () => {
     }
 
     it('simple key retrieval', async () => {
-        mockInput('test');
-        mockVaultData('1');
-
-        await exportSecrets();
-
-        expect(core.exportSecret).toBeCalledWith('TEST', '1');
-    });
-
-    it('mapped key retrieval', async () => {
-        mockInput('test|TEST_NAME');
-        mockVaultData('1');
-
-        await exportSecrets();
-
-        expect(core.exportSecret).toBeCalledWith('TEST_NAME', '1');
-    });
-
-    it('queried data retrieval', async () => {
-        mockInput('test > $.key');
+        mockInput('test key');
         mockVaultData({
-            key: 'SECURE'
+            key: 1
         });
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('TEST', 'SECURE');
+        expect(core.exportSecret).toBeCalledWith('KEY', 1);
+    });
+
+    it('mapped key retrieval', async () => {
+        mockInput('test key|TEST_NAME');
+        mockVaultData({
+            key: 1
+        });
+
+        await exportSecrets();
+
+        expect(core.exportSecret).toBeCalledWith('TEST_NAME', 1);
     });
 });

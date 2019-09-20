@@ -41,8 +41,8 @@ jobs:
         node-version: 10.x
     - name: npm install
       run: npm ci
-    - name: test connection
-      run: node quicktest.js
+    - name: npm run test:e2e
+      run: npm run test:e2e
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
