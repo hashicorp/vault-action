@@ -68,6 +68,9 @@ jobs:
       run: npm ci
     - name: setup vault
       run: node ./e2e/setup.js
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: ${{ job.services.vault.ports[8200] }}
     - name: use vault actions
       uses: ./
     - name: verify
