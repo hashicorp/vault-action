@@ -31,7 +31,7 @@ jobs:
       vault:
         image: vault
         ports:
-          - 8200/tcp
+          - 8200:8200
         env:
           VAULT_DEV_ROOT_TOKEN_ID: testtoken
         options: --cap-add=IPC_LOCK
