@@ -20,8 +20,7 @@ jobs:
       env:
         CI: true
 
-  e2e:
-
+  integration:
     runs-on: ubuntu-latest
 
     services:
@@ -41,9 +40,38 @@ jobs:
         node-version: 10.x
     - name: npm install
       run: npm ci
-    - name: npm run test:e2e
-      run: npm run test:e2e
+    - name: npm run test:integration
+      run: npm run test:integration
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      vault:
+        image: vault:1.2.3
+        ports:
+          - 8200/tcp
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: testtoken
+        options: --cap-add=IPC_LOCK
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: npm install
+      run: npm ci
+    - name: setup vault
+      run: node ./e2e/setup.js
+    - name: use vault actions
+      uses: ./
+    - name: verify
+      run: npm run test:e2e
+
+  
 

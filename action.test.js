@@ -89,8 +89,9 @@ describe('exportSecrets', () => {
     function mockVaultData(data) {
         got.mockResolvedValue({
             body: JSON.stringify({
-                data,
-                meta: {}
+                data: {
+                    data
+                }
             })
         });
     }

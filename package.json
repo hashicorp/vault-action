@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:integration": "jest -c integration/jest.config.js",
     "test:e2e": "jest -c e2e/jest.config.js"
   },
   "repository": {
