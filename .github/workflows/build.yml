@@ -82,7 +82,7 @@ jobs:
       run: npm ci
     - name: release
       if: success() && endsWith(github.ref, 'master')
-      run: npm run release
+      run: npx semantic-release
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
