@@ -1,4 +1,5 @@
 jest.mock('@actions/core');
+jest.mock('@actions/core/lib/command');
 const core = require('@actions/core');
 
 const got = require('got');
@@ -23,9 +24,7 @@ describe('integration', () => {
             },
             body: {
                 data: {
-                    a: 1,
-                    b: 2,
-                    c: 3,
+                    secret: "SUPERSECRET",
                 },
             },
             json: true,
@@ -38,9 +37,7 @@ describe('integration', () => {
             },
             body: {
                 data: {
-                    e: 4,
-                    f: 5,
-                    g: 6,
+                    otherSecret: "OTHERSUPERSECRET",
                 },
             },
             json: true,
@@ -66,26 +63,26 @@ describe('integration', () => {
     }
 
     it('get simple secret', async () => {
-        mockInput('test a')
+        mockInput('test secret')
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('A', 1);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
     });
 
     it('re-map secret', async () => {
-        mockInput('test a | TEST_KEY')
+        mockInput('test secret | TEST_KEY')
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('TEST_KEY', 1);
+        expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUPERSECRET');
     });
 
     it('get nested secret', async () => {
-        mockInput('nested/test e')
+        mockInput('nested/test otherSecret')
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('E', 4);
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
     });
 });

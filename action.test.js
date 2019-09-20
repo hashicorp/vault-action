@@ -105,7 +105,7 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(core.exportVariable).toBeCalledWith('KEY', 1);
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
     });
 
     it('mapped key retrieval', async () => {
@@ -116,6 +116,6 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(core.exportVariable).toBeCalledWith('TEST_NAME', 1);
+        expect(core.exportVariable).toBeCalledWith('TEST_NAME', '1');
     });
 });

@@ -16,9 +16,7 @@ const got = require('got');
             },
             body: {
                 data: {
-                    a: 1,
-                    b: 2,
-                    c: 3,
+                    secret: "SUPERSECRET",
                 },
             },
             json: true,
@@ -31,9 +29,7 @@ const got = require('got');
             },
             body: {
                 data: {
-                    e: 4,
-                    f: 5,
-                    g: 6,
+                    otherSecret: "OTHERSUPERSECRET",
                 },
             },
             json: true,

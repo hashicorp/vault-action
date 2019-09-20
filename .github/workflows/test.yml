@@ -77,9 +77,9 @@ jobs:
         vaultUrl: http://localhost:${{ job.services.vault.ports[8200] }}
         vaultToken: testtoken
         keys: |
-          test a ;
-          test a | NAMED_TOKEN ;
-          nested/test e ;
+          test secret ;
+          test secret | NAMED_SECRET ;
+          nested/test otherSecret ;
     - name: verify
       run: npm run test:e2e
 
