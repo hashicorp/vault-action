@@ -1,4 +1,4 @@
-name: 'Vault'
+name: 'Vault Secrets'
 description: 'A Github Action that allows you to consume the v2 K/V backend of HashiCorp Vault as secure environment variables'
 inputs:
   url:
@@ -13,3 +13,6 @@ inputs:
 runs:
   using: 'node12'
   main: 'index.js'
+branding:
+  icon: 'unlock'
+  color: 'gray-dark'
