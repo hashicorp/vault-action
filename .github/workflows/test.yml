@@ -38,6 +38,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: npm install
+        run: npm ci
       - name: test connection
         run: node quicktest.js
 
