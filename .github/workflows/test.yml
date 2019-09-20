@@ -71,12 +71,12 @@ jobs:
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
-    - name: use vault actions
+    - name: use vault action
       uses: ./
       with:
-        vaultUrl: http://localhost:${{ job.services.vault.ports[8200] }}
-        vaultToken: testtoken
-        keys: |
+        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        token: testtoken
+        secrets: |
           test secret ;
           test secret | NAMED_SECRET ;
           nested/test otherSecret ;

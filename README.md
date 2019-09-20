@@ -1,6 +1,6 @@
 # vault-action
 
-A helper action for retrieving vault secrets as env vars.
+A helper action for easily pulling secrets from the v2 K/V backend of vault.
 
 ## Example Usage
 
@@ -11,25 +11,25 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
-              uses: richicoder1/vault-action
+              uses: RichiCoder1/vault-action
               with:
-                vaultUrl: https://vault.mycompany.com
-                vaultToken: ${{ secrets.VaultToken }}
-                keys: |
+                url: https://vault.mycompany.com:8200
+                token: ${{ secrets.VaultToken }}
+                secrets: |
                     ci/aws accessKey | AWS_ACCESS_KEY_ID ;
                     ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
-                    ci/npm token | NPM_TOKEN
+                    ci npm_token
             # ...
 ```
 
 ## Key Syntax
 
-The `keys` parameter is multiple keys separated by the `;` character.
+The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
 
-Each key is comprised of the `path` of they key, and optionally a [`JSONPath`](https://www.npmjs.com/package/jsonpath) expression and an output name.
+Each secret request is comprised of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
 
 ```raw
-{{ Key Path }} > {{ JSONPath Query }} | {{ Output Environment Variable Name }}
+{{ Secret Path }} {{ Secret Key }} | {{ Output Environment Variable Name }}
 ```
 
 ### Simple Key
@@ -38,7 +38,7 @@ To retrieve a key `npmToken` from path `ci` that has value `somelongtoken` from 
 
 ```yaml
 with:
-    keys: ci npmToken
+    secrets: ci npmToken
 ```
 
 `vault-action` will automatically normalize the given data key, and output:
@@ -53,7 +53,7 @@ However, if you want to set it to a specific environmental variable, say `NPM_TO
 
 ```yaml
 with:
-    keys: ci npmToken | NPM_TOKEN
+    secrets: ci npmToken | NPM_TOKEN
 ```
 
 With that, `vault-action` will now use your requested name and output:
@@ -62,7 +62,7 @@ With that, `vault-action` will now use your requested name and output:
 NPM_TOKEN=somelongtoken
 ```
 
-### Multiple Keys
+### Multiple Secrets
 
 This action can take multi-line input, so say you had your AWS keys stored in a path and wanted to retrieve both of them. You can do:
 

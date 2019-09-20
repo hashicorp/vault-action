@@ -48,18 +48,18 @@ describe('integration', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('vaultUrl')
+            .calledWith('url')
             .mockReturnValue(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`);
 
         when(core.getInput)
-            .calledWith('vaultToken')
+            .calledWith('token')
             .mockReturnValue('testtoken');
     });
 
-    function mockInput(key) {
+    function mockInput(secrets) {
         when(core.getInput)
-            .calledWith('keys')
-            .mockReturnValue(key);
+            .calledWith('secrets')
+            .mockReturnValue(secrets);
     }
 
     it('get simple secret', async () => {

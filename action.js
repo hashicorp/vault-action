@@ -3,15 +3,15 @@ const command = require('@actions/core/lib/command');
 const got = require('got');
 
 async function exportSecrets() {
-    const vaultUrl = core.getInput('vaultUrl', { required: true });
-    const vaultToken = core.getInput('vaultToken', { required: true });
+    const vaultUrl = core.getInput('url', { required: true });
+    const vaultToken = core.getInput('token', { required: true });
 
-    const keysInput = core.getInput('keys', { required: true });
-    const keys = parseKeysInput(keysInput);
+    const secretsInput = core.getInput('secrets', { required: true });
+    const secrets = parseSecretsInput(secretsInput);
 
-    for (const key of keys) {
-        const { keyPath, outputName, dataKey } = key;
-        const result = await got(`${vaultUrl}/v1/secret/data/${keyPath}`, {
+    for (const secret of secrets) {
+        const { secretPath, outputName, secretKey } = secret;
+        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, {
             headers: {
                 'X-Vault-Token': vaultToken
             }
@@ -20,37 +20,37 @@ async function exportSecrets() {
         const parsedResponse = JSON.parse(result.body);
         const vaultKeyData = parsedResponse.data;
         const versionData = vaultKeyData.data;
-        const value = versionData[dataKey];
+        const value = versionData[secretKey];
         command.issue('add-mask', value);
         core.exportVariable(outputName, `${value}`);
-        core.debug(`✔ ${keyPath} => ${outputName}`);
+        core.debug(`✔ ${secretPath} => ${outputName}`);
     }
 };
 
 /**
- * Parses a keys input string into key paths and their resulting environment variable name.
- * @param {string} keys 
+ * Parses a secrets input string into key paths and their resulting environment variable name.
+ * @param {string} secretsInput 
  */
-function parseKeysInput(keys) {
-    const keyPairs = keys
+function parseSecretsInput(secretsInput) {
+    const secrets = secretsInput
         .split(';')
         .filter(key => !!key)
         .map(key => key.trim())
         .filter(key => key.length !== 0);
 
-    /** @type {{ keyPath: string; outputName: string; dataKey: string; }[]} */
+    /** @type {{ secretPath: string; outputName: string; dataKey: string; }[]} */
     const output = [];
-    for (const keyPair of keyPairs) {
-        let path = keyPair;
+    for (const secret of secrets) {
+        let path = secret;
         let outputName = null;
 
-        const renameSigilIndex = keyPair.lastIndexOf('|');
+        const renameSigilIndex = secret.lastIndexOf('|');
         if (renameSigilIndex > -1) {
-            path = keyPair.substring(0, renameSigilIndex).trim();
-            outputName = keyPair.substring(renameSigilIndex + 1).trim();
+            path = secret.substring(0, renameSigilIndex).trim();
+            outputName = secret.substring(renameSigilIndex + 1).trim();
 
             if (outputName.length < 1) {
-                throw Error(`You must provide a value when mapping a secret to a name. Input: "${keyPair}"`);
+                throw Error(`You must provide a value when mapping a secret to a name. Input: "${secret}"`);
             }
         }
 
@@ -60,20 +60,20 @@ function parseKeysInput(keys) {
             .filter(part => part.length !== 0);
 
         if (pathParts.length !== 2) {
-            throw Error(`You must provide a valid path and key. Input: "${keyPair}"`)
+            throw Error(`You must provide a valid path and key. Input: "${secret}"`)
         }
 
-        const [keyPath, dataKey] = pathParts;
+        const [secretPath, secretKey] = pathParts;
 
         // If we're not using a mapped name, normalize the key path into a variable name.
         if (!outputName) {
-            outputName = normalizeKeyName(dataKey);
+            outputName = normalizeOutputKey(secretKey);
         }
 
         output.push({
-            keyPath,
+            secretPath,
             outputName,
-            dataKey
+            secretKey
         });
     }
     return output;
@@ -81,14 +81,14 @@ function parseKeysInput(keys) {
 
 /**
  * Replaces any forward-slash characters to 
- * @param {string} keyPath
+ * @param {string} dataKey
  */
-function normalizeKeyName(keyPath) {
-    return keyPath.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
+function normalizeOutputKey(dataKey) {
+    return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
 }
 
 module.exports = {
     exportSecrets,
-    parseKeysInput,
-    normalizeKeyName
+    parseSecretsInput,
+    normalizeOutputKey
 };
