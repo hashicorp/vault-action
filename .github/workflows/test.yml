@@ -24,9 +24,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    container:
-      image:  node:10.16-jessie
-
     services:
       vault:
         image: vault:1.2.3
@@ -37,12 +34,16 @@ jobs:
         options: --cap-add=IPC_LOCK
 
     steps:
-      - uses: actions/checkout@v1
-      - name: npm install
-        run: npm ci
-      - name: test connection
-        run: node quicktest.js
-        env:
-          VAULT_HOST: localhost
-          VAULT_PORT: ${{ job.services.vault.ports[8200] }}
+    - uses: actions/checkout@v1
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    - name: npm install
+      run: npm ci
+    - name: test connection
+      run: node quicktest.js
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: ${{ job.services.vault.ports[8200] }}
 
