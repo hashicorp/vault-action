@@ -1,8 +1,7 @@
 const got = require('got');
 
 (async () => {
-    const result = await got(`https://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/config`, {
-        method: 'POST',
+    const result = await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/config`, {
         headers: {
             'X-Vault-Token': 'testtoken'
         }
