@@ -3,7 +3,7 @@ name: Test
 on: [push]
 
 jobs:
-  test:
+  unit:
 
     runs-on: ubuntu-latest
 
@@ -19,3 +19,25 @@ jobs:
         npm test
       env:
         CI: true
+
+  e2e:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image:  node:10.16-jessie
+
+    services:
+      vault:
+        image: vault
+        ports:
+          - 8200/tcp
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: testtoken
+        options: --cap-add=IPC_LOCK
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: test connection
+        run: node quicktest.js
+
