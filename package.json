@@ -1,0 +1,37 @@
+{
+  "name": "vault-action",
+  "version": "0.1.0",
+  "description": "A Github Action that allows you to consume vault secrets as secure environment variables.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RichiCoder1/vault-action.git"
+  },
+  "keywords": [
+    "hashicorp",
+    "vault",
+    "github",
+    "actions",
+    "github-actions",
+    "javascript"
+  ],
+  "author": "Richard Simpson <richardsimpson@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RichiCoder1/vault-action/issues"
+  },
+  "homepage": "https://github.com/RichiCoder1/vault-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.1.1",
+    "got": "^9.6.0",
+    "jsonpath": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "jest": "^24.9.0",
+    "jest-when": "^2.7.0"
+  }
+}

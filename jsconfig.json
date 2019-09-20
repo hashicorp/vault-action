@@ -1,0 +1,10 @@
+{
+    "typeAcquisition": {
+        "include": [
+            "jest"
+        ]
+    },
+    "compilerOptions": {
+        "target": "es2018"
+    }
+}

@@ -1,0 +1,15 @@
+name: 'Vault Secrets'
+description: 'A Github Action that allows you to consume vault secrets as secure environment variables'
+inputs:
+  vaultUrl:
+    description: 'The URL for the vault endpoint'
+    required: true
+  vaultToken:
+    description: 'The Vault Token to be used to authenticate with Vault'
+    required: true
+  keys:
+    description: 'A semicolon-separated list of key paths to retrieve. These will automatically be converted to environmental variable keys. See README for more details'
+    required: true
+runs:
+  using: 'node10'
+  main: 'index.js'
