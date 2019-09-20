@@ -1,5 +1,6 @@
 jest.mock('got');
 jest.mock('@actions/core');
+jest.mock('@actions/core/lib/command');
 
 const core = require('@actions/core');
 const got = require('got');
@@ -104,7 +105,7 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('KEY', 1);
+        expect(core.exportVariable).toBeCalledWith('KEY', 1);
     });
 
     it('mapped key retrieval', async () => {
@@ -115,6 +116,6 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(core.exportSecret).toBeCalledWith('TEST_NAME', 1);
+        expect(core.exportVariable).toBeCalledWith('TEST_NAME', 1);
     });
 });

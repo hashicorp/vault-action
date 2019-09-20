@@ -1,6 +1,5 @@
-// @ts-check
-// @ts-ignore
 const core = require('@actions/core');
+const command = require('@actions/core/lib/command');
 const got = require('got');
 
 async function exportSecrets() {
@@ -22,7 +21,8 @@ async function exportSecrets() {
         const vaultKeyData = parsedResponse.data;
         const versionData = vaultKeyData.data;
         const value = versionData[dataKey];
-        core.exportSecret(outputName, value);
+        command.issue('add-mask', value);
+        core.exportVariable(outputName, `${value}`);
         core.debug(`✔ ${keyPath} => ${outputName}`);
     }
 };
