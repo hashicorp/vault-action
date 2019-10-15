@@ -21,6 +21,8 @@ jobs:
         node-version: 10.x
     - name: npm install
       run: npm ci
+    - name: npm build
+      run: npm run build
     - name: npm run test
       run: npm run test
       env:
@@ -52,6 +54,8 @@ jobs:
         node-version: 10.x
     - name: npm install
       run: npm ci
+    - name: npm build
+      run: npm run build
     - name: setup vault
       run: node ./e2e/setup.js
       env:
