@@ -1,6 +1,6 @@
 # vault-action
 
-A helper action for easily pulling secrets from the v2 K/V backend of vault.
+A helper action for easily pulling secrets from the default v2 K/V backend of vault.
 
 ## Example Usage
 
