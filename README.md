@@ -68,7 +68,7 @@ This action can take multi-line input, so say you had your AWS keys stored in a 
 
 ```yaml
 with:
-    keys: |
+    secrets: |
         ci/aws accessKey | AWS_ACCESS_KEY_ID ;
         ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
