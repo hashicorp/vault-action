@@ -5,17 +5,22 @@ const got = require('got');
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultToken = core.getInput('token', { required: true });
+    const vaultNamespace = core.getInput('namespace', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
 
     for (const secret of secrets) {
         const { secretPath, outputName, secretKey } = secret;
-        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, {
+        var headers = {
             headers: {
                 'X-Vault-Token': vaultToken
-            }
-        });
+            }};
+        if (vaultNamespace != null){
+            headers.headers["X-Vault-Namespace"] = vaultNamespace
+        }
+
+        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, headers);
 
         const parsedResponse = JSON.parse(result.body);
         const vaultKeyData = parsedResponse.data;
