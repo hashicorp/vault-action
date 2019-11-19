@@ -34,6 +34,39 @@ jobs:
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
         CI: true
 
+  test-ent:
+    runs-on: ubuntu-latest
+
+    services:
+      vault:
+        image: hashicorp/vault-enterprise:1.3.0_ent
+        ports:
+          - 8200/tcp
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: testtoken
+        options: --cap-add=IPC_LOCK
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: npm install
+        run: npm ci
+      - name: npm build
+        run: npm run build
+      - name: npm run test
+        run: npm run test
+        env:
+          CI: true
+      - name: npm run test:integration-ent
+        run: npm run test:integration-ent
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: ${{ job.services.vault.ports[8200] }}
+          CI: true
+
   e2e:
     runs-on: ubuntu-latest
 
