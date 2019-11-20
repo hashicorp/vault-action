@@ -14,6 +14,7 @@ jobs:
               uses: RichiCoder1/vault-action
               with:
                 url: https://vault.mycompany.com:8200
+                method: token
                 token: ${{ secrets.VaultToken }}
                 secrets: |
                     ci/aws accessKey | AWS_ACCESS_KEY_ID ;
@@ -21,6 +22,12 @@ jobs:
                     ci npm_token
             # ...
 ```
+
+## Authentication method
+
+The `method` parameter can have these value :
+- **token**: you must provide a token parameter
+- **approle**: you must provide a roleId & secretId parameter
 
 ## Key Syntax
 
@@ -84,6 +91,7 @@ steps:
       uses: RichiCoder1/vault-action
       with:
         url: https://vault-enterprise.mycompany.com:8200
+        method: token
         token: ${{ secrets.VaultToken }}
         namespace: ns1
         secrets: |

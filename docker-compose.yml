@@ -13,5 +13,5 @@ services:
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: testtoken
     ports:
-      - 8201:8201
+      - 8201:8200
     privileged: true

@@ -128,3 +128,151 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET_IN_NAMESPACE');
     });
 });
+
+describe('authenticate with approle', () => {
+    let roleId;
+    let secretId;
+    beforeAll(async () => {
+        try {
+            // Verify Connection
+            await got(`${vaultUrl}/v1/secret/config`, {
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                },
+            });
+
+            // Create namespace
+            await got(`${vaultUrl}/v1/sys/namespaces/ns2`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                },
+                json: true,
+            });
+
+            // Enable secret engine
+            await got(`${vaultUrl}/v1/sys/mounts/secret`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                body: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
+                json: true,
+            });
+
+            // Add secret
+            await got(`${vaultUrl}/v1/secret/data/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                body: {
+                    data: {
+                        secret: 'SUPERSECRET_WITH_APPROLE',
+                    },
+                },
+                json: true,
+            });
+
+            // Enable approle
+            await got(`${vaultUrl}/v1/sys/auth/approle`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                body: {
+                    type: 'approle'
+                },
+                json: true,
+            });
+
+            // Create policies
+            await got(`${vaultUrl}/v1/sys/policies/acl/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                body: {
+                    "name":"test",
+                    "policy":"path \"auth/approle/*\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"auth/approle/role/my-role/role-id\"\n{\n    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\npath \"auth/approle/role/my-role/secret-id\"\n{\n    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\n\npath \"secret/data/*\" {\n    capabilities = [\"list\"]\n}\npath \"secret/metadata/*\" {\n    capabilities = [\"list\"]\n}\n\npath \"secret/data/test\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/metadata/test\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/data/test/*\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/metadata/test/*\" {\n    capabilities = [\"read\", \"list\"]\n}\n"
+                },
+                json: true,
+            });
+
+            // Create approle
+            await got(`${vaultUrl}/v1/auth/approle/role/my-role`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                body: {
+                    policies: 'test'
+                },
+                json: true,
+            });
+
+            // Get role-id
+            const roldIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/role-id`, {
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                json: true,
+            });
+            roleId = roldIdResponse.body.data.role_id;
+
+            // Get secret-id
+            const secretIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/secret-id`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns2',
+                },
+                json: true,
+            });
+            secretId = secretIdResponse.body.data.secret_id;
+        } catch(err) {
+            console.warn('Create approle',err);
+            throw err
+        }
+    });
+
+    beforeEach(() => {
+        jest.resetAllMocks();
+
+        when(core.getInput)
+            .calledWith('method')
+            .mockReturnValue('approle');
+        when(core.getInput)
+            .calledWith('roleId')
+            .mockReturnValue(roleId);
+        when(core.getInput)
+            .calledWith('secretId')
+            .mockReturnValue(secretId);
+        when(core.getInput)
+            .calledWith('url')
+            .mockReturnValue(`${vaultUrl}`);
+        when(core.getInput)
+            .calledWith('namespace')
+            .mockReturnValue('ns2');
+    });
+
+    function mockInput(secrets) {
+        when(core.getInput)
+            .calledWith('secrets')
+            .mockReturnValue(secrets);
+    }
+
+    it('authenticate with approle', async()=> {
+        mockInput('test secret');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET_WITH_APPROLE');
+    })
+});
