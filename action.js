@@ -12,15 +12,16 @@ async function exportSecrets() {
 
     for (const secret of secrets) {
         const { secretPath, outputName, secretKey } = secret;
-        var headers = {
+        const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
             }};
+
         if (vaultNamespace != null){
-            headers.headers["X-Vault-Namespace"] = vaultNamespace
+            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace
         }
 
-        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, headers);
+        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, requestOptions);
 
         const parsedResponse = JSON.parse(result.body);
         const vaultKeyData = parsedResponse.data;
