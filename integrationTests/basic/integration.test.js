@@ -1,9 +1,9 @@
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
-const core = require('./@actions/core');
+const core = require('@actions/core');
 
-const got = require('./got');
-const { when } = require('./jest-when');
+const got = require('got');
+const { when } = require('jest-when');
 
 const { exportSecrets } = require('../../action');
 

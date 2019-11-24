@@ -1,44 +1,40 @@
 on: [push]
 
 jobs:
-  integration-basic:
+  build:
     runs-on: ubuntu-latest
-
-    services:
-      vault:
-        image: vault:1.2.3
-        ports:
-          - 8200/tcp
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: testtoken
-        options: --cap-add=IPC_LOCK
-
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js 10.x
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
+    - name: setup npm cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     - name: npm install
       run: npm ci
     - name: npm build
       run: npm run build
     - name: npm run test
       run: npm run test
-      env:
-        CI: true
-    - name: npm run test:integration:basic
-      run: npm run test:integration:basic
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: ${{ job.services.vault.ports[8200] }}
-        CI: true
 
-  integration-enterprise:
+  integration:
     runs-on: ubuntu-latest
 
     services:
-      vault:
+      vaultBasic:
+        image: vault:1.2.3
+        ports:
+          - 8200/tcp
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: testtoken
+        options: --cap-add=IPC_LOCK
+      vaultEnterprise:
         image: hashicorp/vault-enterprise:1.3.0_ent
         ports:
           - 8200/tcp
@@ -52,19 +48,28 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      - name: setup npm cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: npm install
         run: npm ci
       - name: npm build
         run: npm run build
-      - name: npm run test
-        run: npm run test
+      - name: npm run test:integration:basic
+        run: npm run test:integration:basic
         env:
+          VAULT_HOST: localhost
+          VAULT_PORT: ${{ job.services.vaultBasic.ports[8200] }}
           CI: true
       - name: npm run test:integration:enterprise
         run: npm run test:integration:enterprise
         env:
           VAULT_HOST: localhost
-          VAULT_PORT: ${{ job.services.vault.ports[8200] }}
+          VAULT_PORT: ${{ job.services.vaultEnterprise.ports[8200] }}
           CI: true
 
   e2e:
@@ -85,12 +90,19 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
+    - name: setup npm cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     - name: npm install
       run: npm ci
     - name: npm build
       run: npm run build
     - name: setup vault
-      run: node ./e2e/setup.js
+      run: node ./integrationTests/e2e/setup.js
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
@@ -108,13 +120,20 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: [integration-basic, integration-enterprise, e2e]
+    needs: [build, integration, e2e]
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js 10.x
       uses: actions/setup-node@v1
       with:
         node-version: 10.x
+    - name: setup npm cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     - name: npm install
       run: npm ci
     - name: release
