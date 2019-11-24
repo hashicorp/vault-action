@@ -1,0 +1,12 @@
+# Start vault server locally
+# You can run integration tests against server by running
+#  `VAULT_HOST=localhost VAULT_PORT=8200 CI=true npm run test:integration-ent`
+version: "3.0"
+services:
+  vault:
+    image: hashicorp/vault-enterprise:1.3.0_ent
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: testtoken
+    ports:
+      - 8200:8200
+    privileged: true

@@ -73,6 +73,25 @@ with:
         ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
 
+### Namespace
+
+This action could be use with namespace Vault Enterprise feature. You can specify namespace in request : 
+
+```yaml
+steps:
+    # ...
+    - name: Import Secrets
+      uses: RichiCoder1/vault-action
+      with:
+        url: https://vault-enterprise.mycompany.com:8200
+        token: ${{ secrets.VaultToken }}
+        namespace: ns1
+        secrets: |
+            ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            ci npm_token
+```
+
 ## Masking
 
 This action uses Github Action's built in masking, so all variables will automatically be masked if printed to the console or to logs.
