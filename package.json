@@ -6,9 +6,9 @@
     "scripts": {
         "build": "ncc build index.js -o dist",
         "test": "jest",
-        "test:integration": "jest -c integration/jest.config.js",
-        "test:integration-ent": "jest -c integration-ent/jest.config.js",
-        "test:e2e": "jest -c e2e/jest.config.js"
+        "test:integration:basic": "jest -c integrationTests/basic/jest.config.js",
+        "test:integration:enterprise": "jest -c integrationTests/enterprise/jest.config.js",
+        "test:e2e": "jest -c integrationTests/e2e/jest.config.js"
     },
     "release": {
         "branch": "master",

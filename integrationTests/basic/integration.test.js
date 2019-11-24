@@ -5,51 +5,52 @@ const core = require('@actions/core');
 const got = require('got');
 const { when } = require('jest-when');
 
-const { exportSecrets } = require('../action');
+const { exportSecrets } = require('../../action');
+
+const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
 
 describe('integration', () => {
-
     beforeAll(async () => {
         // Verify Connection
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/config`, {
+        await got(`${vaultUrl}/v1/secret/config`, {
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
         });
 
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/test`, {
+        await got(`${vaultUrl}/v1/secret/data/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
             body: {
                 data: {
-                    secret: "SUPERSECRET",
+                    secret: 'SUPERSECRET',
                 },
             },
             json: true,
         });
 
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/nested/test`, {
+        await got(`${vaultUrl}/v1/secret/data/nested/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
             body: {
                 data: {
-                    otherSecret: "OTHERSUPERSECRET",
+                    otherSecret: 'OTHERSUPERSECRET',
                 },
             },
             json: true,
         });
-    })
+    });
 
     beforeEach(() => {
         jest.resetAllMocks();
 
         when(core.getInput)
             .calledWith('url')
-            .mockReturnValue(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`);
+            .mockReturnValue(`${vaultUrl}`);
 
         when(core.getInput)
             .calledWith('token')
@@ -63,7 +64,7 @@ describe('integration', () => {
     }
 
     it('get simple secret', async () => {
-        mockInput('test secret')
+        mockInput('test secret');
 
         await exportSecrets();
 
@@ -71,7 +72,7 @@ describe('integration', () => {
     });
 
     it('re-map secret', async () => {
-        mockInput('test secret | TEST_KEY')
+        mockInput('test secret | TEST_KEY');
 
         await exportSecrets();
 
@@ -79,7 +80,7 @@ describe('integration', () => {
     });
 
     it('get nested secret', async () => {
-        mockInput('nested/test otherSecret')
+        mockInput('nested/test otherSecret');
 
         await exportSecrets();
 
