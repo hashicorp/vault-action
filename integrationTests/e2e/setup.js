@@ -1,4 +1,4 @@
-const got = require('got');
+const got = require('./got');
 
 (async () => {
     try {
@@ -16,7 +16,7 @@ const got = require('got');
             },
             body: {
                 data: {
-                    secret: "SUPERSECRET",
+                    secret: 'SUPERSECRET',
                 },
             },
             json: true,
@@ -29,7 +29,7 @@ const got = require('got');
             },
             body: {
                 data: {
-                    otherSecret: "OTHERSUPERSECRET",
+                    otherSecret: 'OTHERSUPERSECRET',
                 },
             },
             json: true,

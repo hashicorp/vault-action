@@ -1,7 +1,7 @@
 on: [push]
 
 jobs:
-  test:
+  integration-basic:
     runs-on: ubuntu-latest
 
     services:
@@ -27,14 +27,14 @@ jobs:
       run: npm run test
       env:
         CI: true
-    - name: npm run test:integration
-      run: npm run test:integration
+    - name: npm run test:integration:basic
+      run: npm run test:integration:basic
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
         CI: true
 
-  test-ent:
+  integration-enterprise:
     runs-on: ubuntu-latest
 
     services:
@@ -60,8 +60,8 @@ jobs:
         run: npm run test
         env:
           CI: true
-      - name: npm run test:integration-ent
-        run: npm run test:integration-ent
+      - name: npm run test:integration:enterprise
+        run: npm run test:integration:enterprise
         env:
           VAULT_HOST: localhost
           VAULT_PORT: ${{ job.services.vault.ports[8200] }}
@@ -72,7 +72,7 @@ jobs:
 
     services:
       vault:
-        image: vault:1.2.3
+        image: vault:1.3.0
         ports:
           - 8200/tcp
         env:
@@ -108,7 +108,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: [test, e2e]
+    needs: [integration-basic, integration-enterprise, e2e]
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js 10.x

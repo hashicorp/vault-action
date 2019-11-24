@@ -1,24 +1,25 @@
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
-const core = require('@actions/core');
+const core = require('./@actions/core');
 
-const got = require('got');
-const { when } = require('jest-when');
+const got = require('./got');
+const { when } = require('./jest-when');
 
-const { exportSecrets } = require('../action');
+const { exportSecrets } = require('../../action');
+
+const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
 
 describe('integration', () => {
-
     beforeAll(async () => {
         // Verify Connection
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/config`, {
+        await got(`${vaultUrl}/v1/secret/config`, {
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
         });
 
         // Create namespace
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/sys/namespaces/ns1`, {
+        await got(`${vaultUrl}/v1/sys/namespaces/ns1`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -27,31 +28,17 @@ describe('integration', () => {
         });
 
         // Enable secret engine
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/sys/mounts/secret`, {
+        await got(`${vaultUrl}/v1/sys/mounts/secret`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
                 'X-Vault-Namespace': 'ns1',
             },
-            body: {"path":"secret","type":"kv","config":{},"options":{"version":2},"generate_signing_key":true},
+            body: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
             json: true,
         });
 
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/test`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': 'testtoken',
-                'X-Vault-Namespace': 'ns1',
-            },
-            body: {
-                data: {
-                    secret: "SUPERSECRET_IN_NAMESPACE",
-                },
-            },
-            json: true,
-        });
-
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/nested/test`, {
+        await got(`${vaultUrl}/v1/secret/data/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -59,21 +46,33 @@ describe('integration', () => {
             },
             body: {
                 data: {
-                    otherSecret: "OTHERSUPERSECRET_IN_NAMESPACE",
+                    secret: 'SUPERSECRET_IN_NAMESPACE',
                 },
             },
             json: true,
         });
 
+        await got(`${vaultUrl}/v1/secret/data/nested/test`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+                'X-Vault-Namespace': 'ns1',
+            },
+            body: {
+                data: {
+                    otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE',
+                },
+            },
+            json: true,
+        });
+    });
 
-
-    })
     beforeEach(() => {
         jest.resetAllMocks();
 
         when(core.getInput)
             .calledWith('url')
-            .mockReturnValue(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`);
+            .mockReturnValue(`${vaultUrl}`);
 
         when(core.getInput)
             .calledWith('token')
@@ -91,7 +90,7 @@ describe('integration', () => {
     }
 
     it('get simple secret', async () => {
-        mockInput('test secret')
+        mockInput('test secret');
 
         await exportSecrets();
 
@@ -99,7 +98,7 @@ describe('integration', () => {
     });
 
     it('re-map secret', async () => {
-        mockInput('test secret | TEST_KEY')
+        mockInput('test secret | TEST_KEY');
 
         await exportSecrets();
 
@@ -107,7 +106,7 @@ describe('integration', () => {
     });
 
     it('get nested secret', async () => {
-        mockInput('nested/test otherSecret')
+        mockInput('nested/test otherSecret');
 
         await exportSecrets();
 
