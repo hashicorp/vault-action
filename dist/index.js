@@ -2875,7 +2875,7 @@ module.exports = function (obj) {
 /***/ 482:
 /***/ (function(module) {
 
-module.exports = {"_args":[["got@9.6.0","/Users/20012243/Dev/vault-action"]],"_from":"got@9.6.0","_id":"got@9.6.0","_inBundle":false,"_integrity":"sha512-R7eWptXuGYxwijs0eV+v3o6+XH1IqVK8dJOEecQfTmkncw9AV4dcw/Dhxi8MdlqPthxxpZyizMzyg8RTmEsG+Q==","_location":"/got","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"got@9.6.0","name":"got","escapedName":"got","rawSpec":"9.6.0","saveSpec":null,"fetchSpec":"9.6.0"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/got/-/got-9.6.0.tgz","_spec":"9.6.0","_where":"/Users/20012243/Dev/vault-action","ava":{"concurrency":4},"browser":{"decompress-response":false,"electron":false},"bugs":{"url":"https://github.com/sindresorhus/got/issues"},"dependencies":{"@sindresorhus/is":"^0.14.0","@szmarczak/http-timer":"^1.1.2","cacheable-request":"^6.0.0","decompress-response":"^3.3.0","duplexer3":"^0.1.4","get-stream":"^4.1.0","lowercase-keys":"^1.0.1","mimic-response":"^1.0.1","p-cancelable":"^1.0.0","to-readable-stream":"^1.0.0","url-parse-lax":"^3.0.0"},"description":"Simplified HTTP requests","devDependencies":{"ava":"^1.1.0","coveralls":"^3.0.0","delay":"^4.1.0","form-data":"^2.3.3","get-port":"^4.0.0","np":"^3.1.0","nyc":"^13.1.0","p-event":"^2.1.0","pem":"^1.13.2","proxyquire":"^2.0.1","sinon":"^7.2.2","slow-stream":"0.0.4","tempfile":"^2.0.0","tempy":"^0.2.1","tough-cookie":"^3.0.0","xo":"^0.24.0"},"engines":{"node":">=8.6"},"files":["source"],"homepage":"https://github.com/sindresorhus/got#readme","keywords":["http","https","get","got","url","uri","request","util","utility","simple","curl","wget","fetch","net","network","electron"],"license":"MIT","main":"source","name":"got","repository":{"type":"git","url":"git+https://github.com/sindresorhus/got.git"},"scripts":{"release":"np","test":"xo && nyc ava"},"version":"9.6.0"};
+module.exports = {"_args":[["got@9.6.0","/Users/antoinemeausoone/Projects/wk_sfeir/github-actions/vault-action"]],"_from":"got@9.6.0","_id":"got@9.6.0","_inBundle":false,"_integrity":"sha512-R7eWptXuGYxwijs0eV+v3o6+XH1IqVK8dJOEecQfTmkncw9AV4dcw/Dhxi8MdlqPthxxpZyizMzyg8RTmEsG+Q==","_location":"/got","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"got@9.6.0","name":"got","escapedName":"got","rawSpec":"9.6.0","saveSpec":null,"fetchSpec":"9.6.0"},"_requiredBy":["/"],"_resolved":"https://registry.npmjs.org/got/-/got-9.6.0.tgz","_spec":"9.6.0","_where":"/Users/antoinemeausoone/Projects/wk_sfeir/github-actions/vault-action","ava":{"concurrency":4},"browser":{"decompress-response":false,"electron":false},"bugs":{"url":"https://github.com/sindresorhus/got/issues"},"dependencies":{"@sindresorhus/is":"^0.14.0","@szmarczak/http-timer":"^1.1.2","cacheable-request":"^6.0.0","decompress-response":"^3.3.0","duplexer3":"^0.1.4","get-stream":"^4.1.0","lowercase-keys":"^1.0.1","mimic-response":"^1.0.1","p-cancelable":"^1.0.0","to-readable-stream":"^1.0.0","url-parse-lax":"^3.0.0"},"description":"Simplified HTTP requests","devDependencies":{"ava":"^1.1.0","coveralls":"^3.0.0","delay":"^4.1.0","form-data":"^2.3.3","get-port":"^4.0.0","np":"^3.1.0","nyc":"^13.1.0","p-event":"^2.1.0","pem":"^1.13.2","proxyquire":"^2.0.1","sinon":"^7.2.2","slow-stream":"0.0.4","tempfile":"^2.0.0","tempy":"^0.2.1","tough-cookie":"^3.0.0","xo":"^0.24.0"},"engines":{"node":">=8.6"},"files":["source"],"homepage":"https://github.com/sindresorhus/got#readme","keywords":["http","https","get","got","url","uri","request","util","utility","simple","curl","wget","fetch","net","network","electron"],"license":"MIT","main":"source","name":"got","repository":{"type":"git","url":"git+https://github.com/sindresorhus/got.git"},"scripts":{"release":"np","test":"xo && nyc ava"},"version":"9.6.0"};
 
 /***/ }),
 
@@ -3750,14 +3750,18 @@ async function exportSecrets() {
     const _methods = ['approle', 'token'];
 
     const vaultUrl = core.getInput('url', { required: true });
-    const vaultToken = core.getInput('token', { required: true });
+    var vaultMethod = core.getInput('method', { required: false });
+    const vaultRoleId = core.getInput('roleId', { required: false });
+    const vaultSecretId = core.getInput('secretId', { required: false });
+    var vaultToken = core.getInput('token', { required: false });
     const vaultNamespace = core.getInput('namespace', { required: false });
-	const vaultMethod = core.getInput('method', { required: true });
-	const vaultRoleId = core.getInput('roleId', { required: false });
-	const vaultSecretId = core.getInput('secretId', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
+
+    if (!vaultMethod){
+        vaultMethod = 'token'
+    }
 
     if (!_methods.includes(vaultMethod)) {
         throw Error(`Sorry, method ${vaultMethod} currently not implemented.`);
@@ -3765,7 +3769,7 @@ async function exportSecrets() {
 
     switch (vaultMethod) {
         case 'approle':
-            core.debug('Try to retrieve Vault Token from approle')
+            core.debug('Try to retrieve Vault Token from approle');
             var options = { headers: { }, json: true, body: { role_id: vaultRoleId, secret_id: vaultSecretId }, responseType: 'json' };
             if (vaultNamespace != null){
                 options.headers["X-Vault-Namespace"] = vaultNamespace
@@ -3773,7 +3777,7 @@ async function exportSecrets() {
             const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 vaultToken = result.body.auth.client_token;
-                core.debug('✔ Vault Token has retrieved from approle')
+                core.debug('✔ Vault Token has retrieved from approle');
             } else {
                 throw Error(`No token was retrieved with the role_id and secret_id provided.`);
             }
@@ -3784,11 +3788,16 @@ async function exportSecrets() {
 
     for (const secret of secrets) {
         const { secretPath, outputName, secretKey } = secret;
-        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, {
+        const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
-            }
-        });
+            }};
+
+        if (vaultNamespace != null){
+            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace
+        }
+
+        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, requestOptions);
 
         const parsedResponse = JSON.parse(result.body);
         const vaultKeyData = parsedResponse.data;
@@ -3802,7 +3811,7 @@ async function exportSecrets() {
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
- * @param {string} secretsInput 
+ * @param {string} secretsInput
  */
 function parseSecretsInput(secretsInput) {
     const secrets = secretsInput
@@ -3853,7 +3862,7 @@ function parseSecretsInput(secretsInput) {
 }
 
 /**
- * Replaces any forward-slash characters to 
+ * Replaces any forward-slash characters to
  * @param {string} dataKey
  */
 function normalizeOutputKey(dataKey) {
@@ -3865,6 +3874,7 @@ module.exports = {
     parseSecretsInput,
     normalizeOutputKey
 };
+
 
 /***/ }),
 

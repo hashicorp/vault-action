@@ -25,7 +25,7 @@ async function exportSecrets() {
 
     switch (vaultMethod) {
         case 'approle':
-            core.debug('Try to retrieve Vault Token from approle')
+            core.debug('Try to retrieve Vault Token from approle');
             var options = { headers: { }, json: true, body: { role_id: vaultRoleId, secret_id: vaultSecretId }, responseType: 'json' };
             if (vaultNamespace != null){
                 options.headers["X-Vault-Namespace"] = vaultNamespace
@@ -33,7 +33,7 @@ async function exportSecrets() {
             const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 vaultToken = result.body.auth.client_token;
-                core.debug('✔ Vault Token has retrieved from approle')
+                core.debug('✔ Vault Token has retrieved from approle');
             } else {
                 throw Error(`No token was retrieved with the role_id and secret_id provided.`);
             }
