@@ -3749,17 +3749,23 @@ const got = __webpack_require__(798);
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultToken = core.getInput('token', { required: true });
+    const vaultNamespace = core.getInput('namespace', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
 
     for (const secret of secrets) {
         const { secretPath, outputName, secretKey } = secret;
-        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, {
+        const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
-            }
-        });
+            }};
+
+        if (vaultNamespace != null){
+            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace
+        }
+
+        const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, requestOptions);
 
         const parsedResponse = JSON.parse(result.body);
         const vaultKeyData = parsedResponse.data;
@@ -3836,6 +3842,7 @@ module.exports = {
     parseSecretsInput,
     normalizeOutputKey
 };
+
 
 /***/ }),
 
