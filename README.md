@@ -1,6 +1,6 @@
 # vault-action
 
-A helper action for easily pulling secrets from the default v2 K/V backend of vault.
+A helper action for easily pulling secrets from a K/V backend of vault.
 
 ## Example Usage
 
@@ -93,9 +93,34 @@ with:
         ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
 
+### Using K/V version 1
+
+By default, `vault-action` expects a K/V engine using [version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html).
+
+In order to work with a v1 engine, the `kv-version` parameter may be passed:
+
+```yaml
+with:
+    kv-version: 1
+```
+
+### Custom Engine Name
+
+Vault comes with a default engine named `secret`, so a secret named `ci` will be
+accessed from `secret/ci`. However, if you are using a custom named engine, you
+can pass it as follows:
+
+```yaml
+with:
+    engine-name: my-secrets
+    secrets: ci npmToken
+```
+
+This way, the `ci` secret in the example above will be retrieved from `my-secrets/ci`.
+
 ### Namespace
 
-This action could be use with namespace Vault Enterprise feature. You can specify namespace in request : 
+This action could be use with namespace Vault Enterprise feature. You can specify namespace in request :
 
 ```yaml
 steps:
