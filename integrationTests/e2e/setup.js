@@ -1,15 +1,17 @@
 const got = require('got');
 
+const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
+
 (async () => {
     try {
         // Verify Connection
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/config`, {
+        await got(`http://${vaultUrl}/v1/secret/config`, {
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
         });
 
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/test`, {
+        await got(`http://${vaultUrl}/v1/secret/data/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -21,7 +23,7 @@ const got = require('got');
             },
         });
 
-        await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/nested/test`, {
+        await got(`http://${vaultUrl}/v1/secret/data/nested/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -30,6 +32,36 @@ const got = require('got');
                 data: {
                     otherSecret: 'OTHERSUPERSECRET',
                 },
+            }
+        });
+
+        await got(`http://${vaultUrl}/v1/sys/mounts/my-secret`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                type: 'kv'
+            }
+        });
+
+        await got(`http://${vaultUrl}/v1/my-secret/test`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                altSecret: 'CUSTOMSECRET',
+            }
+        });
+
+        await got(`http://${vaultUrl}/v1/my-secret/nested/test`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                otherAltSecret: 'OTHERCUSTOMSECRET',
             },
         });
     } catch (error) {

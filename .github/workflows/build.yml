@@ -110,7 +110,7 @@ jobs:
       env:
         VAULT_HOST: localhost
         VAULT_PORT: ${{ job.services.vault.ports[8200] }}
-    - name: use vault action
+    - name: use vault action (default K/V version 2)
       uses: ./
       with:
         url: http://localhost:${{ job.services.vault.ports[8200] }}
@@ -119,6 +119,17 @@ jobs:
           test secret ;
           test secret | NAMED_SECRET ;
           nested/test otherSecret ;
+    - name: use vault action (custom K/V version 1)
+      uses: ./
+      with:
+        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        token: testtoken
+        engine-name: my-secret
+        kv-version: 1
+        secrets: |
+          test altSecret ;
+          test altSecret | NAMED_ALTSECRET ;
+          nested/test otherAltSecret ;
     - name: verify
       run: npm run test:e2e
 
