@@ -4067,7 +4067,6 @@ const got = __webpack_require__(77);
 
 const AUTH_METHODS = ['approle', 'token'];
 async function exportSecrets() {
-
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
 
@@ -4082,8 +4081,8 @@ async function exportSecrets() {
     let vaultToken = null;
     switch (vaultMethod) {
         case 'approle':
-            const vaultRoleId = core.getInput('roleId', { required: false });
-            const vaultSecretId = core.getInput('secretId', { required: false });
+            const vaultRoleId = core.getInput('roleId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: true });
             core.debug('Try to retrieve Vault Token from approle');
             var options = { 
                 headers: {}, 
