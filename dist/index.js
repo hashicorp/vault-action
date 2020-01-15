@@ -4065,30 +4065,25 @@ const core = __webpack_require__(470);
 const command = __webpack_require__(431);
 const got = __webpack_require__(77);
 
+const AUTH_METHODS = ['approle', 'token'];
 async function exportSecrets() {
-    const _methods = ['approle', 'token'];
 
     const vaultUrl = core.getInput('url', { required: true });
-    const vaultRoleId = core.getInput('roleId', { required: false });
-    const vaultSecretId = core.getInput('secretId', { required: false });
     const vaultNamespace = core.getInput('namespace', { required: false });
-
-    let vaultMethod = core.getInput('method', { required: false });
-    let vaultToken = core.getInput('token', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
 
-    if (!vaultMethod) {
-        vaultMethod = 'token';
-    }
-
-    if (!_methods.includes(vaultMethod)) {
+    const vaultMethod = core.getInput('method', { required: false }) || 'token';
+    if (!AUTH_METHODS.includes(vaultMethod)) {
         throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
     }
 
+    let vaultToken = null;
     switch (vaultMethod) {
         case 'approle':
+            const vaultRoleId = core.getInput('roleId', { required: false });
+            const vaultSecretId = core.getInput('secretId', { required: false });
             core.debug('Try to retrieve Vault Token from approle');
             var options = { 
                 headers: {}, 
@@ -4109,9 +4104,7 @@ async function exportSecrets() {
             }
             break;
         default:
-            if (!vaultToken) {
-                throw Error(`No token was provided. You must provided a valid vault token if using token authentication.`);
-            }
+            vaultToken = core.getInput('token', { required: true });
             break;
     }
 
