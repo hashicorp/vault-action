@@ -14,12 +14,11 @@ const got = require('got');
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
-            body: {
+            json: {
                 data: {
                     secret: 'SUPERSECRET',
                 },
             },
-            json: true,
         });
 
         await got(`http://${process.env.VAULT_HOST}:${process.env.VAULT_PORT}/v1/secret/data/nested/test`, {
@@ -27,12 +26,11 @@ const got = require('got');
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
-            body: {
+            json: {
                 data: {
                     otherSecret: 'OTHERSUPERSECRET',
                 },
             },
-            json: true,
         });
     } catch (error) {
         console.log(error);

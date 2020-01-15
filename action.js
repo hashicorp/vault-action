@@ -59,8 +59,8 @@ async function exportSecrets() {
                 'X-Vault-Token': vaultToken
             }};
 
-        if (vaultNamespace != null){
-            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace
+        if (vaultNamespace != null) {
+            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
         const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, requestOptions);

@@ -34,8 +34,7 @@ describe('integration', () => {
                 'X-Vault-Token': 'testtoken',
                 'X-Vault-Namespace': 'ns1',
             },
-            body: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
-            json: true,
+            json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
         });
 
         await got(`${vaultUrl}/v1/secret/data/test`, {
@@ -44,12 +43,11 @@ describe('integration', () => {
                 'X-Vault-Token': 'testtoken',
                 'X-Vault-Namespace': 'ns1',
             },
-            body: {
+            json: {
                 data: {
                     secret: 'SUPERSECRET_IN_NAMESPACE',
                 },
             },
-            json: true,
         });
 
         await got(`${vaultUrl}/v1/secret/data/nested/test`, {
@@ -58,12 +56,11 @@ describe('integration', () => {
                 'X-Vault-Token': 'testtoken',
                 'X-Vault-Namespace': 'ns1',
             },
-            body: {
+            json: {
                 data: {
                     otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE',
                 },
             },
-            json: true,
         });
     });
 
@@ -157,8 +154,7 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                body: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
-                json: true,
+                json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
             });
 
             // Add secret
@@ -168,12 +164,11 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                body: {
+                json: {
                     data: {
                         secret: 'SUPERSECRET_WITH_APPROLE',
                     },
                 },
-                json: true,
             });
 
             // Enable approle
@@ -183,10 +178,9 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                body: {
+                json: {
                     type: 'approle'
                 },
-                json: true,
             });
 
             // Create policies
@@ -196,11 +190,10 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                body: {
+                json: {
                     "name":"test",
                     "policy":"path \"auth/approle/*\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"auth/approle/role/my-role/role-id\"\n{\n    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\npath \"auth/approle/role/my-role/secret-id\"\n{\n    capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\"]\n}\n\npath \"secret/data/*\" {\n    capabilities = [\"list\"]\n}\npath \"secret/metadata/*\" {\n    capabilities = [\"list\"]\n}\n\npath \"secret/data/test\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/metadata/test\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/data/test/*\" {\n    capabilities = [\"read\", \"list\"]\n}\npath \"secret/metadata/test/*\" {\n    capabilities = [\"read\", \"list\"]\n}\n"
                 },
-                json: true,
             });
 
             // Create approle
@@ -210,10 +203,9 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                body: {
+                json: {
                     policies: 'test'
                 },
-                json: true,
             });
 
             // Get role-id

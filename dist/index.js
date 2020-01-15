@@ -4096,8 +4096,8 @@ async function exportSecrets() {
                 responseType: 'json' 
             };
 
-            if (vaultNamespace != null){
-                options.headers["X-Vault-Namespace"] = vaultNamespace
+            if (vaultNamespace != null) {
+                options.headers["X-Vault-Namespace"] = vaultNamespace;
             }
 
             const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
