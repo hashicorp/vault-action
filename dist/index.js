@@ -4069,30 +4069,37 @@ async function exportSecrets() {
     const _methods = ['approle', 'token'];
 
     const vaultUrl = core.getInput('url', { required: true });
-    var vaultMethod = core.getInput('method', { required: false });
     const vaultRoleId = core.getInput('roleId', { required: false });
     const vaultSecretId = core.getInput('secretId', { required: false });
-    var vaultToken = core.getInput('token', { required: false });
     const vaultNamespace = core.getInput('namespace', { required: false });
+
+    let vaultMethod = core.getInput('method', { required: false });
+    let vaultToken = core.getInput('token', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
 
-    if (!vaultMethod){
-        vaultMethod = 'token'
+    if (!vaultMethod) {
+        vaultMethod = 'token';
     }
 
     if (!_methods.includes(vaultMethod)) {
-        throw Error(`Sorry, method ${vaultMethod} currently not implemented.`);
+        throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
     }
 
     switch (vaultMethod) {
         case 'approle':
             core.debug('Try to retrieve Vault Token from approle');
-            var options = { headers: { }, json: true, body: { role_id: vaultRoleId, secret_id: vaultSecretId }, responseType: 'json' };
+            var options = { 
+                headers: {}, 
+                json: { role_id: vaultRoleId, secret_id: vaultSecretId }, 
+                responseType: 'json' 
+            };
+
             if (vaultNamespace != null){
                 options.headers["X-Vault-Namespace"] = vaultNamespace
             }
+
             const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 vaultToken = result.body.auth.client_token;
@@ -4102,6 +4109,9 @@ async function exportSecrets() {
             }
             break;
         default:
+            if (!vaultToken) {
+                throw Error(`No token was provided. You must provided a valid vault token if using token authentication.`);
+            }
             break;
     }
 
