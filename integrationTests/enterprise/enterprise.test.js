@@ -11,57 +11,61 @@ const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.
 
 describe('integration', () => {
     beforeAll(async () => {
-        // Verify Connection
-        await got(`${vaultUrl}/v1/secret/config`, {
-            headers: {
-                'X-Vault-Token': 'testtoken',
-            },
-        });
-
-        // Create namespace
-        await got(`${vaultUrl}/v1/sys/namespaces/ns1`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': 'testtoken',
-            },
-            json: true,
-        });
-
-        // Enable secret engine
-        await got(`${vaultUrl}/v1/sys/mounts/secret`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': 'testtoken',
-                'X-Vault-Namespace': 'ns1',
-            },
-            json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
-        });
-
-        await got(`${vaultUrl}/v1/secret/data/test`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': 'testtoken',
-                'X-Vault-Namespace': 'ns1',
-            },
-            json: {
-                data: {
-                    secret: 'SUPERSECRET_IN_NAMESPACE',
+        try {
+            // Verify Connection
+            await got(`${vaultUrl}/v1/secret/config`, {
+                headers: {
+                    'X-Vault-Token': 'testtoken',
                 },
-            },
-        });
+            });
 
-        await got(`${vaultUrl}/v1/secret/data/nested/test`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': 'testtoken',
-                'X-Vault-Namespace': 'ns1',
-            },
-            json: {
-                data: {
-                    otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE',
+            // Create namespace
+            await got(`${vaultUrl}/v1/sys/namespaces/ns1`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                }
+            });
+
+            // Enable secret engine
+            await got(`${vaultUrl}/v1/sys/mounts/secret`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns1',
                 },
-            },
-        });
+                json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
+            });
+
+            await got(`${vaultUrl}/v1/secret/data/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns1',
+                },
+                json: {
+                    data: {
+                        secret: 'SUPERSECRET_IN_NAMESPACE',
+                    },
+                },
+            });
+
+            await got(`${vaultUrl}/v1/secret/data/nested/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Namespace': 'ns1',
+                },
+                json: {
+                    data: {
+                        otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE',
+                    },
+                },
+            });
+        } catch (e) {
+            console.error('Failed to setup test', e);
+            throw e;
+        }
     });
 
     beforeEach(() => {
@@ -144,7 +148,6 @@ describe('authenticate with approle', () => {
                 headers: {
                     'X-Vault-Token': 'testtoken',
                 },
-                json: true,
             });
 
             // Enable secret engine
@@ -214,7 +217,7 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                json: true,
+                responseType: 'json',
             });
             roleId = roldIdResponse.body.data.role_id;
 
@@ -225,12 +228,12 @@ describe('authenticate with approle', () => {
                     'X-Vault-Token': 'testtoken',
                     'X-Vault-Namespace': 'ns2',
                 },
-                json: true,
+                responseType: 'json',
             });
             secretId = secretIdResponse.body.data.secret_id;
         } catch(err) {
-            console.warn('Create approle',err);
-            throw err
+            console.warn('Create approle', err);
+            throw err;
         }
     });
 

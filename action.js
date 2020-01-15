@@ -57,7 +57,8 @@ async function exportSecrets() {
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
-            }};
+            },
+        };
 
         if (vaultNamespace != null) {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;

@@ -23,12 +23,11 @@ describe('integration', () => {
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
-            body: {
+            json: {
                 data: {
                     secret: 'SUPERSECRET',
                 },
             },
-            json: true,
         });
 
         await got(`${vaultUrl}/v1/secret/data/nested/test`, {
@@ -36,12 +35,11 @@ describe('integration', () => {
             headers: {
                 'X-Vault-Token': 'testtoken',
             },
-            body: {
+            json: {
                 data: {
                     otherSecret: 'OTHERSUPERSECRET',
                 },
             },
-            json: true,
         });
     });
 
