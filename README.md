@@ -22,6 +22,26 @@ jobs:
             # ...
 ```
 
+## Authentication method
+
+The `method` parameter can have these value :
+- **token**: (by default) you must provide a token parameter
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  token: ${{ secrets.VaultToken }}
+```
+- **approle**: you must provide a roleId & secretId parameter
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: approle
+  roleId: ${{ secrets.roleId }}
+  secretId : ${{ secrets.secretId }}
+```
+
 ## Key Syntax
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
@@ -84,6 +104,7 @@ steps:
       uses: RichiCoder1/vault-action
       with:
         url: https://vault-enterprise.mycompany.com:8200
+        method: token
         token: ${{ secrets.VaultToken }}
         namespace: ns1
         secrets: |

@@ -2,23 +2,58 @@ const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got');
 
+const AUTH_METHODS = ['approle', 'token'];
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
-    const vaultToken = core.getInput('token', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
+
+    const vaultMethod = core.getInput('method', { required: false }) || 'token';
+    if (!AUTH_METHODS.includes(vaultMethod)) {
+        throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
+    }
+
+    let vaultToken = null;
+    switch (vaultMethod) {
+        case 'approle':
+            const vaultRoleId = core.getInput('roleId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: true });
+            core.debug('Try to retrieve Vault Token from approle');
+            var options = { 
+                headers: {}, 
+                json: { role_id: vaultRoleId, secret_id: vaultSecretId }, 
+                responseType: 'json' 
+            };
+
+            if (vaultNamespace != null) {
+                options.headers["X-Vault-Namespace"] = vaultNamespace;
+            }
+
+            const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
+            if (result && result.body && result.body.auth && result.body.auth.client_token) {
+                vaultToken = result.body.auth.client_token;
+                core.debug('✔ Vault Token has retrieved from approle');
+            } else {
+                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
+            }
+            break;
+        default:
+            vaultToken = core.getInput('token', { required: true });
+            break;
+    }
 
     for (const secret of secrets) {
         const { secretPath, outputName, secretKey } = secret;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
-            }};
+            },
+        };
 
-        if (vaultNamespace != null){
-            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace
+        if (vaultNamespace != null) {
+            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
         const result = await got(`${vaultUrl}/v1/secret/data/${secretPath}`, requestOptions);
@@ -35,7 +70,7 @@ async function exportSecrets() {
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
- * @param {string} secretsInput 
+ * @param {string} secretsInput
  */
 function parseSecretsInput(secretsInput) {
     const secrets = secretsInput
@@ -86,7 +121,7 @@ function parseSecretsInput(secretsInput) {
 }
 
 /**
- * Replaces any forward-slash characters to 
+ * Replaces any forward-slash characters to
  * @param {string} dataKey
  */
 function normalizeOutputKey(dataKey) {

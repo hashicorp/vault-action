@@ -39,7 +39,7 @@
     "homepage": "https://github.com/RichiCoder1/vault-action#readme",
     "dependencies": {
         "@actions/core": "^1.1.1",
-        "got": "^9.6.0"
+        "got": "^10.2.2"
     },
     "devDependencies": {
         "@types/jest": "^24.0.18",
