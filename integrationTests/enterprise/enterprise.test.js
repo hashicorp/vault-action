@@ -20,48 +20,19 @@ describe('integration', () => {
             });
 
             // Create namespace
-            await got(`${vaultUrl}/v1/sys/namespaces/ns1`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                }
-            });
+            await enableNamespace('ns1');
 
-            // Enable secret engine
-            await got(`${vaultUrl}/v1/sys/mounts/secret`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns1',
-                },
-                json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
-            });
+            // Enable K/V v2 secret engine at 'secret/'
+            await enableEngine('secret', 'ns1', 2);
 
-            await got(`${vaultUrl}/v1/secret/data/test`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns1',
-                },
-                json: {
-                    data: {
-                        secret: 'SUPERSECRET_IN_NAMESPACE',
-                    },
-                },
-            });
+            await writeSecret('secret', 'test', 'ns1', 2, {secret: 'SUPERSECRET_IN_NAMESPACE'})
+            await writeSecret('secret', 'nested/test', 'ns1', 2, {otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE'})
 
-            await got(`${vaultUrl}/v1/secret/data/nested/test`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns1',
-                },
-                json: {
-                    data: {
-                        otherSecret: 'OTHERSUPERSECRET_IN_NAMESPACE',
-                    },
-                },
-            });
+            // Enable K/V v1 secret engine at 'my-secret/'
+            await enableEngine('my-secret', 'ns1', 1);
+
+            await writeSecret('my-secret', 'test', 'ns1', 1, {secret: 'CUSTOMSECRET_IN_NAMESPACE'})
+            await writeSecret('my-secret', 'nested/test', 'ns1', 1, {otherSecret: 'OTHERCUSTOMSECRET_IN_NAMESPACE'})
         } catch (e) {
             console.error('Failed to setup test', e);
             throw e;
@@ -73,22 +44,16 @@ describe('integration', () => {
 
         when(core.getInput)
             .calledWith('url')
-            .mockReturnValue(`${vaultUrl}`);
+            .mockReturnValueOnce(`${vaultUrl}`);
 
         when(core.getInput)
             .calledWith('token')
-            .mockReturnValue('testtoken');
+            .mockReturnValueOnce('testtoken');
 
         when(core.getInput)
             .calledWith('namespace')
-            .mockReturnValue('ns1');
+            .mockReturnValueOnce('ns1');
     });
-
-    function mockInput(secrets) {
-        when(core.getInput)
-            .calledWith('secrets')
-            .mockReturnValue(secrets);
-    }
 
     it('get simple secret', async () => {
         mockInput('test secret');
@@ -128,6 +93,26 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET_IN_NAMESPACE');
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET_IN_NAMESPACE');
     });
+
+    it('get secret from K/V v1', async () => {
+        mockInput('test secret');
+        mockEngineName('my-secret');
+        mockVersion('1');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET_IN_NAMESPACE');
+    });
+
+    it('get nested secret from K/V v1', async () => {
+        mockInput('nested/test otherSecret');
+        mockEngineName('my-secret');
+        mockVersion('1');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERCUSTOMSECRET_IN_NAMESPACE');
+    });
 });
 
 describe('authenticate with approle', () => {
@@ -143,48 +128,34 @@ describe('authenticate with approle', () => {
             });
 
             // Create namespace
-            await got(`${vaultUrl}/v1/sys/namespaces/ns2`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                },
-            });
+            await enableNamespace("ns2");
 
-            // Enable secret engine
-            await got(`${vaultUrl}/v1/sys/mounts/secret`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns2',
-                },
-                json: { path: 'secret', type: 'kv', config: {}, options: { version: 2 }, generate_signing_key: true },
-            });
+            // Enable K/V v2 secret engine at 'secret/'
+            await enableEngine("secret", "ns2", 2);
 
             // Add secret
-            await got(`${vaultUrl}/v1/secret/data/test`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns2',
-                },
-                json: {
-                    data: {
-                        secret: 'SUPERSECRET_WITH_APPROLE',
-                    },
-                },
-            });
+            await writeSecret('secret', 'test', 'ns2', 2, {secret: 'SUPERSECRET_WITH_APPROLE'})
 
             // Enable approle
-            await got(`${vaultUrl}/v1/sys/auth/approle`, {
-                method: 'POST',
-                headers: {
-                    'X-Vault-Token': 'testtoken',
-                    'X-Vault-Namespace': 'ns2',
-                },
-                json: {
-                    type: 'approle'
-                },
-            });
+            try {
+                await got(`${vaultUrl}/v1/sys/auth/approle`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Vault-Token': 'testtoken',
+                        'X-Vault-Namespace': 'ns2',
+                    },
+                    json: {
+                        type: 'approle'
+                    },
+                });
+            } catch (error) {
+                const {response} = error;
+                if (response.statusCode === 400 && response.body.includes("path is already in use")) {
+                    // Approle might already be enabled from previous test runs
+                } else {
+                    throw error;
+                }
+            }
 
             // Create policies
             await got(`${vaultUrl}/v1/sys/policies/acl/test`, {
@@ -232,7 +203,7 @@ describe('authenticate with approle', () => {
             });
             secretId = secretIdResponse.body.data.secret_id;
         } catch(err) {
-            console.warn('Create approle', err);
+            console.warn('Create approle', err.response.body);
             throw err;
         }
     });
@@ -242,26 +213,20 @@ describe('authenticate with approle', () => {
 
         when(core.getInput)
             .calledWith('method')
-            .mockReturnValue('approle');
+            .mockReturnValueOnce('approle');
         when(core.getInput)
             .calledWith('roleId')
-            .mockReturnValue(roleId);
+            .mockReturnValueOnce(roleId);
         when(core.getInput)
             .calledWith('secretId')
-            .mockReturnValue(secretId);
+            .mockReturnValueOnce(secretId);
         when(core.getInput)
             .calledWith('url')
-            .mockReturnValue(`${vaultUrl}`);
+            .mockReturnValueOnce(`${vaultUrl}`);
         when(core.getInput)
             .calledWith('namespace')
-            .mockReturnValue('ns2');
+            .mockReturnValueOnce('ns2');
     });
-
-    function mockInput(secrets) {
-        when(core.getInput)
-            .calledWith('secrets')
-            .mockReturnValue(secrets);
-    }
 
     it('authenticate with approle', async()=> {
         mockInput('test secret');
@@ -271,3 +236,72 @@ describe('authenticate with approle', () => {
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET_WITH_APPROLE');
     })
 });
+
+async function enableNamespace(name) {
+    try {
+        await got(`${vaultUrl}/v1/sys/namespaces/${name}`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            }
+        });
+    } catch (error) {
+        const {response} = error;
+        if (response.statusCode === 400 && response.body.includes("already exists")) {
+            // Namespace might already be enabled from previous test runs
+        } else {
+            throw error;
+        }
+    }
+}
+
+async function enableEngine(path, namespace, version) {
+    try {
+        await got(`${vaultUrl}/v1/sys/mounts/${path}`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+                'X-Vault-Namespace': namespace,
+            },
+            json: { type: 'kv', config: {}, options: { version }, generate_signing_key: true },
+        });
+    } catch (error) {
+        const {response} = error;
+        if (response.statusCode === 400 && response.body.includes("path is already in use")) {
+            // Engine might already be enabled from previous test runs
+        } else {
+            throw error;
+        }
+    }
+}
+
+async function writeSecret(engine, path, namespace, version, data) {
+    const secretPath = (version == 1) ? (`${engine}/${path}`) : (`${engine}/data/${path}`);
+    const secretPayload = (version == 1) ? (data) : ({data});
+    await got(`${vaultUrl}/v1/${secretPath}`, {
+        method: 'POST',
+        headers: {
+            'X-Vault-Token': 'testtoken',
+            'X-Vault-Namespace': namespace,
+        },
+        json: secretPayload
+    });
+}
+
+function mockInput(secrets) {
+    when(core.getInput)
+        .calledWith('secrets')
+        .mockReturnValueOnce(secrets);
+}
+
+function mockEngineName(name) {
+    when(core.getInput)
+        .calledWith('path')
+        .mockReturnValueOnce(name);
+}
+
+function mockVersion(version) {
+    when(core.getInput)
+        .calledWith('kv-version')
+        .mockReturnValueOnce(version);
+}
