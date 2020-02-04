@@ -124,7 +124,7 @@ jobs:
       with:
         url: http://localhost:${{ job.services.vault.ports[8200] }}
         token: testtoken
-        engine-name: my-secret
+        path: my-secret
         kv-version: 1
         secrets: |
           test altSecret ;

@@ -103,7 +103,7 @@ describe('integration', () => {
 
     function mockEngineName(name) {
         when(core.getInput)
-            .calledWith('engine-name')
+            .calledWith('path')
             .mockReturnValueOnce(name);
     }
 
