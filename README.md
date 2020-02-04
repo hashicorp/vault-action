@@ -1,6 +1,8 @@
 # vault-action
 
-A helper action for easily pulling secrets from a K/V backend of vault.
+A helper action for easily pulling secrets from the K/V backend of vault.
+
+Expects [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the KV Secrets Engine by default.
 
 ## Example Usage
 
@@ -39,7 +41,7 @@ with:
   url: https://vault.mycompany.com:8200
   method: approle
   roleId: ${{ secrets.roleId }}
-  secretId : ${{ secrets.secretId }}
+  secretId: ${{ secrets.secretId }}
 ```
 
 ## Key Syntax
@@ -97,22 +99,21 @@ with:
 
 By default, `vault-action` expects a K/V engine using [version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html).
 
-In order to work with a v1 engine, the `kv-version` parameter may be passed:
+In order to work with a [v1 engine](https://www.vaultproject.io/docs/secrets/kv/kv-v1/), the `kv-version` parameter may be passed:
 
 ```yaml
 with:
     kv-version: 1
 ```
 
-### Custom Engine Name
+### Custom Engine Path
 
-Vault comes with a default engine named `secret`, so a secret named `ci` will be
-accessed from `secret/ci`. However, if you are using a custom named engine, you
+When you enable the K/V Engine, by default it's placed at the path `secret`, so a secret named `ci` will be accessed from `secret/ci`. However, [if you enabled the secrets engine using a custom `path`](https://www.vaultproject.io/docs/commands/secrets/enable/#inlinecode--path-4), you
 can pass it as follows:
 
 ```yaml
 with:
-    engine-name: my-secrets
+    path: my-secrets
     secrets: ci npmToken
 ```
 

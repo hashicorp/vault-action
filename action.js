@@ -7,7 +7,7 @@ async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
 
-    let engineName = core.getInput('engine-name', { required: false });
+    let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
@@ -47,16 +47,16 @@ async function exportSecrets() {
             break;
     }
 
-    if (!engineName){
-        engineName = 'secret';
+    if (!enginePath) {
+        enginePath = 'secret';
     }
 
-    if (!kvVersion){
+    if (!kvVersion) {
         kvVersion = '2';
     }
 
     if (kvVersion !== '1' && kvVersion !== '2') {
-        throw Error(`You must provide a valid K/V version. Input: "${kvVersion}"`);
+        throw Error(`You must provide a valid K/V version (1 or 2). Input: "${kvVersion}"`);
     }
 
     kvVersion = parseInt(kvVersion);
@@ -148,14 +148,14 @@ function parseResponse(responseBody, kvVersion) {
     let secretData;
 
     switch(kvVersion) {
-        case 1:
+        case 1: {
             secretData = parsedResponse.data;
-        break;
+        } break;
 
-        case 2:
+        case 2: {
             const vaultKeyData = parsedResponse.data;
             secretData = vaultKeyData.data;
-        break;
+        } break;
     }
 
     return secretData;
