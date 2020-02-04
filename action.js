@@ -74,8 +74,8 @@ async function exportSecrets() {
         }
 
         const requestPath = (kvVersion === 1)
-                            ? `${vaultUrl}/v1/${engineName}/${secretPath}`
-                            : `${vaultUrl}/v1/${engineName}/data/${secretPath}`;
+                            ? `${vaultUrl}/v1/${enginePath}/${secretPath}`
+                            : `${vaultUrl}/v1/${enginePath}/data/${secretPath}`;
         const result = await got(requestPath, requestOptions);
 
         const secretData = parseResponse(result.body, kvVersion);
