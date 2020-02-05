@@ -11,10 +11,9 @@ async function exportSecrets() {
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
-    let isKvEngine = parseBoolInput(core.getInput('isKvEngine', { required: false }));
 
     const secretsInput = core.getInput('secrets', { required: true });
-    const secrets = parseSecretsInput(secretsInput);
+    const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = core.getInput('method', { required: false }) || 'token';
     if (!AUTH_METHODS.includes(vaultMethod)) {
@@ -64,8 +63,8 @@ async function exportSecrets() {
     }
 
     const responseCache = new Map();
-    for (const secret of secrets) {
-        const { secretPath, outputName, secretSelector, isJSONPath } = secret;
+    for (const secretRequest of secretRequests) {
+        const { secretPath, outputName, secretSelector, isJSONPath } = secretRequest;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -76,9 +75,16 @@ async function exportSecrets() {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
-        const requestPath = (kvVersion === 2)
-                            ? `${vaultUrl}/v1/${enginePath}/data/${secretPath}`
-                            : `${vaultUrl}/v1/${enginePath}/${secretPath}`;
+        let requestPath = `${vaultUrl}/v1`;
+        const kvRequest = !secretPath.startsWith('/')
+        if (!kvRequest) {
+            requestPath += secretPath;
+        } else {
+           requestPath += (kvVersion === 2)
+                    ? `/${enginePath}/data/${secretPath}`
+                    : `/${enginePath}/${secretPath}`;
+        }
+
         let body;
         if (responseCache.has(requestPath)) {
             body = responseCache.get(requestPath);
@@ -88,7 +94,7 @@ async function exportSecrets() {
             responseCache.set(requestPath, body);
         }
 
-        let dataDepth = isJSONPath === true ? 0 : isKvEngine === false ? 1 : kvVersion;
+        let dataDepth = isJSONPath === true ? 0 : kvRequest === false ? 1 : kvVersion;
 
         const secretData = getResponseData(body, dataDepth);
         const value = selectData(secretData, secretSelector);
