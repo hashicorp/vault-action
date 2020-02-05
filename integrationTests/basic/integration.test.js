@@ -171,4 +171,40 @@ describe('integration', () => {
 
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERCUSTOMSECRET');
     });
+
+    describe('generic engines', () => {
+        beforeAll(async () => {
+            await got(`${vaultUrl}/v1/cubbyhole/test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': 'testtoken',
+                },
+                json: {
+                    foo: "bar",
+                    zip: "zap"
+                },
+            });
+        });
+
+        it('supports cubbyhole', async () => {            
+            mockInput('/cubbyhole/test foo');
+
+            await exportSecrets();
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
+        });
+
+        it('caches responses', async () => {            
+            mockInput(`
+            /cubbyhole/test foo ;
+            /cubbyhole/test zip`);
+
+            await exportSecrets();
+
+            expect(core.debug).toBeCalledWith('ℹ using cached response');
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
+            expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+        });
+    })
 });

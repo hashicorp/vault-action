@@ -64,6 +64,17 @@ const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
                 otherAltSecret: 'OTHERCUSTOMSECRET',
             },
         });
+
+        await got(`http://${vaultUrl}/v1/cubbyhole/test`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                foo: 'bar',
+                zip: 'zap',
+            },
+        });
     } catch (error) {
         console.log(error);
         process.exit(1);

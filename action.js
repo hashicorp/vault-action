@@ -3,6 +3,8 @@ const command = require('@actions/core/lib/command');
 const got = require('got');
 
 const AUTH_METHODS = ['approle', 'token'];
+const VALID_KV_VERSION = [-1, 1, 2];
+
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
@@ -11,7 +13,7 @@ async function exportSecrets() {
     let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
-    const secrets = parseSecretsInput(secretsInput);
+    const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = core.getInput('method', { required: false }) || 'token';
     if (!AUTH_METHODS.includes(vaultMethod)) {
@@ -52,17 +54,17 @@ async function exportSecrets() {
     }
 
     if (!kvVersion) {
-        kvVersion = '2';
+        kvVersion = 2;
+    }
+    kvVersion = +kvVersion;
+
+    if (Number.isNaN(kvVersion) || !VALID_KV_VERSION.includes(kvVersion)) {
+        throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
     }
 
-    if (kvVersion !== '1' && kvVersion !== '2') {
-        throw Error(`You must provide a valid K/V version (1 or 2). Input: "${kvVersion}"`);
-    }
-
-    kvVersion = parseInt(kvVersion);
-
-    for (const secret of secrets) {
-        const { secretPath, outputName, secretKey } = secret;
+    const responseCache = new Map();
+    for (const secretRequest of secretRequests) {
+        const { secretPath, outputName, secretSelector, isJSONPath } = secretRequest;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -73,13 +75,30 @@ async function exportSecrets() {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
-        const requestPath = (kvVersion === 1)
-                            ? `${vaultUrl}/v1/${enginePath}/${secretPath}`
-                            : `${vaultUrl}/v1/${enginePath}/data/${secretPath}`;
-        const result = await got(requestPath, requestOptions);
+        let requestPath = `${vaultUrl}/v1`;
+        const kvRequest = !secretPath.startsWith('/')
+        if (!kvRequest) {
+            requestPath += secretPath;
+        } else {
+           requestPath += (kvVersion === 2)
+                    ? `/${enginePath}/data/${secretPath}`
+                    : `/${enginePath}/${secretPath}`;
+        }
 
-        const secretData = parseResponse(result.body, kvVersion);
-        const value = secretData[secretKey];
+        let body;
+        if (responseCache.has(requestPath)) {
+            body = responseCache.get(requestPath);
+            core.debug('ℹ using cached response');
+        } else {
+            const result = await got(requestPath, requestOptions);
+            body = result.body;
+            responseCache.set(requestPath, body);
+        }
+
+        let dataDepth = isJSONPath === true ? 0 : kvRequest === false ? 1 : kvVersion;
+
+        const secretData = getResponseData(body, dataDepth);
+        const value = selectData(secretData, secretSelector);
         command.issue('add-mask', value);
         core.exportVariable(outputName, `${value}`);
         core.debug(`✔ ${secretPath} => ${outputName}`);
@@ -122,17 +141,18 @@ function parseSecretsInput(secretsInput) {
             throw Error(`You must provide a valid path and key. Input: "${secret}"`)
         }
 
-        const [secretPath, secretKey] = pathParts;
+        const [secretPath, secretSelector] = pathParts;
 
         // If we're not using a mapped name, normalize the key path into a variable name.
         if (!outputName) {
-            outputName = normalizeOutputKey(secretKey);
+            outputName = normalizeOutputKey(secretSelector);
         }
 
         output.push({
             secretPath,
             outputName,
-            secretKey
+            secretSelector,
+            isJSONPath: secretSelector.startsWith('$')
         });
     }
     return output;
@@ -143,22 +163,26 @@ function parseSecretsInput(secretsInput) {
  * @param {string} responseBody
  * @param {number} kvVersion
  */
-function parseResponse(responseBody, kvVersion) {
-    const parsedResponse = JSON.parse(responseBody);
-    let secretData;
+function getResponseData(responseBody, dataLevel) {
+    let secretData = JSON.parse(responseBody);
 
-    switch(kvVersion) {
-        case 1: {
-            secretData = parsedResponse.data;
-        } break;
+    for (let i = 0; i < dataLevel; i++) {
+        secretData = secretData['data'];
+    }
+    return secretData;
+}
 
-        case 2: {
-            const vaultKeyData = parsedResponse.data;
-            secretData = vaultKeyData.data;
-        } break;
+/**
+ * Parses a JSON response and returns the secret data
+ * @param {Object} data
+ * @param {string} selector
+ */
+function selectData(data, selector, isJSONPath) {
+    if (!isJSONPath) {
+        return data[selector];
     }
 
-    return secretData;
+    // TODO: JSONPath
 }
 
 /**
@@ -169,9 +193,16 @@ function normalizeOutputKey(dataKey) {
     return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
 }
 
+function parseBoolInput(input) {
+    if (input === null || input === undefined || input.trim() === '') {
+        return null;
+    }
+    return Boolean(input);
+}
+
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    parseResponse,
+    parseResponse: getResponseData,
     normalizeOutputKey
 };

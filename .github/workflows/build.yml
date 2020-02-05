@@ -130,6 +130,14 @@ jobs:
           test altSecret ;
           test altSecret | NAMED_ALTSECRET ;
           nested/test otherAltSecret ;
+    - name: use vault action (using cubbyhole engine)
+      uses: ./
+      with:
+        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        token: testtoken
+        secrets: |
+          /cubbyhole/test foo ;
+          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
     - name: verify
       run: npm run test:e2e
 
