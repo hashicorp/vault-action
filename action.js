@@ -88,6 +88,7 @@ async function exportSecrets() {
         let body;
         if (responseCache.has(requestPath)) {
             body = responseCache.get(requestPath);
+            core.debug('ℹ using cached response');
         } else {
             const result = await got(requestPath, requestOptions);
             body = result.body;

@@ -6,5 +6,7 @@ describe('e2e', () => {
         expect(process.env.ALTSECRET).toBe("CUSTOMSECRET");
         expect(process.env.NAMED_ALTSECRET).toBe("CUSTOMSECRET");
         expect(process.env.OTHERALTSECRET).toBe("OTHERCUSTOMSECRET");
+        expect(process.env.FOO).toBe("bar");
+        expect(process.env.NAMED_CUBBYSECRET).toBe("zap");
     });
 });
