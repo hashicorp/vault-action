@@ -17,7 +17,7 @@ describe('parseSecretsInput', () => {
         const output = parseSecretsInput('test key');
         expect(output).toContainEqual({
             secretPath: 'test',
-            secretKey: 'key',
+            secretSelector: 'key',
             outputName: 'KEY',
         });
     });

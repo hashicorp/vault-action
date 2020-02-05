@@ -3,12 +3,15 @@ const command = require('@actions/core/lib/command');
 const got = require('got');
 
 const AUTH_METHODS = ['approle', 'token'];
+const VALID_KV_VERSION = [-1, 1, 2];
+
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
+    const useKv = core.getInput('useKv', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
@@ -52,17 +55,23 @@ async function exportSecrets() {
     }
 
     if (!kvVersion) {
-        kvVersion = '2';
+        if (useKv !== false) {
+            kvVersion = 2;
+        } else {
+            kvVersion = -1;
+        }
     }
+    kvVersion = +kvVersion;
 
-    if (kvVersion !== '1' && kvVersion !== '2') {
-        throw Error(`You must provide a valid K/V version (1 or 2). Input: "${kvVersion}"`);
+    if (Number.isNaN(kvVersion) || !VALID_KV_VERSION.includes(kvVersion)) {
+        throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
     }
 
     kvVersion = parseInt(kvVersion);
 
+    const responseCache = new Map();
     for (const secret of secrets) {
-        const { secretPath, outputName, secretKey } = secret;
+        const { secretPath, outputName, secretSelector } = secret;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -73,13 +82,18 @@ async function exportSecrets() {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
-        const requestPath = (kvVersion === 1)
-                            ? `${vaultUrl}/v1/${enginePath}/${secretPath}`
-                            : `${vaultUrl}/v1/${enginePath}/data/${secretPath}`;
-        const result = await got(requestPath, requestOptions);
+        const requestPath = (kvVersion === 2)
+                            ? `${vaultUrl}/v1/${enginePath}/data/${secretPath}`
+                            : `${vaultUrl}/v1/${enginePath}/${secretPath}`;
+        let result;
+        if (responseCache.has(requestPath)) {
+            result = responseCache.get(requestPath);
+        } else {
+            result = await got(requestPath, requestOptions);
+        }
 
-        const secretData = parseResponse(result.body, kvVersion);
-        const value = secretData[secretKey];
+        const secretData = getResponseData(result.body, kvVersion);
+        const value = selectData(secretData, secretSelector);
         command.issue('add-mask', value);
         core.exportVariable(outputName, `${value}`);
         core.debug(`✔ ${secretPath} => ${outputName}`);
@@ -122,17 +136,17 @@ function parseSecretsInput(secretsInput) {
             throw Error(`You must provide a valid path and key. Input: "${secret}"`)
         }
 
-        const [secretPath, secretKey] = pathParts;
+        const [secretPath, secretSelector] = pathParts;
 
         // If we're not using a mapped name, normalize the key path into a variable name.
         if (!outputName) {
-            outputName = normalizeOutputKey(secretKey);
+            outputName = normalizeOutputKey(secretSelector);
         }
 
         output.push({
             secretPath,
             outputName,
-            secretKey
+            secretSelector
         });
     }
     return output;
@@ -143,7 +157,7 @@ function parseSecretsInput(secretsInput) {
  * @param {string} responseBody
  * @param {number} kvVersion
  */
-function parseResponse(responseBody, kvVersion) {
+function getResponseData(responseBody, kvVersion) {
     const parsedResponse = JSON.parse(responseBody);
     let secretData;
 
@@ -156,9 +170,26 @@ function parseResponse(responseBody, kvVersion) {
             const vaultKeyData = parsedResponse.data;
             secretData = vaultKeyData.data;
         } break;
+
+        default: {
+            secretData = parsedResponse;
+        } break;
     }
 
     return secretData;
+}
+
+/**
+ * Parses a JSON response and returns the secret data
+ * @param {Object} data
+ * @param {string} selector
+ */
+function selectData(data, selector) {
+    if (!selector.startsWith('$')) {
+        return data[selector];
+    }
+
+    // TODO: JSONPath
 }
 
 /**
@@ -172,6 +203,6 @@ function normalizeOutputKey(dataKey) {
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    parseResponse,
+    parseResponse: getResponseData,
     normalizeOutputKey
 };
