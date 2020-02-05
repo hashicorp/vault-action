@@ -19,6 +19,7 @@ describe('parseSecretsInput', () => {
             secretPath: 'test',
             secretSelector: 'key',
             outputName: 'KEY',
+            isJSONPath: false
         });
     });
 

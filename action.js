@@ -11,7 +11,7 @@ async function exportSecrets() {
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
-    const useKv = core.getInput('useKv', { required: false });
+    let isKvEngine = parseBoolInput(core.getInput('isKvEngine', { required: false }));
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secrets = parseSecretsInput(secretsInput);
@@ -55,11 +55,7 @@ async function exportSecrets() {
     }
 
     if (!kvVersion) {
-        if (useKv !== false) {
-            kvVersion = 2;
-        } else {
-            kvVersion = -1;
-        }
+        kvVersion = 2;
     }
     kvVersion = +kvVersion;
 
@@ -67,11 +63,9 @@ async function exportSecrets() {
         throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
     }
 
-    kvVersion = parseInt(kvVersion);
-
     const responseCache = new Map();
     for (const secret of secrets) {
-        const { secretPath, outputName, secretSelector } = secret;
+        const { secretPath, outputName, secretSelector, isJSONPath } = secret;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -85,14 +79,18 @@ async function exportSecrets() {
         const requestPath = (kvVersion === 2)
                             ? `${vaultUrl}/v1/${enginePath}/data/${secretPath}`
                             : `${vaultUrl}/v1/${enginePath}/${secretPath}`;
-        let result;
+        let body;
         if (responseCache.has(requestPath)) {
-            result = responseCache.get(requestPath);
+            body = responseCache.get(requestPath);
         } else {
-            result = await got(requestPath, requestOptions);
+            const result = await got(requestPath, requestOptions);
+            body = result.body;
+            responseCache.set(requestPath, body);
         }
 
-        const secretData = getResponseData(result.body, kvVersion);
+        let dataDepth = isJSONPath === true ? 0 : isKvEngine === false ? 1 : kvVersion;
+
+        const secretData = getResponseData(body, dataDepth);
         const value = selectData(secretData, secretSelector);
         command.issue('add-mask', value);
         core.exportVariable(outputName, `${value}`);
@@ -146,7 +144,8 @@ function parseSecretsInput(secretsInput) {
         output.push({
             secretPath,
             outputName,
-            secretSelector
+            secretSelector,
+            isJSONPath: secretSelector.startsWith('$')
         });
     }
     return output;
@@ -157,25 +156,12 @@ function parseSecretsInput(secretsInput) {
  * @param {string} responseBody
  * @param {number} kvVersion
  */
-function getResponseData(responseBody, kvVersion) {
-    const parsedResponse = JSON.parse(responseBody);
-    let secretData;
+function getResponseData(responseBody, dataLevel) {
+    let secretData = JSON.parse(responseBody);
 
-    switch(kvVersion) {
-        case 1: {
-            secretData = parsedResponse.data;
-        } break;
-
-        case 2: {
-            const vaultKeyData = parsedResponse.data;
-            secretData = vaultKeyData.data;
-        } break;
-
-        default: {
-            secretData = parsedResponse;
-        } break;
+    for (let i = 0; i < dataLevel; i++) {
+        secretData = secretData['data'];
     }
-
     return secretData;
 }
 
@@ -184,8 +170,8 @@ function getResponseData(responseBody, kvVersion) {
  * @param {Object} data
  * @param {string} selector
  */
-function selectData(data, selector) {
-    if (!selector.startsWith('$')) {
+function selectData(data, selector, isJSONPath) {
+    if (!isJSONPath) {
         return data[selector];
     }
 
@@ -198,6 +184,13 @@ function selectData(data, selector) {
  */
 function normalizeOutputKey(dataKey) {
     return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
+}
+
+function parseBoolInput(input) {
+    if (input === null || input === undefined || input.trim() === '') {
+        return null;
+    }
+    return Boolean(input);
 }
 
 module.exports = {
