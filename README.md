@@ -1,8 +1,8 @@
 # vault-action
 
-A helper action for easily pulling secrets from the K/V backend of vault.
+A helper action for easily pulling secrets from HashiCorp Vault™.
 
-Expects [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the KV Secrets Engine by default.
+By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the K/V Engine. See examples below for how to [use v1](#using-kv-version-1) as well as non-K/V engines.
 
 ## Example Usage
 
@@ -26,7 +26,8 @@ jobs:
 
 ## Authentication method
 
-The `method` parameter can have these value :
+While most workflows will likely use a vault token, you can also use an `approle` to authenticate with vaule. You can configure which by using the `method` parameter:
+
 - **token**: (by default) you must provide a token parameter
 ```yaml
 ...
@@ -106,7 +107,7 @@ with:
     kv-version: 1
 ```
 
-### Custom Engine Path
+### Custom K/V Engine Path
 
 When you enable the K/V Engine, by default it's placed at the path `secret`, so a secret named `ci` will be accessed from `secret/ci`. However, [if you enabled the secrets engine using a custom `path`](https://www.vaultproject.io/docs/commands/secrets/enable/#inlinecode--path-4), you
 can pass it as follows:
@@ -119,9 +120,56 @@ with:
 
 This way, the `ci` secret in the example above will be retrieved from `my-secrets/ci`.
 
+### Other Secret Engines
+
+While this action primarily supports the K/V engine, it is possible to request secrets from other engines in Vault.
+
+To do so when specifying the `Secret Path`, just append a leading formard slash (`/`) and specify the path as described in the Vault API documentation.
+
+For example, to retrieve a stored secret from the [`cubbyhole` engine](https://www.vaultproject.io/api-docs/secret/cubbyhole/), assuming you have a stored secret at the path `foo` with the contents:
+
+```json
+{
+  "foo": "bar",
+  "zip": "zap"
+}
+```
+
+You could request the contents like so:
+
+```yaml
+with:
+    secrets: |
+        /cubbyhole/foo foo ;
+        /cubbyhole/foo zip | MY_KEY ;
+```
+
+Resulting in:
+
+```bash
+FOO=bar MY_KEY=zap
+```
+
+Secrets pulled from the same `Secret Path` are cached by default. So if you, for example, are using the `aws` engine and retrieve a key, only a single key for a given path is returned.
+
+e.g.:
+
+```yaml
+with:
+    secrets: |
+        /aws/creds/ci access_key | AWS_ACCESS_KEY_ID ;
+        /aws/creds/ci secret_key | AWS_SECRET_ACCESS_KEY
+```
+
+would work fine.
+
+NOTE: The `Secret Key` is pulled from the `data` property of the response.
+
+## Vault Enterprise Features
+
 ### Namespace
 
-This action could be use with namespace Vault Enterprise feature. You can specify namespace in request :
+If you need to retrieve secrets from a specific vault namespace, all that's required is an additional parameter specifying the namespace.
 
 ```yaml
 steps:
