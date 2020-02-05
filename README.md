@@ -2,7 +2,7 @@
 
 A helper action for easily pulling secrets from HashiCorp Vault™.
 
-By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the K/V Engine. See examples below for how to [use v1](#using-kv-version-1) as well as non-K/V engines.
+By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the K/V Engine. See examples below for how to [use v1](#using-kv-version-1) as well as [other non-K/V engines](#other-secret-engines).
 
 ## Example Usage
 
