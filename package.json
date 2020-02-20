@@ -38,7 +38,7 @@
     },
     "homepage": "https://github.com/RichiCoder1/vault-action#readme",
     "dependencies": {
-        "@actions/core": "^1.1.1",
+        "@actions/core": "^1.2.2",
         "got": "^10.2.2"
     },
     "devDependencies": {
