@@ -18,7 +18,8 @@ describe('parseSecretsInput', () => {
         expect(output).toContainEqual({
             secretPath: 'test',
             secretSelector: 'key',
-            outputName: 'KEY',
+            outputVarName: 'key',
+            envVarName: 'KEY',
             isJSONPath: false
         });
     });
@@ -27,7 +28,8 @@ describe('parseSecretsInput', () => {
         const output = parseSecretsInput('test key|testName');
         expect(output).toHaveLength(1);
         expect(output[0]).toMatchObject({
-            outputName: 'testName',
+            outputVarName: 'testName',
+            envVarName: 'testName',
         });
     });
 
@@ -58,10 +60,12 @@ describe('parseSecretsInput', () => {
 
         expect(output).toHaveLength(2);
         expect(output[0]).toMatchObject({
-            outputName: 'A',
+            outputVarName: 'a',
+            envVarName: 'A',
         });
         expect(output[1]).toMatchObject({
-            outputName: 'secondName',
+            outputVarName: 'secondName',
+            envVarName: 'secondName'
         });
     });
 
@@ -76,10 +80,12 @@ describe('parseSecretsInput', () => {
             secretPath: 'first',
         });
         expect(output[1]).toMatchObject({
-            outputName: 'B',
+            outputVarName: 'b',
+            envVarName: 'B'
         });
         expect(output[2]).toMatchObject({
-            outputName: 'SOME_C',
+            outputVarName: 'SOME_C',
+            envVarName: 'SOME_C',
         });
     })
 });
@@ -172,6 +178,7 @@ describe('exportSecrets', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
     it('mapped secret retrieval', async () => {
@@ -183,6 +190,7 @@ describe('exportSecrets', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('TEST_NAME', '1');
+        expect(core.setOutput).toBeCalledWith('TEST_NAME', '1');
     });
 
     it('simple secret retrieval from K/V v1', async () => {
@@ -197,5 +205,6 @@ describe('exportSecrets', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
     });
 });
