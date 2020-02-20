@@ -584,6 +584,7 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
+const url_1 = __webpack_require__(835);
 const create_1 = __webpack_require__(323);
 const defaults = {
     options: {
@@ -648,7 +649,37 @@ const defaults = {
         prefixUrl: '',
         methodRewriting: true,
         ignoreInvalidCookies: false,
-        context: {}
+        context: {},
+        _pagination: {
+            transform: (response) => {
+                return JSON.parse(response.body);
+            },
+            paginate: response => {
+                if (!Reflect.has(response.headers, 'link')) {
+                    return false;
+                }
+                const items = response.headers.link.split(',');
+                let next;
+                for (const item of items) {
+                    const parsed = item.split(';');
+                    if (parsed[1].includes('next')) {
+                        next = parsed[0].trimStart().trim();
+                        next = next.slice(1, -1);
+                        break;
+                    }
+                }
+                if (next) {
+                    const options = {
+                        url: new url_1.URL(next)
+                    };
+                    return options;
+                }
+                return false;
+            },
+            filter: () => true,
+            shouldContinue: () => true,
+            countLimit: Infinity
+        }
     },
     handlers: [create_1.defaultHandler],
     mutableDefaults: false
@@ -666,6 +697,7 @@ var errors_1 = __webpack_require__(378);
 exports.GotError = errors_1.GotError;
 exports.CacheError = errors_1.CacheError;
 exports.RequestError = errors_1.RequestError;
+exports.ReadError = errors_1.ReadError;
 exports.ParseError = errors_1.ParseError;
 exports.HTTPError = errors_1.HTTPError;
 exports.MaxRedirectsError = errors_1.MaxRedirectsError;
@@ -712,16 +744,18 @@ const knownProperties = [
 ];
 
 module.exports = (fromStream, toStream) => {
-	const fromProps = new Set(Object.keys(fromStream).concat(knownProperties));
+	const fromProperties = new Set(Object.keys(fromStream).concat(knownProperties));
 
-	for (const prop of fromProps) {
-		// Don't overwrite existing properties
-		if (prop in toStream) {
+	for (const property of fromProperties) {
+		// Don't overwrite existing properties.
+		if (property in toStream) {
 			continue;
 		}
 
-		toStream[prop] = typeof fromStream[prop] === 'function' ? fromStream[prop].bind(fromStream) : fromStream[prop];
+		toStream[property] = typeof fromStream[property] === 'function' ? fromStream[property].bind(fromStream) : fromStream[property];
 	}
+
+	return toStream;
 };
 
 
@@ -932,7 +966,7 @@ exports.preNormalizeArguments = (options, defaults) => {
         // Horrible `tough-cookie` check
         if (setCookie.length === 4 && getCookieString.length === 0) {
             if (!Reflect.has(setCookie, util_1.promisify.custom)) {
-                // @ts-ignore TS is dumb.
+                // @ts-ignore TS is dumb - it says `setCookie` is `never`.
                 setCookie = util_1.promisify(setCookie.bind(options.cookieJar));
                 getCookieString = util_1.promisify(getCookieString.bind(options.cookieJar));
             }
@@ -956,6 +990,22 @@ exports.preNormalizeArguments = (options, defaults) => {
     // Merge defaults
     if (defaults) {
         options = merge_1.default({}, defaults, options);
+    }
+    // `options._pagination`
+    if (is_1.default.object(options._pagination)) {
+        const { _pagination: pagination } = options;
+        if (!is_1.default.function_(pagination.transform)) {
+            throw new TypeError('`options._pagination.transform` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.shouldContinue)) {
+            throw new TypeError('`options._pagination.shouldContinue` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.filter)) {
+            throw new TypeError('`options._pagination.filter` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.paginate)) {
+            throw new TypeError('`options._pagination.paginate` must be implemented');
+        }
     }
     // Other values
     options.decompress = Boolean(options.decompress);
@@ -994,27 +1044,52 @@ exports.mergeOptions = (...sources) => {
     return mergedOptions;
 };
 exports.normalizeArguments = (url, options, defaults) => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     // Merge options
     if (typeof url === 'undefined') {
         throw new TypeError('Missing `url` argument');
     }
-    if (typeof options === 'undefined') {
-        options = {};
-    }
-    if (is_1.default.urlInstance(url) || is_1.default.string(url)) {
-        if (Reflect.has(options, 'url')) {
-            throw new TypeError('The `url` option cannot be used if the input is a valid URL.');
+    const runInitHooks = (hooks, options) => {
+        if (hooks && options) {
+            for (const hook of hooks) {
+                const result = hook(options);
+                if (is_1.default.promise(result)) {
+                    throw new TypeError('The `init` hook must be a synchronous function');
+                }
+            }
+        }
+    };
+    const hasUrl = is_1.default.urlInstance(url) || is_1.default.string(url);
+    if (hasUrl) {
+        if (options) {
+            if (Reflect.has(options, 'url')) {
+                throw new TypeError('The `url` option cannot be used if the input is a valid URL.');
+            }
+        }
+        else {
+            options = {};
         }
         // @ts-ignore URL is not URL
         options.url = url;
-        options = exports.mergeOptions((_b = (_a = defaults) === null || _a === void 0 ? void 0 : _a.options, (_b !== null && _b !== void 0 ? _b : {})), options);
+        runInitHooks((_a = defaults) === null || _a === void 0 ? void 0 : _a.options.hooks.init, options);
+        runInitHooks((_b = options.hooks) === null || _b === void 0 ? void 0 : _b.init, options);
+    }
+    else if (Reflect.has(url, 'resolve')) {
+        throw new Error('The legacy `url.Url` is deprecated. Use `URL` instead.');
     }
     else {
-        if (Reflect.has(url, 'resolve')) {
-            throw new Error('The legacy `url.Url` is deprecated. Use `URL` instead.');
+        runInitHooks((_c = defaults) === null || _c === void 0 ? void 0 : _c.options.hooks.init, url);
+        runInitHooks((_d = url.hooks) === null || _d === void 0 ? void 0 : _d.init, url);
+        if (options) {
+            runInitHooks((_e = defaults) === null || _e === void 0 ? void 0 : _e.options.hooks.init, options);
+            runInitHooks((_f = options.hooks) === null || _f === void 0 ? void 0 : _f.init, options);
         }
-        options = exports.mergeOptions((_d = (_c = defaults) === null || _c === void 0 ? void 0 : _c.options, (_d !== null && _d !== void 0 ? _d : {})), url, options);
+    }
+    if (hasUrl) {
+        options = exports.mergeOptions((_h = (_g = defaults) === null || _g === void 0 ? void 0 : _g.options, (_h !== null && _h !== void 0 ? _h : {})), (options !== null && options !== void 0 ? options : {}));
+    }
+    else {
+        options = exports.mergeOptions((_k = (_j = defaults) === null || _j === void 0 ? void 0 : _j.options, (_k !== null && _k !== void 0 ? _k : {})), url, (options !== null && options !== void 0 ? options : {}));
     }
     // Normalize URL
     // TODO: drop `optionsToUrl` in Got 12
@@ -1054,12 +1129,6 @@ exports.normalizeArguments = (url, options, defaults) => {
             delete normalizedOptions.headers[key];
         }
     }
-    for (const hook of normalizedOptions.hooks.init) {
-        const result = hook(normalizedOptions);
-        if (is_1.default.promise(result)) {
-            throw new TypeError('The `init` hook must be a synchronous function');
-        }
-    }
     return normalizedOptions;
 };
 const withoutBody = new Set(['GET', 'HEAD']);
@@ -1068,16 +1137,16 @@ exports.normalizeRequestArguments = async (options) => {
     options = exports.mergeOptions(options);
     // Serialize body
     const { headers } = options;
-    const noContentType = is_1.default.undefined(headers['content-type']);
+    const hasNoContentType = is_1.default.undefined(headers['content-type']);
     {
         // TODO: these checks should be moved to `preNormalizeArguments`
         const isForm = !is_1.default.undefined(options.form);
-        const isJSON = !is_1.default.undefined(options.json);
+        const isJson = !is_1.default.undefined(options.json);
         const isBody = !is_1.default.undefined(options.body);
-        if ((isBody || isForm || isJSON) && withoutBody.has(options.method)) {
+        if ((isBody || isForm || isJson) && withoutBody.has(options.method)) {
             throw new TypeError(`The \`${options.method}\` method cannot be used with a body`);
         }
-        if ([isBody, isForm, isJSON].filter(isTrue => isTrue).length > 1) {
+        if ([isBody, isForm, isJson].filter(isTrue => isTrue).length > 1) {
             throw new TypeError('The `body`, `json` and `form` options are mutually exclusive');
         }
         if (isBody &&
@@ -1093,18 +1162,18 @@ exports.normalizeRequestArguments = async (options) => {
     }
     if (options.body) {
         // Special case for https://github.com/form-data/form-data
-        if (is_1.default.object(options.body) && is_form_data_1.default(options.body) && noContentType) {
+        if (is_1.default.object(options.body) && is_form_data_1.default(options.body) && hasNoContentType) {
             headers['content-type'] = `multipart/form-data; boundary=${options.body.getBoundary()}`;
         }
     }
     else if (options.form) {
-        if (noContentType) {
+        if (hasNoContentType) {
             headers['content-type'] = 'application/x-www-form-urlencoded';
         }
         options.body = (new url_1.URLSearchParams(options.form)).toString();
     }
     else if (options.json) {
-        if (noContentType) {
+        if (hasNoContentType) {
             headers['content-type'] = 'application/json';
         }
         options.body = JSON.stringify(options.json);
@@ -1123,7 +1192,7 @@ exports.normalizeRequestArguments = async (options) => {
     // a payload body and the method semantics do not anticipate such a
     // body.
     if (is_1.default.undefined(headers['content-length']) && is_1.default.undefined(headers['transfer-encoding'])) {
-        if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH') &&
+        if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH' || options.method === 'DELETE') &&
             !is_1.default.undefined(uploadBodySize)) {
             // @ts-ignore We assign if it is undefined, so this IS correct
             headers['content-length'] = String(uploadBodySize);
@@ -1190,6 +1259,303 @@ exports.normalizeRequestArguments = async (options) => {
     // `http-cache-semantics` checks this
     delete options.url;
     return options;
+};
+
+
+/***/ }),
+
+/***/ 148:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const pTimeout = __webpack_require__(654);
+
+const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator';
+
+const normalizeEmitter = emitter => {
+	const addListener = emitter.on || emitter.addListener || emitter.addEventListener;
+	const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener;
+
+	if (!addListener || !removeListener) {
+		throw new TypeError('Emitter is not compatible');
+	}
+
+	return {
+		addListener: addListener.bind(emitter),
+		removeListener: removeListener.bind(emitter)
+	};
+};
+
+const normalizeEvents = event => Array.isArray(event) ? event : [event];
+
+const multiple = (emitter, event, options) => {
+	let cancel;
+	const ret = new Promise((resolve, reject) => {
+		options = {
+			rejectionEvents: ['error'],
+			multiArgs: false,
+			resolveImmediately: false,
+			...options
+		};
+
+		if (!(options.count >= 0 && (options.count === Infinity || Number.isInteger(options.count)))) {
+			throw new TypeError('The `count` option should be at least 0 or more');
+		}
+
+		// Allow multiple events
+		const events = normalizeEvents(event);
+
+		const items = [];
+		const {addListener, removeListener} = normalizeEmitter(emitter);
+
+		const onItem = (...args) => {
+			const value = options.multiArgs ? args : args[0];
+
+			if (options.filter && !options.filter(value)) {
+				return;
+			}
+
+			items.push(value);
+
+			if (options.count === items.length) {
+				cancel();
+				resolve(items);
+			}
+		};
+
+		const rejectHandler = error => {
+			cancel();
+			reject(error);
+		};
+
+		cancel = () => {
+			for (const event of events) {
+				removeListener(event, onItem);
+			}
+
+			for (const rejectionEvent of options.rejectionEvents) {
+				removeListener(rejectionEvent, rejectHandler);
+			}
+		};
+
+		for (const event of events) {
+			addListener(event, onItem);
+		}
+
+		for (const rejectionEvent of options.rejectionEvents) {
+			addListener(rejectionEvent, rejectHandler);
+		}
+
+		if (options.resolveImmediately) {
+			resolve(items);
+		}
+	});
+
+	ret.cancel = cancel;
+
+	if (typeof options.timeout === 'number') {
+		const timeout = pTimeout(ret, options.timeout);
+		timeout.cancel = cancel;
+		return timeout;
+	}
+
+	return ret;
+};
+
+const pEvent = (emitter, event, options) => {
+	if (typeof options === 'function') {
+		options = {filter: options};
+	}
+
+	options = {
+		...options,
+		count: 1,
+		resolveImmediately: false
+	};
+
+	const arrayPromise = multiple(emitter, event, options);
+	const promise = arrayPromise.then(array => array[0]); // eslint-disable-line promise/prefer-await-to-then
+	promise.cancel = arrayPromise.cancel;
+
+	return promise;
+};
+
+module.exports = pEvent;
+// TODO: Remove this for the next major release
+module.exports.default = pEvent;
+
+module.exports.multiple = multiple;
+
+module.exports.iterator = (emitter, event, options) => {
+	if (typeof options === 'function') {
+		options = {filter: options};
+	}
+
+	// Allow multiple events
+	const events = normalizeEvents(event);
+
+	options = {
+		rejectionEvents: ['error'],
+		resolutionEvents: [],
+		limit: Infinity,
+		multiArgs: false,
+		...options
+	};
+
+	const {limit} = options;
+	const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit));
+	if (!isValidLimit) {
+		throw new TypeError('The `limit` option should be a non-negative integer or Infinity');
+	}
+
+	if (limit === 0) {
+		// Return an empty async iterator to avoid any further cost
+		return {
+			[Symbol.asyncIterator]() {
+				return this;
+			},
+			async next() {
+				return {
+					done: true,
+					value: undefined
+				};
+			}
+		};
+	}
+
+	const {addListener, removeListener} = normalizeEmitter(emitter);
+
+	let isDone = false;
+	let error;
+	let hasPendingError = false;
+	const nextQueue = [];
+	const valueQueue = [];
+	let eventCount = 0;
+	let isLimitReached = false;
+
+	const valueHandler = (...args) => {
+		eventCount++;
+		isLimitReached = eventCount === limit;
+
+		const value = options.multiArgs ? args : args[0];
+
+		if (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+
+			resolve({done: false, value});
+
+			if (isLimitReached) {
+				cancel();
+			}
+
+			return;
+		}
+
+		valueQueue.push(value);
+
+		if (isLimitReached) {
+			cancel();
+		}
+	};
+
+	const cancel = () => {
+		isDone = true;
+		for (const event of events) {
+			removeListener(event, valueHandler);
+		}
+
+		for (const rejectionEvent of options.rejectionEvents) {
+			removeListener(rejectionEvent, rejectHandler);
+		}
+
+		for (const resolutionEvent of options.resolutionEvents) {
+			removeListener(resolutionEvent, resolveHandler);
+		}
+
+		while (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+			resolve({done: true, value: undefined});
+		}
+	};
+
+	const rejectHandler = (...args) => {
+		error = options.multiArgs ? args : args[0];
+
+		if (nextQueue.length > 0) {
+			const {reject} = nextQueue.shift();
+			reject(error);
+		} else {
+			hasPendingError = true;
+		}
+
+		cancel();
+	};
+
+	const resolveHandler = (...args) => {
+		const value = options.multiArgs ? args : args[0];
+
+		if (options.filter && !options.filter(value)) {
+			return;
+		}
+
+		if (nextQueue.length > 0) {
+			const {resolve} = nextQueue.shift();
+			resolve({done: true, value});
+		} else {
+			valueQueue.push(value);
+		}
+
+		cancel();
+	};
+
+	for (const event of events) {
+		addListener(event, valueHandler);
+	}
+
+	for (const rejectionEvent of options.rejectionEvents) {
+		addListener(rejectionEvent, rejectHandler);
+	}
+
+	for (const resolutionEvent of options.resolutionEvents) {
+		addListener(resolutionEvent, resolveHandler);
+	}
+
+	return {
+		[symbolAsyncIterator]() {
+			return this;
+		},
+		async next() {
+			if (valueQueue.length > 0) {
+				const value = valueQueue.shift();
+				return {
+					done: isDone && valueQueue.length === 0 && !isLimitReached,
+					value
+				};
+			}
+
+			if (hasPendingError) {
+				hasPendingError = false;
+				throw error;
+			}
+
+			if (isDone) {
+				return {
+					done: true,
+					value: undefined
+				};
+			}
+
+			return new Promise((resolve, reject) => nextQueue.push({resolve, reject}));
+		},
+		async return(value) {
+			cancel();
+			return {
+				done: isDone,
+				value
+			};
+		}
+	};
 };
 
 
@@ -1381,9 +1747,9 @@ module.exports = class CachePolicy {
                 // contains a max-age response directive, or
                 // contains a s-maxage response directive and the cache is shared, or
                 // contains a public response directive.
-                this._rescc.public ||
                 this._rescc['max-age'] ||
-                this._rescc['s-maxage'] ||
+                (this._isShared && this._rescc['s-maxage']) ||
+                this._rescc.public ||
                 // has a status code that is defined as cacheable by default
                 statusCodeCacheableByDefault.indexOf(this._status) !== -1)
         );
@@ -1543,12 +1909,12 @@ module.exports = class CachePolicy {
     }
 
     _serverDate() {
-        const dateValue = Date.parse(this._resHeaders.date);
-        if (isFinite(dateValue)) {
+        const serverDate = Date.parse(this._resHeaders.date);
+        if (isFinite(serverDate)) {
             const maxClockDrift = 8 * 3600 * 1000;
-            const clockDrift = Math.abs(this._responseTime - dateValue);
+            const clockDrift = Math.abs(this._responseTime - serverDate);
             if (clockDrift < maxClockDrift) {
-                return dateValue;
+                return serverDate;
             }
         }
         return this._responseTime;
@@ -1620,22 +1986,22 @@ module.exports = class CachePolicy {
 
         const defaultMinTtl = this._rescc.immutable ? this._immutableMinTtl : 0;
 
-        const dateValue = this._serverDate();
+        const serverDate = this._serverDate();
         if (this._resHeaders.expires) {
             const expires = Date.parse(this._resHeaders.expires);
             // A cache recipient MUST interpret invalid date formats, especially the value "0", as representing a time in the past (i.e., "already expired").
-            if (Number.isNaN(expires) || expires < dateValue) {
+            if (Number.isNaN(expires) || expires < serverDate) {
                 return 0;
             }
-            return Math.max(defaultMinTtl, (expires - dateValue) / 1000);
+            return Math.max(defaultMinTtl, (expires - serverDate) / 1000);
         }
 
         if (this._resHeaders['last-modified']) {
             const lastModified = Date.parse(this._resHeaders['last-modified']);
-            if (isFinite(lastModified) && dateValue > lastModified) {
+            if (isFinite(lastModified) && serverDate > lastModified) {
                 return Math.max(
                     defaultMinTtl,
-                    ((dateValue - lastModified) / 1000) * this._cacheHeuristic
+                    ((serverDate - lastModified) / 1000) * this._cacheHeuristic
                 );
             }
         }
@@ -1953,7 +2319,7 @@ exports.parse = function (s) {
   return JSON.parse(s, function (key, value) {
     if('string' === typeof value) {
       if(/^:base64:/.test(value))
-        return new Buffer(value.substring(8), 'base64')
+        return Buffer.from(value.substring(8), 'base64')
       else
         return /^:/.test(value) ? value.substring(1) : value 
     }
@@ -2302,6 +2668,7 @@ const loadStore = opts => {
 		const adapter = opts.adapter || /^[^:]*/.exec(opts.uri)[0];
 		return new (require(adapters[adapter]))(opts);
 	}
+
 	return new Map();
 };
 
@@ -2334,21 +2701,25 @@ class Keyv extends EventEmitter {
 		return `${this.opts.namespace}:${key}`;
 	}
 
-	get(key) {
+	get(key, opts) {
 		key = this._getKeyPrefix(key);
-		const store = this.opts.store;
+		const { store } = this.opts;
 		return Promise.resolve()
 			.then(() => store.get(key))
 			.then(data => {
-				data = (typeof data === 'string') ? this.opts.deserialize(data) : data;
+				return (typeof data === 'string') ? this.opts.deserialize(data) : data;
+			})
+			.then(data => {
 				if (data === undefined) {
 					return undefined;
 				}
+
 				if (typeof data.expires === 'number' && Date.now() > data.expires) {
 					this.delete(key);
 					return undefined;
 				}
-				return data.value;
+
+				return (opts && opts.raw) ? data : data.value;
 			});
 	}
 
@@ -2357,29 +2728,32 @@ class Keyv extends EventEmitter {
 		if (typeof ttl === 'undefined') {
 			ttl = this.opts.ttl;
 		}
+
 		if (ttl === 0) {
 			ttl = undefined;
 		}
-		const store = this.opts.store;
+
+		const { store } = this.opts;
 
 		return Promise.resolve()
 			.then(() => {
 				const expires = (typeof ttl === 'number') ? (Date.now() + ttl) : null;
 				value = { value, expires };
-				return store.set(key, this.opts.serialize(value), ttl);
+				return this.opts.serialize(value);
 			})
+			.then(value => store.set(key, value, ttl))
 			.then(() => true);
 	}
 
 	delete(key) {
 		key = this._getKeyPrefix(key);
-		const store = this.opts.store;
+		const { store } = this.opts;
 		return Promise.resolve()
 			.then(() => store.delete(key));
 	}
 
 	clear() {
-		const store = this.opts.store;
+		const { store } = this.opts;
 		return Promise.resolve()
 			.then(() => store.clear());
 	}
@@ -2396,6 +2770,7 @@ module.exports = Keyv;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const is_1 = __webpack_require__(534);
 const as_promise_1 = __webpack_require__(616);
 const as_stream_1 = __webpack_require__(379);
 const errors = __webpack_require__(378);
@@ -2422,9 +2797,16 @@ const create = (defaults) => {
             root = next(newOptions);
             return root;
         });
-        if (result !== root && !options.isStream) {
-            Object.setPrototypeOf(result, Object.getPrototypeOf(root));
-            Object.defineProperties(result, Object.getOwnPropertyDescriptors(root));
+        if (result !== root && !options.isStream && root) {
+            const typedResult = result;
+            const { then: promiseThen, catch: promiseCatch, finally: promiseFianlly } = typedResult;
+            Object.setPrototypeOf(typedResult, Object.getPrototypeOf(root));
+            Object.defineProperties(typedResult, Object.getOwnPropertyDescriptors(root));
+            // These should point to the new promise
+            // eslint-disable-next-line promise/prefer-await-to-then
+            typedResult.then = promiseThen;
+            typedResult.catch = promiseCatch;
+            typedResult.finally = promiseFianlly;
         }
         return result;
     }));
@@ -2445,7 +2827,7 @@ const create = (defaults) => {
             }
             else {
                 // @ts-ignore It's an Error not a response, but TS thinks it's calling .resolve
-                return Promise.reject(error);
+                return as_promise_1.createRejection(error);
             }
         }
         /* eslint-enable @typescript-eslint/return-await */
@@ -2453,19 +2835,19 @@ const create = (defaults) => {
     got.extend = (...instancesOrOptions) => {
         const optionsArray = [defaults.options];
         let handlers = [...defaults._rawHandlers];
-        let mutableDefaults;
+        let isMutableDefaults;
         for (const value of instancesOrOptions) {
             if (isGotInstance(value)) {
                 optionsArray.push(value.defaults.options);
                 handlers.push(...value.defaults._rawHandlers);
-                mutableDefaults = value.defaults.mutableDefaults;
+                isMutableDefaults = value.defaults.mutableDefaults;
             }
             else {
                 optionsArray.push(value);
                 if (Reflect.has(value, 'handlers')) {
                     handlers.push(...value.handlers);
                 }
-                mutableDefaults = value.mutableDefaults;
+                isMutableDefaults = value.mutableDefaults;
             }
         }
         handlers = handlers.filter(handler => handler !== exports.defaultHandler);
@@ -2475,7 +2857,7 @@ const create = (defaults) => {
         return create({
             options: normalize_arguments_1.mergeOptions(...optionsArray),
             handlers,
-            mutableDefaults: Boolean(mutableDefaults)
+            mutableDefaults: Boolean(isMutableDefaults)
         });
     };
     // @ts-ignore The missing methods because the for-loop handles it for us
@@ -2485,6 +2867,48 @@ const create = (defaults) => {
         got[method] = (url, options) => got(url, { ...options, method });
         got.stream[method] = (url, options) => got.stream(url, { ...options, method });
     }
+    // @ts-ignore The missing property is added below
+    got.paginate = async function* (url, options) {
+        let normalizedOptions = normalize_arguments_1.normalizeArguments(url, options, defaults);
+        const pagination = normalizedOptions._pagination;
+        if (!is_1.default.object(pagination)) {
+            throw new Error('`options._pagination` must be implemented');
+        }
+        const all = [];
+        while (true) {
+            // @ts-ignore See https://github.com/sindresorhus/got/issues/954
+            // eslint-disable-next-line no-await-in-loop
+            const result = await got(normalizedOptions);
+            // eslint-disable-next-line no-await-in-loop
+            const parsed = await pagination.transform(result);
+            for (const item of parsed) {
+                if (pagination.filter(item, all)) {
+                    if (!pagination.shouldContinue(item, all)) {
+                        return;
+                    }
+                    yield item;
+                    all.push(item);
+                    if (all.length === pagination.countLimit) {
+                        return;
+                    }
+                }
+            }
+            const optionsToMerge = pagination.paginate(result);
+            if (optionsToMerge === false) {
+                return;
+            }
+            if (optionsToMerge !== undefined) {
+                normalizedOptions = normalize_arguments_1.normalizeArguments(normalizedOptions, optionsToMerge);
+            }
+        }
+    };
+    got.paginate.all = async (url, options) => {
+        const results = [];
+        for await (const item of got.paginate(url, options)) {
+            results.push(item);
+        }
+        return results;
+    };
     Object.assign(got, { ...errors, mergeOptions: normalize_arguments_1.mergeOptions });
     Object.defineProperty(got, 'defaults', {
         value: defaults.mutableDefaults ? defaults : deep_freeze_1.default(defaults),
@@ -2702,7 +3126,6 @@ exports.CancelError = p_cancelable_1.CancelError;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const duplexer3 = __webpack_require__(718);
-const stream = __webpack_require__(413);
 const http_1 = __webpack_require__(605);
 const stream_1 = __webpack_require__(413);
 const errors_1 = __webpack_require__(378);
@@ -2768,10 +3191,12 @@ function asStream(options) {
         if (options.encoding) {
             proxy.setEncoding(options.encoding);
         }
-        stream.pipeline(response, output, error => {
-            if (error && error.message !== 'Premature close') {
-                emitError(new errors_1.ReadError(error, options));
-            }
+        // We cannot use `stream.pipeline(...)` here,
+        // because if we did then `output` would throw
+        // the original error before throwing `ReadError`.
+        response.pipe(output);
+        response.once('error', error => {
+            emitError(new errors_1.ReadError(error, options));
         });
         for (const destination of piped) {
             if (destination.headersSent) {
@@ -2847,17 +3272,24 @@ exports.default = (moduleObject, moduleId) => moduleObject.require(moduleId);
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __webpack_require__(87);
+const os = __importStar(__webpack_require__(87));
 /**
  * Commands
  *
  * Command Format:
- *   ##[name key=value;key=value]message
+ *   ::name key=value,key=value::message
  *
  * Examples:
- *   ##[warning]This is the user warning message
- *   ##[set-secret name=mypassword]definitelyNotAPassword!
+ *   ::warning::This is the message
+ *   ::set-env name=MY_VAR::some value
  */
 function issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
@@ -2882,34 +3314,39 @@ class Command {
         let cmdStr = CMD_STRING + this.command;
         if (this.properties && Object.keys(this.properties).length > 0) {
             cmdStr += ' ';
+            let first = true;
             for (const key in this.properties) {
                 if (this.properties.hasOwnProperty(key)) {
                     const val = this.properties[key];
                     if (val) {
-                        // safely append the val - avoid blowing up when attempting to
-                        // call .replace() if message is not a string for some reason
-                        cmdStr += `${key}=${escape(`${val || ''}`)},`;
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            cmdStr += ',';
+                        }
+                        cmdStr += `${key}=${escapeProperty(val)}`;
                     }
                 }
             }
         }
-        cmdStr += CMD_STRING;
-        // safely append the message - avoid blowing up when attempting to
-        // call .replace() if message is not a string for some reason
-        const message = `${this.message || ''}`;
-        cmdStr += escapeData(message);
+        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
         return cmdStr;
     }
 }
 function escapeData(s) {
-    return s.replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+    return (s || '')
+        .replace(/%/g, '%25')
+        .replace(/\r/g, '%0D')
+        .replace(/\n/g, '%0A');
 }
-function escape(s) {
-    return s
+function escapeProperty(s) {
+    return (s || '')
+        .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
-        .replace(/]/g, '%5D')
-        .replace(/;/g, '%3B');
+        .replace(/:/g, '%3A')
+        .replace(/,/g, '%2C');
 }
 //# sourceMappingURL=command.js.map
 
@@ -3018,10 +3455,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(431);
-const os = __webpack_require__(87);
-const path = __webpack_require__(622);
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
 /**
  * The code to exit an action
  */
@@ -3040,7 +3484,7 @@ var ExitCode;
 // Variables
 //-----------------------------------------------------------------------
 /**
- * sets env variable for this action and future actions in the job
+ * Sets env variable for this action and future actions in the job
  * @param name the name of the variable to set
  * @param val the value of the variable
  */
@@ -3050,18 +3494,13 @@ function exportVariable(name, val) {
 }
 exports.exportVariable = exportVariable;
 /**
- * exports the variable and registers a secret which will get masked from logs
- * @param name the name of the variable to set
- * @param val value of the secret
+ * Registers a secret which will get masked from logs
+ * @param secret value of the secret
  */
-function exportSecret(name, val) {
-    exportVariable(name, val);
-    // the runner will error with not implemented
-    // leaving the function but raising the error earlier
-    command_1.issueCommand('set-secret', {}, val);
-    throw new Error('Not implemented.');
+function setSecret(secret) {
+    command_1.issueCommand('add-mask', {}, secret);
 }
-exports.exportSecret = exportSecret;
+exports.setSecret = setSecret;
 /**
  * Prepends inputPath to the PATH (for this action and future actions)
  * @param inputPath
@@ -3184,6 +3623,29 @@ function group(name, fn) {
     });
 }
 exports.group = group;
+//-----------------------------------------------------------------------
+// Wrapper action state
+//-----------------------------------------------------------------------
+/**
+ * Saves state for current action, the state can only be retrieved by this action's post job execution.
+ *
+ * @param     name     name of the state to store
+ * @param     value    value to store
+ */
+function saveState(name, value) {
+    command_1.issueCommand('save-state', { name }, value);
+}
+exports.saveState = saveState;
+/**
+ * Gets the value of an state set by this action's main execution.
+ *
+ * @param     name     name of the state to get
+ * @returns   string
+ */
+function getState(name) {
+    return process.env[`STATE_${name}`] || '';
+}
+exports.getState = getState;
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -3254,16 +3716,140 @@ exports.createProgressStream = createProgressStream;
 
 /***/ }),
 
-/***/ 534:
+/***/ 490:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-/// <reference lib="esnext"/>
-/// <reference lib="dom"/>
 Object.defineProperty(exports, "__esModule", { value: true });
-// TODO: Use the `URL` global when targeting Node.js 10
-const URLGlobal = typeof URL === 'undefined' ? __webpack_require__(835).URL : URL;
+const defer_to_connect_1 = __webpack_require__(790);
+const nodejsMajorVersion = Number(process.versions.node.split('.')[0]);
+const timer = (request) => {
+    const timings = {
+        start: Date.now(),
+        socket: undefined,
+        lookup: undefined,
+        connect: undefined,
+        secureConnect: undefined,
+        upload: undefined,
+        response: undefined,
+        end: undefined,
+        error: undefined,
+        abort: undefined,
+        phases: {
+            wait: undefined,
+            dns: undefined,
+            tcp: undefined,
+            tls: undefined,
+            request: undefined,
+            firstByte: undefined,
+            download: undefined,
+            total: undefined
+        }
+    };
+    request.timings = timings;
+    const handleError = (origin) => {
+        const emit = origin.emit.bind(origin);
+        origin.emit = (event, ...args) => {
+            // Catches the `error` event
+            if (event === 'error') {
+                timings.error = Date.now();
+                timings.phases.total = timings.error - timings.start;
+                origin.emit = emit;
+            }
+            // Saves the original behavior
+            return emit(event, ...args);
+        };
+    };
+    handleError(request);
+    request.prependOnceListener('abort', () => {
+        timings.abort = Date.now();
+        // Let the `end` response event be responsible for setting the total phase,
+        // unless the Node.js major version is >= 13.
+        if (!timings.response || nodejsMajorVersion >= 13) {
+            timings.phases.total = Date.now() - timings.start;
+        }
+    });
+    const onSocket = (socket) => {
+        timings.socket = Date.now();
+        timings.phases.wait = timings.socket - timings.start;
+        const lookupListener = () => {
+            timings.lookup = Date.now();
+            timings.phases.dns = timings.lookup - timings.socket;
+        };
+        socket.prependOnceListener('lookup', lookupListener);
+        defer_to_connect_1.default(socket, {
+            connect: () => {
+                timings.connect = Date.now();
+                if (timings.lookup === undefined) {
+                    socket.removeListener('lookup', lookupListener);
+                    timings.lookup = timings.connect;
+                    timings.phases.dns = timings.lookup - timings.socket;
+                }
+                timings.phases.tcp = timings.connect - timings.lookup;
+                // This callback is called before flushing any data,
+                // so we don't need to set `timings.phases.request` here.
+            },
+            secureConnect: () => {
+                timings.secureConnect = Date.now();
+                timings.phases.tls = timings.secureConnect - timings.connect;
+            }
+        });
+    };
+    if (request.socket) {
+        onSocket(request.socket);
+    }
+    else {
+        request.prependOnceListener('socket', onSocket);
+    }
+    const onUpload = () => {
+        var _a;
+        timings.upload = Date.now();
+        timings.phases.request = timings.upload - (_a = timings.secureConnect, (_a !== null && _a !== void 0 ? _a : timings.connect));
+    };
+    const writableFinished = () => {
+        if (typeof request.writableFinished === 'boolean') {
+            return request.writableFinished;
+        }
+        // Node.js doesn't have `request.writableFinished` property
+        return request.finished && request.outputSize === 0 && (!request.socket || request.socket.writableLength === 0);
+    };
+    if (writableFinished()) {
+        onUpload();
+    }
+    else {
+        request.prependOnceListener('finish', onUpload);
+    }
+    request.prependOnceListener('response', (response) => {
+        timings.response = Date.now();
+        timings.phases.firstByte = timings.response - timings.upload;
+        response.timings = timings;
+        handleError(response);
+        response.prependOnceListener('end', () => {
+            timings.end = Date.now();
+            timings.phases.download = timings.end - timings.response;
+            timings.phases.total = timings.end - timings.start;
+        });
+    });
+    return timings;
+};
+exports.default = timer;
+// For CommonJS default export support
+module.exports = timer;
+module.exports.default = timer;
+
+
+/***/ }),
+
+/***/ 534:
+/***/ (function(module, exports) {
+
+"use strict";
+
+/// <reference lib="es2018"/>
+/// <reference lib="dom"/>
+/// <reference types="node"/>
+Object.defineProperty(exports, "__esModule", { value: true });
 const { toString } = Object.prototype;
 const isOfType = (type) => (value) => typeof value === type;
 const getObjectType = (value) => {
@@ -3336,14 +3922,15 @@ is.object = (value) => !is.null_(value) && (typeof value === 'object' || is.func
 is.iterable = (value) => !is.nullOrUndefined(value) && is.function_(value[Symbol.iterator]);
 is.asyncIterable = (value) => !is.nullOrUndefined(value) && is.function_(value[Symbol.asyncIterator]);
 is.generator = (value) => is.iterable(value) && is.function_(value.next) && is.function_(value.throw);
+is.asyncGenerator = (value) => is.asyncIterable(value) && is.function_(value.next) && is.function_(value.throw);
 is.nativePromise = (value) => isObjectOfType("Promise" /* Promise */)(value);
 const hasPromiseAPI = (value) => is.object(value) &&
     is.function_(value.then) && // eslint-disable-line promise/prefer-await-to-then
     is.function_(value.catch);
 is.promise = (value) => is.nativePromise(value) || hasPromiseAPI(value);
 is.generatorFunction = isObjectOfType("GeneratorFunction" /* GeneratorFunction */);
-// eslint-disable-next-line @typescript-eslint/ban-types
-is.asyncFunction = isObjectOfType("AsyncFunction" /* AsyncFunction */);
+is.asyncGeneratorFunction = (value) => getObjectType(value) === "AsyncGeneratorFunction" /* AsyncGeneratorFunction */;
+is.asyncFunction = (value) => getObjectType(value) === "AsyncFunction" /* AsyncFunction */;
 // eslint-disable-next-line no-prototype-builtins, @typescript-eslint/ban-types
 is.boundFunction = (value) => is.function_(value) && !value.hasOwnProperty('prototype');
 is.regExp = isObjectOfType("RegExp" /* RegExp */);
@@ -3374,7 +3961,7 @@ is.urlString = (value) => {
         return false;
     }
     try {
-        new URLGlobal(value); // eslint-disable-line no-new
+        new URL(value); // eslint-disable-line no-new
         return true;
     }
     catch (_a) {
@@ -3489,8 +4076,102 @@ const predicateOnArray = (method, predicate, values) => {
     }
     return method.call(values, predicate);
 };
-is.any = (predicate, ...values) => predicateOnArray(Array.prototype.some, predicate, values);
+is.any = (predicate, ...values) => {
+    const predicates = is.array(predicate) ? predicate : [predicate];
+    return predicates.some(singlePredicate => predicateOnArray(Array.prototype.some, singlePredicate, values));
+};
 is.all = (predicate, ...values) => predicateOnArray(Array.prototype.every, predicate, values);
+const assertType = (condition, description, value) => {
+    if (!condition) {
+        throw new TypeError(`Expected value which is \`${description}\`, received value of type \`${is(value)}\`.`);
+    }
+};
+exports.assert = {
+    // Unknowns.
+    undefined: (value) => assertType(is.undefined(value), "undefined" /* undefined */, value),
+    string: (value) => assertType(is.string(value), "string" /* string */, value),
+    number: (value) => assertType(is.number(value), "number" /* number */, value),
+    bigint: (value) => assertType(is.bigint(value), "bigint" /* bigint */, value),
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    function_: (value) => assertType(is.function_(value), "Function" /* Function */, value),
+    null_: (value) => assertType(is.null_(value), "null" /* null */, value),
+    class_: (value) => assertType(is.class_(value), "Class" /* class_ */, value),
+    boolean: (value) => assertType(is.boolean(value), "boolean" /* boolean */, value),
+    symbol: (value) => assertType(is.symbol(value), "symbol" /* symbol */, value),
+    numericString: (value) => assertType(is.numericString(value), "string with a number" /* numericString */, value),
+    array: (value) => assertType(is.array(value), "Array" /* Array */, value),
+    buffer: (value) => assertType(is.buffer(value), "Buffer" /* Buffer */, value),
+    nullOrUndefined: (value) => assertType(is.nullOrUndefined(value), "null or undefined" /* nullOrUndefined */, value),
+    object: (value) => assertType(is.object(value), "Object" /* Object */, value),
+    iterable: (value) => assertType(is.iterable(value), "Iterable" /* iterable */, value),
+    asyncIterable: (value) => assertType(is.asyncIterable(value), "AsyncIterable" /* asyncIterable */, value),
+    generator: (value) => assertType(is.generator(value), "Generator" /* Generator */, value),
+    asyncGenerator: (value) => assertType(is.asyncGenerator(value), "AsyncGenerator" /* AsyncGenerator */, value),
+    nativePromise: (value) => assertType(is.nativePromise(value), "native Promise" /* nativePromise */, value),
+    promise: (value) => assertType(is.promise(value), "Promise" /* Promise */, value),
+    generatorFunction: (value) => assertType(is.generatorFunction(value), "GeneratorFunction" /* GeneratorFunction */, value),
+    asyncGeneratorFunction: (value) => assertType(is.asyncGeneratorFunction(value), "AsyncGeneratorFunction" /* AsyncGeneratorFunction */, value),
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    asyncFunction: (value) => assertType(is.asyncFunction(value), "AsyncFunction" /* AsyncFunction */, value),
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    boundFunction: (value) => assertType(is.boundFunction(value), "Function" /* Function */, value),
+    regExp: (value) => assertType(is.regExp(value), "RegExp" /* RegExp */, value),
+    date: (value) => assertType(is.date(value), "Date" /* Date */, value),
+    error: (value) => assertType(is.error(value), "Error" /* Error */, value),
+    map: (value) => assertType(is.map(value), "Map" /* Map */, value),
+    set: (value) => assertType(is.set(value), "Set" /* Set */, value),
+    weakMap: (value) => assertType(is.weakMap(value), "WeakMap" /* WeakMap */, value),
+    weakSet: (value) => assertType(is.weakSet(value), "WeakSet" /* WeakSet */, value),
+    int8Array: (value) => assertType(is.int8Array(value), "Int8Array" /* Int8Array */, value),
+    uint8Array: (value) => assertType(is.uint8Array(value), "Uint8Array" /* Uint8Array */, value),
+    uint8ClampedArray: (value) => assertType(is.uint8ClampedArray(value), "Uint8ClampedArray" /* Uint8ClampedArray */, value),
+    int16Array: (value) => assertType(is.int16Array(value), "Int16Array" /* Int16Array */, value),
+    uint16Array: (value) => assertType(is.uint16Array(value), "Uint16Array" /* Uint16Array */, value),
+    int32Array: (value) => assertType(is.int32Array(value), "Int32Array" /* Int32Array */, value),
+    uint32Array: (value) => assertType(is.uint32Array(value), "Uint32Array" /* Uint32Array */, value),
+    float32Array: (value) => assertType(is.float32Array(value), "Float32Array" /* Float32Array */, value),
+    float64Array: (value) => assertType(is.float64Array(value), "Float64Array" /* Float64Array */, value),
+    bigInt64Array: (value) => assertType(is.bigInt64Array(value), "BigInt64Array" /* BigInt64Array */, value),
+    bigUint64Array: (value) => assertType(is.bigUint64Array(value), "BigUint64Array" /* BigUint64Array */, value),
+    arrayBuffer: (value) => assertType(is.arrayBuffer(value), "ArrayBuffer" /* ArrayBuffer */, value),
+    sharedArrayBuffer: (value) => assertType(is.sharedArrayBuffer(value), "SharedArrayBuffer" /* SharedArrayBuffer */, value),
+    dataView: (value) => assertType(is.dataView(value), "DataView" /* DataView */, value),
+    urlInstance: (value) => assertType(is.urlInstance(value), "URL" /* URL */, value),
+    urlString: (value) => assertType(is.urlString(value), "string with a URL" /* urlString */, value),
+    truthy: (value) => assertType(is.truthy(value), "truthy" /* truthy */, value),
+    falsy: (value) => assertType(is.falsy(value), "falsy" /* falsy */, value),
+    nan: (value) => assertType(is.nan(value), "NaN" /* nan */, value),
+    primitive: (value) => assertType(is.primitive(value), "primitive" /* primitive */, value),
+    integer: (value) => assertType(is.integer(value), "integer" /* integer */, value),
+    safeInteger: (value) => assertType(is.safeInteger(value), "integer" /* safeInteger */, value),
+    plainObject: (value) => assertType(is.plainObject(value), "plain object" /* plainObject */, value),
+    typedArray: (value) => assertType(is.typedArray(value), "TypedArray" /* typedArray */, value),
+    arrayLike: (value) => assertType(is.arrayLike(value), "array-like" /* arrayLike */, value),
+    domElement: (value) => assertType(is.domElement(value), "Element" /* domElement */, value),
+    observable: (value) => assertType(is.observable(value), "Observable" /* Observable */, value),
+    nodeStream: (value) => assertType(is.nodeStream(value), "Node.js Stream" /* nodeStream */, value),
+    infinite: (value) => assertType(is.infinite(value), "infinite number" /* infinite */, value),
+    emptyArray: (value) => assertType(is.emptyArray(value), "empty array" /* emptyArray */, value),
+    nonEmptyArray: (value) => assertType(is.nonEmptyArray(value), "non-empty array" /* nonEmptyArray */, value),
+    emptyString: (value) => assertType(is.emptyString(value), "empty string" /* emptyString */, value),
+    nonEmptyString: (value) => assertType(is.nonEmptyString(value), "non-empty string" /* nonEmptyString */, value),
+    emptyStringOrWhitespace: (value) => assertType(is.emptyStringOrWhitespace(value), "empty string or whitespace" /* emptyStringOrWhitespace */, value),
+    emptyObject: (value) => assertType(is.emptyObject(value), "empty object" /* emptyObject */, value),
+    nonEmptyObject: (value) => assertType(is.nonEmptyObject(value), "non-empty object" /* nonEmptyObject */, value),
+    emptySet: (value) => assertType(is.emptySet(value), "empty set" /* emptySet */, value),
+    nonEmptySet: (value) => assertType(is.nonEmptySet(value), "non-empty set" /* nonEmptySet */, value),
+    emptyMap: (value) => assertType(is.emptyMap(value), "empty map" /* emptyMap */, value),
+    nonEmptyMap: (value) => assertType(is.nonEmptyMap(value), "non-empty map" /* nonEmptyMap */, value),
+    // Numbers.
+    evenInteger: (value) => assertType(is.evenInteger(value), "even integer" /* evenInteger */, value),
+    oddInteger: (value) => assertType(is.oddInteger(value), "odd integer" /* oddInteger */, value),
+    // Two arguments.
+    directInstanceOf: (instance, class_) => assertType(is.directInstanceOf(instance, class_), "T" /* directInstanceOf */, instance),
+    inRange: (value, range) => assertType(is.inRange(value, range), "in range" /* inRange */, value),
+    // Variadic functions.
+    any: (predicate, ...values) => assertType(is.any(predicate, ...values), "predicate returns truthy for any value" /* any */, values),
+    all: (predicate, ...values) => assertType(is.all(predicate, ...values), "predicate returns truthy for all values" /* all */, values)
+};
 // Some few keywords are reserved, but we'll populate them for Node.js users
 // See https://github.com/Microsoft/TypeScript/issues/2536
 Object.defineProperties(is, {
@@ -3504,11 +4185,23 @@ Object.defineProperties(is, {
         value: is.null_
     }
 });
+Object.defineProperties(exports.assert, {
+    class: {
+        value: exports.assert.class_
+    },
+    function: {
+        value: exports.assert.function_
+    },
+    null: {
+        value: exports.assert.null_
+    }
+});
 exports.default = is;
 // For CommonJS default export support
 module.exports = is;
 module.exports.default = is;
-//# sourceMappingURL=index.js.map
+module.exports.assert = exports.assert;
+
 
 /***/ }),
 
@@ -3666,6 +4359,16 @@ const parseBody = (body, responseType, encoding) => {
     }
     throw new TypeError(`Unknown body type '${responseType}'`);
 };
+function createRejection(error) {
+    const promise = Promise.reject(error);
+    const returnPromise = () => promise;
+    promise.json = returnPromise;
+    promise.text = returnPromise;
+    promise.buffer = returnPromise;
+    promise.on = returnPromise;
+    return promise;
+}
+exports.createRejection = createRejection;
 function asPromise(options) {
     const proxy = new EventEmitter();
     let body;
@@ -3709,13 +4412,13 @@ function asPromise(options) {
                 response.body = parseBody(body, options.responseType, options.encoding);
             }
             catch (error) {
+                // Fall back to `utf8`
+                response.body = body.toString();
                 if (isOk()) {
                     const parseError = new errors_1.ParseError(error, response, options);
                     emitError(parseError);
                     return;
                 }
-                // Fall back to `utf8`
-                response.body = body.toString();
             }
             try {
                 for (const [index, hook] of options.hooks.afterResponse.entries()) {
@@ -3817,6 +4520,58 @@ module.exports = require("net");
 
 /***/ }),
 
+/***/ 654:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const pFinally = __webpack_require__(697);
+
+class TimeoutError extends Error {
+	constructor(message) {
+		super(message);
+		this.name = 'TimeoutError';
+	}
+}
+
+module.exports = (promise, ms, fallback) => new Promise((resolve, reject) => {
+	if (typeof ms !== 'number' || ms < 0) {
+		throw new TypeError('Expected `ms` to be a positive number');
+	}
+
+	const timer = setTimeout(() => {
+		if (typeof fallback === 'function') {
+			try {
+				resolve(fallback());
+			} catch (err) {
+				reject(err);
+			}
+			return;
+		}
+
+		const message = typeof fallback === 'string' ? fallback : `Promise timed out after ${ms} milliseconds`;
+		const err = fallback instanceof Error ? fallback : new TimeoutError(message);
+
+		if (typeof promise.cancel === 'function') {
+			promise.cancel();
+		}
+
+		reject(err);
+	}, ms);
+
+	pFinally(
+		promise.then(resolve, reject),
+		() => {
+			clearTimeout(timer);
+		}
+	);
+});
+
+module.exports.TimeoutError = TimeoutError;
+
+
+/***/ }),
+
 /***/ 668:
 /***/ (function(__unusedmodule, exports) {
 
@@ -3897,6 +4652,29 @@ const calculateRetryDelay = ({ attemptCount, retryOptions, error }) => {
     return ((2 ** (attemptCount - 1)) * 1000) + noise;
 };
 exports.default = calculateRetryDelay;
+
+
+/***/ }),
+
+/***/ 697:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = (promise, onFinally) => {
+	onFinally = onFinally || (() => {});
+
+	return promise.then(
+		val => new Promise(resolve => {
+			resolve(onFinally());
+		}).then(() => val),
+		err => new Promise(resolve => {
+			resolve(onFinally());
+		}).then(() => {
+			throw err;
+		})
+	);
+};
 
 
 /***/ }),
@@ -4283,6 +5061,15 @@ const {promisify} = __webpack_require__(669);
 const os = __webpack_require__(87);
 const Keyv = __webpack_require__(303);
 
+const kCacheableLookupData = Symbol('cacheableLookupData');
+const kCacheableLookupInstance = Symbol('cacheableLookupInstance');
+
+const verifyAgent = agent => {
+	if (!(agent && typeof agent.createConnection === 'function')) {
+		throw new Error('Expected an Agent instance as the first argument');
+	}
+};
+
 const map4to6 = entries => {
 	for (const entry of entries) {
 		entry.address = `::ffff:${entry.address}`;
@@ -4316,19 +5103,20 @@ const getIfaceInfo = () => {
 };
 
 class CacheableLookup {
-	constructor(options = {}) {
-		const {cacheAdapter} = options;
+	constructor({cacheAdapter, maxTtl = Infinity, resolver} = {}) {
 		this.cache = new Keyv({
 			uri: typeof cacheAdapter === 'string' && cacheAdapter,
 			store: typeof cacheAdapter !== 'string' && cacheAdapter,
 			namespace: 'cached-lookup'
 		});
 
-		this.maxTtl = options.maxTtl === 0 ? 0 : (options.maxTtl || Infinity);
+		this.maxTtl = maxTtl;
 
-		this._resolver = options.resolver || new Resolver();
+		this._resolver = resolver || new Resolver();
 		this._resolve4 = promisify(this._resolver.resolve4.bind(this._resolver));
 		this._resolve6 = promisify(this._resolver.resolve6.bind(this._resolver));
+
+		this._iface = getIfaceInfo();
 
 		this.lookup = this.lookup.bind(this);
 		this.lookupAsync = this.lookupAsync.bind(this);
@@ -4348,11 +5136,12 @@ class CacheableLookup {
 			options = {};
 		}
 
+		// eslint-disable-next-line promise/prefer-await-to-then
 		this.lookupAsync(hostname, {...options, throwNotFound: true}).then(result => {
 			if (options.all) {
 				callback(null, result);
 			} else {
-				callback(null, result.address, result.family);
+				callback(null, result.address, result.family, result.expires, result.ttl);
 			}
 		}).catch(callback);
 	}
@@ -4360,7 +5149,7 @@ class CacheableLookup {
 	async lookupAsync(hostname, options = {}) {
 		let cached;
 		if (!options.family && options.all) {
-			const [cached4, cached6] = await Promise.all([this.lookupAsync(hostname, {all: true, family: 4, details: true}), this.lookupAsync(hostname, {all: true, family: 6, details: true})]);
+			const [cached4, cached6] = await Promise.all([this.lookupAsync(hostname, {all: true, family: 4}), this.lookupAsync(hostname, {all: true, family: 6})]);
 			cached = [...cached4, ...cached6];
 		} else {
 			cached = await this.query(hostname, options.family || 4);
@@ -4372,11 +5161,11 @@ class CacheableLookup {
 		}
 
 		if (options.hints & ADDRCONFIG) {
-			const {has4, has6} = getIfaceInfo();
-			cached = cached.filter(entry => entry.family === 6 ? has6 : has4);
+			const {_iface} = this;
+			cached = cached.filter(entry => entry.family === 6 ? _iface.has6 : _iface.has4);
 		}
 
-		if (options.throwNotFound && cached.length === 0) {
+		if (cached.length === 0 && options.throwNotFound) {
 			const error = new Error(`ENOTFOUND ${hostname}`);
 			error.code = 'ENOTFOUND';
 			error.hostname = hostname;
@@ -4385,20 +5174,14 @@ class CacheableLookup {
 		}
 
 		const now = Date.now();
-
-		cached = cached.filter(entry => !Reflect.has(entry, 'expires') || now < entry.expires);
-
-		if (!options.details) {
-			cached = cached.map(entry => {
-				return {
-					address: entry.address,
-					family: entry.family
-				};
-			});
-		}
+		cached = cached.filter(entry => entry.ttl === 0 || now < entry.expires);
 
 		if (options.all) {
 			return cached;
+		}
+
+		if (cached.length === 1) {
+			return cached[0];
 		}
 
 		if (cached.length === 0) {
@@ -4431,10 +5214,7 @@ class CacheableLookup {
 		for (const entry of entries) {
 			cacheTtl = Math.max(cacheTtl, entry.ttl);
 			entry.family = family;
-
-			if (entry.ttl !== 0) {
-				entry.expires = now + (entry.ttl * 1000);
-			}
+			entry.expires = now + (entry.ttl * 1000);
 		}
 
 		cacheTtl = Math.min(this.maxTtl, cacheTtl) * 1000;
@@ -4448,6 +5228,44 @@ class CacheableLookup {
 
 	_getEntry(entries) {
 		return entries[Math.floor(Math.random() * entries.length)];
+	}
+
+	install(agent) {
+		verifyAgent(agent);
+
+		if (kCacheableLookupData in agent) {
+			throw new Error('CacheableLookup has been already installed');
+		}
+
+		agent[kCacheableLookupData] = agent.createConnection;
+		agent[kCacheableLookupInstance] = this;
+
+		agent.createConnection = (options, callback) => {
+			if (!('lookup' in options)) {
+				options.lookup = this.lookup;
+			}
+
+			return agent[kCacheableLookupData](options, callback);
+		};
+	}
+
+	uninstall(agent) {
+		verifyAgent(agent);
+
+		if (agent[kCacheableLookupData]) {
+			if (agent[kCacheableLookupInstance] !== this) {
+				throw new Error('The agent is not owned by this CacheableLookup instance');
+			}
+
+			agent.createConnection = agent[kCacheableLookupData];
+
+			delete agent[kCacheableLookupData];
+			delete agent[kCacheableLookupInstance];
+		}
+	}
+
+	updateInterfaceInfo() {
+		this._iface = getIfaceInfo();
 	}
 }
 
@@ -4479,6 +5297,59 @@ const knownHookEvents = [
     'afterResponse'
 ];
 exports.default = knownHookEvents;
+
+
+/***/ }),
+
+/***/ 790:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const tls_1 = __webpack_require__(818);
+const deferToConnect = (socket, fn) => {
+    let listeners;
+    if (typeof fn === 'function') {
+        const connect = fn;
+        listeners = { connect };
+    }
+    else {
+        listeners = fn;
+    }
+    const hasConnectListener = typeof listeners.connect === 'function';
+    const hasSecureConnectListener = typeof listeners.secureConnect === 'function';
+    const hasCloseListener = typeof listeners.close === 'function';
+    const onConnect = () => {
+        if (hasConnectListener) {
+            listeners.connect();
+        }
+        if (socket instanceof tls_1.TLSSocket && hasSecureConnectListener) {
+            if (socket.authorized) {
+                listeners.secureConnect();
+            }
+            else if (!socket.authorizationError) {
+                socket.once('secureConnect', listeners.secureConnect);
+            }
+        }
+        if (hasCloseListener) {
+            socket.once('close', listeners.close);
+        }
+    };
+    if (socket.writable && !socket.connecting) {
+        onConnect();
+    }
+    else if (socket.connecting) {
+        socket.once('connect', onConnect);
+    }
+    else if (socket.destroyed && hasCloseListener) {
+        listeners.close(socket._hadError);
+    }
+};
+exports.default = deferToConnect;
+// For CommonJS default export support
+module.exports = deferToConnect;
+module.exports.default = deferToConnect;
 
 
 /***/ }),
@@ -4654,6 +5525,7 @@ module.exports = decompressResponse;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __webpack_require__(747);
 const CacheableRequest = __webpack_require__(946);
 const EventEmitter = __webpack_require__(614);
 const http = __webpack_require__(605);
@@ -4661,7 +5533,7 @@ const stream = __webpack_require__(413);
 const url_1 = __webpack_require__(835);
 const util_1 = __webpack_require__(669);
 const is_1 = __webpack_require__(534);
-const http_timer_1 = __webpack_require__(895);
+const http_timer_1 = __webpack_require__(490);
 const calculate_retry_delay_1 = __webpack_require__(678);
 const errors_1 = __webpack_require__(378);
 const get_response_1 = __webpack_require__(234);
@@ -4670,12 +5542,13 @@ const progress_1 = __webpack_require__(489);
 const timed_out_1 = __webpack_require__(215);
 const types_1 = __webpack_require__(839);
 const url_to_options_1 = __webpack_require__(278);
+const pEvent = __webpack_require__(148);
 const setImmediateAsync = async () => new Promise(resolve => setImmediate(resolve));
 const pipeline = util_1.promisify(stream.pipeline);
 const redirectCodes = new Set([300, 301, 302, 303, 304, 307, 308]);
 exports.default = (options) => {
     const emitter = new EventEmitter();
-    const requestURL = options.url.toString();
+    const requestUrl = options.url.toString();
     const redirects = [];
     let retryCount = 0;
     let currentRequest;
@@ -4714,7 +5587,7 @@ exports.default = (options) => {
                 const { statusCode } = typedResponse;
                 typedResponse.statusMessage = is_1.default.nonEmptyString(typedResponse.statusMessage) ? typedResponse.statusMessage : http.STATUS_CODES[statusCode];
                 typedResponse.url = options.url.toString();
-                typedResponse.requestUrl = requestURL;
+                typedResponse.requestUrl = requestUrl;
                 typedResponse.retryCount = retryCount;
                 typedResponse.redirectUrls = redirects;
                 typedResponse.request = { options };
@@ -4733,6 +5606,7 @@ exports.default = (options) => {
                 }
                 if (options.followRedirect && Reflect.has(typedResponse.headers, 'location') && redirectCodes.has(statusCode)) {
                     typedResponse.resume(); // We're being redirected, we don't care about the response.
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare
                     if (statusCode === 303 || options.methodRewriting === false) {
                         if (options.method !== 'GET' && options.method !== 'HEAD') {
                             // Server responded with "see other", indicating that the resource exists at another location,
@@ -4754,13 +5628,13 @@ exports.default = (options) => {
                     }
                     // Handles invalid URLs. See https://github.com/sindresorhus/got/issues/604
                     const redirectBuffer = Buffer.from(typedResponse.headers.location, 'binary').toString();
-                    const redirectURL = new url_1.URL(redirectBuffer, options.url);
+                    const redirectUrl = new url_1.URL(redirectBuffer, options.url);
                     // Redirecting to a different site, clear cookies.
-                    if (redirectURL.hostname !== options.url.hostname && Reflect.has(options.headers, 'cookie')) {
+                    if (redirectUrl.hostname !== options.url.hostname && Reflect.has(options.headers, 'cookie')) {
                         delete options.headers.cookie;
                     }
-                    redirects.push(redirectURL.toString());
-                    options.url = redirectURL;
+                    redirects.push(redirectUrl.toString());
+                    options.url = redirectUrl;
                     for (const hook of options.hooks.beforeRedirect) {
                         // eslint-disable-next-line no-await-in-loop
                         await hook(options, typedResponse);
@@ -4899,12 +5773,15 @@ exports.default = (options) => {
         }
     };
     (async () => {
-        // Promises are executed immediately.
-        // If there were no `setImmediate` here,
-        // `promise.json()` would have no effect
-        // as the request would be sent already.
-        await setImmediateAsync();
         try {
+            if (options.body instanceof fs_1.ReadStream) {
+                await pEvent(options.body, 'open');
+            }
+            // Promises are executed immediately.
+            // If there were no `setImmediate` here,
+            // `promise.json()` would have no effect
+            // as the request would be sent already.
+            await setImmediateAsync();
             for (const hook of options.hooks.beforeRequest) {
                 // eslint-disable-next-line no-await-in-loop
                 await hook(options);
@@ -4938,109 +5815,6 @@ exports.proxyEvents = (proxy, emitter) => {
 /***/ (function(module) {
 
 module.exports = require("dns");
-
-/***/ }),
-
-/***/ 895:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const defer_to_connect_1 = __importDefault(__webpack_require__(958));
-const timer = (request) => {
-    const timings = {
-        start: Date.now(),
-        socket: undefined,
-        lookup: undefined,
-        connect: undefined,
-        secureConnect: undefined,
-        upload: undefined,
-        response: undefined,
-        end: undefined,
-        error: undefined,
-        abort: undefined,
-        phases: {
-            wait: undefined,
-            dns: undefined,
-            tcp: undefined,
-            tls: undefined,
-            request: undefined,
-            firstByte: undefined,
-            download: undefined,
-            total: undefined
-        }
-    };
-    request.timings = timings;
-    const handleError = (origin) => {
-        const emit = origin.emit.bind(origin);
-        origin.emit = (event, ...args) => {
-            // Catches the `error` event
-            if (event === 'error') {
-                timings.error = Date.now();
-                timings.phases.total = timings.error - timings.start;
-                origin.emit = emit;
-            }
-            // Saves the original behavior
-            return emit(event, ...args);
-        };
-    };
-    handleError(request);
-    request.prependOnceListener('abort', () => {
-        timings.abort = Date.now();
-        timings.phases.total = Date.now() - timings.start;
-    });
-    request.prependOnceListener('socket', (socket) => {
-        timings.socket = Date.now();
-        timings.phases.wait = timings.socket - timings.start;
-        const lookupListener = () => {
-            timings.lookup = Date.now();
-            timings.phases.dns = timings.lookup - timings.socket;
-        };
-        socket.prependOnceListener('lookup', lookupListener);
-        defer_to_connect_1.default(socket, {
-            connect: () => {
-                timings.connect = Date.now();
-                if (timings.lookup === undefined) {
-                    socket.removeListener('lookup', lookupListener);
-                    timings.lookup = timings.connect;
-                    timings.phases.dns = timings.lookup - timings.socket;
-                }
-                timings.phases.tcp = timings.connect - timings.lookup;
-                // This callback is called before flushing any data,
-                // so we don't need to set `timings.phases.request` here.
-            },
-            secureConnect: () => {
-                timings.secureConnect = Date.now();
-                timings.phases.tls = timings.secureConnect - timings.connect;
-            }
-        });
-    });
-    request.prependOnceListener('finish', () => {
-        timings.upload = Date.now();
-        timings.phases.request = timings.upload - (timings.secureConnect || timings.connect);
-    });
-    request.prependOnceListener('response', (response) => {
-        timings.response = Date.now();
-        timings.phases.firstByte = timings.response - timings.upload;
-        response.timings = timings;
-        handleError(response);
-        response.prependOnceListener('end', () => {
-            timings.end = Date.now();
-            timings.phases.download = timings.end - timings.response;
-            timings.phases.total = timings.end - timings.start;
-        });
-    });
-    return timings;
-};
-exports.default = timer;
-// For CommonJS default export support
-module.exports = timer;
-module.exports.default = timer;
-//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -5322,59 +6096,6 @@ const toReadableStream = input => (
 module.exports = toReadableStream;
 // TODO: Remove this for the next major release
 module.exports.default = toReadableStream;
-
-
-/***/ }),
-
-/***/ 958:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const tls_1 = __webpack_require__(818);
-const deferToConnect = (socket, fn) => {
-    let listeners;
-    if (typeof fn === 'function') {
-        const connect = fn;
-        listeners = { connect };
-    }
-    else {
-        listeners = fn;
-    }
-    const hasConnectListener = typeof listeners.connect === 'function';
-    const hasSecureConnectListener = typeof listeners.secureConnect === 'function';
-    const hasCloseListener = typeof listeners.close === 'function';
-    const onConnect = () => {
-        if (hasConnectListener) {
-            listeners.connect();
-        }
-        if (socket instanceof tls_1.TLSSocket && hasSecureConnectListener) {
-            if (socket.authorized) {
-                listeners.secureConnect();
-            }
-            else if (!socket.authorizationError) {
-                socket.once('secureConnect', listeners.secureConnect);
-            }
-        }
-        if (hasCloseListener) {
-            socket.once('close', listeners.close);
-        }
-    };
-    if (socket.writable && !socket.connecting) {
-        onConnect();
-    }
-    else if (socket.connecting) {
-        socket.once('connect', onConnect);
-    }
-    else if (socket.destroyed && hasCloseListener) {
-        listeners.close(socket._hadError);
-    }
-};
-exports.default = deferToConnect;
-// For CommonJS default export support
-module.exports = deferToConnect;
-module.exports.default = deferToConnect;
 
 
 /***/ })
