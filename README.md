@@ -52,7 +52,7 @@ The `secrets` parameter is a set of multiple secret requests separated by the `;
 Each secret request is comprised of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
 
 ```raw
-{{ Secret Path }} {{ Secret Key }} | {{ Output Environment Variable Name }}
+{{ Secret Path }} {{ Secret Key }} | {{ Output Variable Name }}
 ```
 
 ### Simple Key
@@ -64,15 +64,28 @@ with:
     secrets: ci npmToken
 ```
 
-`vault-action` will automatically normalize the given data key, and output:
+`vault-action` will automatically normalize the given secret selector key, and set the follow as environment variables for the following steps in the current job:
 
 ```bash
 NPMTOKEN=somelongtoken
 ```
 
-### Set Environment Variable Name
+You can also access the secret via ouputs:
 
-However, if you want to set it to a specific environmental variable, say `NPM_TOKEN`, you could do this instead:
+```yaml
+steps:
+    # ...
+    - name: Import Secrets
+      id: secrets
+      # Import config...
+    - name: Sensitive Operation
+      run: "my-cli --token '${{ steps.secrets.outputs.npmToken }}'"
+
+```
+
+### Set Output Variable Name
+
+However, if you want to set it to a specific name, say `NPM_TOKEN`, you could do this instead:
 
 ```yaml
 with:
@@ -83,6 +96,17 @@ With that, `vault-action` will now use your requested name and output:
 
 ```bash
 NPM_TOKEN=somelongtoken
+```
+
+```yaml
+steps:
+  # ...
+  - name: Import Secrets
+    id: secrets
+    # Import config...
+  - name: Sensitive Operation
+    run: "my-cli --token '${{ steps.secrets.outputs.NPM_TOKEN }}'"
+
 ```
 
 ### Multiple Secrets
@@ -147,7 +171,20 @@ with:
 Resulting in:
 
 ```bash
-FOO=bar MY_KEY=zap
+FOO=bar
+MY_KEY=zap
+```
+
+```yaml
+steps:
+  # ...
+  - name: Import Secrets
+    id: secrets
+    # Import config...
+  - name: Sensitive Operation
+    run: "my-cli --token '${{ steps.secrets.outputs.foo }}'"
+  - name: Another Sensitive Operation
+    run: "my-cli --token '${{ steps.secrets.outputs.MY_KEY }}'"
 ```
 
 Secrets pulled from the same `Secret Path` are cached by default. So if you, for example, are using the `aws` engine and retrieve a key, only a single key for a given path is returned.

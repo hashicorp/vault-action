@@ -4839,7 +4839,11 @@ module.exports = require("fs");
 /***/ 751:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
+// @ts-check
+
+// @ts-ignore
 const core = __webpack_require__(470);
+// @ts-ignore
 const command = __webpack_require__(431);
 const got = __webpack_require__(77);
 
@@ -4877,6 +4881,7 @@ async function exportSecrets() {
                 options.headers["X-Vault-Namespace"] = vaultNamespace;
             }
 
+            /** @type {any} */
             const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 vaultToken = result.body.auth.client_token;
@@ -4905,7 +4910,7 @@ async function exportSecrets() {
 
     const responseCache = new Map();
     for (const secretRequest of secretRequests) {
-        const { secretPath, outputName, secretSelector, isJSONPath } = secretRequest;
+        const { secretPath, outputVarName, envVarName, secretSelector, isJSONPath } = secretRequest;
         const requestOptions = {
             headers: {
                 'X-Vault-Token': vaultToken
@@ -4939,12 +4944,21 @@ async function exportSecrets() {
         let dataDepth = isJSONPath === true ? 0 : kvRequest === false ? 1 : kvVersion;
 
         const secretData = getResponseData(body, dataDepth);
-        const value = selectData(secretData, secretSelector);
+        const value = selectData(secretData, secretSelector, isJSONPath);
         command.issue('add-mask', value);
-        core.exportVariable(outputName, `${value}`);
-        core.debug(`✔ ${secretPath} => ${outputName}`);
+        core.exportVariable(envVarName, `${value}`);
+        core.setOutput(outputVarName, `${value}`);
+        core.debug(`✔ ${secretPath} => outputs.${outputVarName} | env.${envVarName}`);
     }
 };
+
+/** @typedef {Object} SecretRequest 
+ * @property {string} secretPath
+ * @property {string} envVarName
+ * @property {string} outputVarName
+ * @property {string} secretSelector
+ * @property {boolean} isJSONPath
+*/
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
@@ -4957,18 +4971,18 @@ function parseSecretsInput(secretsInput) {
         .map(key => key.trim())
         .filter(key => key.length !== 0);
 
-    /** @type {{ secretPath: string; outputName: string; dataKey: string; }[]} */
+    /** @type {SecretRequest[]} */
     const output = [];
     for (const secret of secrets) {
         let path = secret;
-        let outputName = null;
+        let outputVarName = null;
 
         const renameSigilIndex = secret.lastIndexOf('|');
         if (renameSigilIndex > -1) {
             path = secret.substring(0, renameSigilIndex).trim();
-            outputName = secret.substring(renameSigilIndex + 1).trim();
+            outputVarName = secret.substring(renameSigilIndex + 1).trim();
 
-            if (outputName.length < 1) {
+            if (outputVarName.length < 1) {
                 throw Error(`You must provide a value when mapping a secret to a name. Input: "${secret}"`);
             }
         }
@@ -4979,21 +4993,29 @@ function parseSecretsInput(secretsInput) {
             .filter(part => part.length !== 0);
 
         if (pathParts.length !== 2) {
-            throw Error(`You must provide a valid path and key. Input: "${secret}"`)
+            throw Error(`You must provide a valid path and key. Input: "${secret}"`);
         }
 
         const [secretPath, secretSelector] = pathParts;
 
-        // If we're not using a mapped name, normalize the key path into a variable name.
-        if (!outputName) {
-            outputName = normalizeOutputKey(secretSelector);
+        const isJSONPath = secretSelector.includes('.');
+
+        if (isJSONPath && !outputVarName) {
+            throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+        }
+
+        let envVarName = outputVarName;
+        if (!outputVarName) {
+            outputVarName = secretSelector;
+            envVarName = normalizeOutputKey(outputVarName);
         }
 
         output.push({
             secretPath,
-            outputName,
+            envVarName,
+            outputVarName,
             secretSelector,
-            isJSONPath: secretSelector.startsWith('$')
+            isJSONPath
         });
     }
     return output;
@@ -5002,7 +5024,7 @@ function parseSecretsInput(secretsInput) {
 /**
  * Parses a JSON response and returns the secret data
  * @param {string} responseBody
- * @param {number} kvVersion
+ * @param {number} dataLevel
  */
 function getResponseData(responseBody, dataLevel) {
     let secretData = JSON.parse(responseBody);
@@ -5034,6 +5056,7 @@ function normalizeOutputKey(dataKey) {
     return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
 }
 
+// @ts-ignore
 function parseBoolInput(input) {
     if (input === null || input === undefined || input.trim() === '') {
         return null;
