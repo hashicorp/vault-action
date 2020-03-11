@@ -13,6 +13,9 @@ inputs:
   namespace:
     description: 'The Vault namespace from which to query secrets. Vault Enterprise only, unset by default'
     required: false
+  extraHeaders:
+    description: 'A string of newline seperated extra headers to include on every request.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

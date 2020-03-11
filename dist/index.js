@@ -648,6 +648,7 @@ const defaults = {
         maxRedirects: 10,
         prefixUrl: '',
         methodRewriting: true,
+        allowGetBody: false,
         ignoreInvalidCookies: false,
         context: {},
         _pagination: {
@@ -1019,6 +1020,7 @@ exports.preNormalizeArguments = (options, defaults) => {
     options.dnsCache = (_e = options.dnsCache, (_e !== null && _e !== void 0 ? _e : false));
     options.useElectronNet = Boolean(options.useElectronNet);
     options.methodRewriting = Boolean(options.methodRewriting);
+    options.allowGetBody = Boolean(options.allowGetBody);
     options.context = (_f = options.context, (_f !== null && _f !== void 0 ? _f : {}));
     return options;
 };
@@ -1131,7 +1133,8 @@ exports.normalizeArguments = (url, options, defaults) => {
     }
     return normalizedOptions;
 };
-const withoutBody = new Set(['GET', 'HEAD']);
+const withoutBody = new Set(['HEAD']);
+const withoutBodyUnlessSpecified = 'GET';
 exports.normalizeRequestArguments = async (options) => {
     var _a, _b, _c;
     options = exports.mergeOptions(options);
@@ -1144,6 +1147,9 @@ exports.normalizeRequestArguments = async (options) => {
         const isJson = !is_1.default.undefined(options.json);
         const isBody = !is_1.default.undefined(options.body);
         if ((isBody || isForm || isJson) && withoutBody.has(options.method)) {
+            throw new TypeError(`The \`${options.method}\` method cannot be used with a body`);
+        }
+        if (!options.allowGetBody && (isBody || isForm || isJson) && withoutBodyUnlessSpecified === options.method) {
             throw new TypeError(`The \`${options.method}\` method cannot be used with a body`);
         }
         if ([isBody, isForm, isJson].filter(isTrue => isTrue).length > 1) {
@@ -1192,7 +1198,7 @@ exports.normalizeRequestArguments = async (options) => {
     // a payload body and the method semantics do not anticipate such a
     // body.
     if (is_1.default.undefined(headers['content-length']) && is_1.default.undefined(headers['transfer-encoding'])) {
-        if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH' || options.method === 'DELETE') &&
+        if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH' || options.method === 'DELETE' || (options.allowGetBody && options.method === 'GET')) &&
             !is_1.default.undefined(uploadBodySize)) {
             // @ts-ignore We assign if it is undefined, so this IS correct
             headers['content-length'] = String(uploadBodySize);
@@ -3146,7 +3152,7 @@ function asStream(options) {
             throw new Error('Got\'s stream is not writable when the `body`, `json` or `form` option is used');
         };
     }
-    else if (options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH') {
+    else if (options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH' || (options.allowGetBody && options.method === 'GET')) {
         options.body = input;
     }
     else {
@@ -3551,6 +3557,13 @@ exports.setFailed = setFailed;
 //-----------------------------------------------------------------------
 // Logging Commands
 //-----------------------------------------------------------------------
+/**
+ * Gets whether Actions Step Debug is on or not
+ */
+function isDebug() {
+    return process.env['RUNNER_DEBUG'] === '1';
+}
+exports.isDebug = isDebug;
 /**
  * Writes debug message to user log
  * @param message debug message
@@ -4853,6 +4866,7 @@ const VALID_KV_VERSION = [-1, 1, 2];
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
+    const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
@@ -4916,6 +4930,10 @@ async function exportSecrets() {
                 'X-Vault-Token': vaultToken
             },
         };
+
+        for (const [headerName, headerValue] of extraHeaders) {
+            requestOptions.headers[headerName] = headerValue;
+        }
 
         if (vaultNamespace != null) {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
@@ -5057,6 +5075,9 @@ function normalizeOutputKey(dataKey) {
 }
 
 // @ts-ignore
+/**
+ * @param {string} input
+ */
 function parseBoolInput(input) {
     if (input === null || input === undefined || input.trim() === '') {
         return null;
@@ -5064,11 +5085,31 @@ function parseBoolInput(input) {
     return Boolean(input);
 }
 
+/**
+ * @param {string} inputKey
+ * @param {any} inputOptions
+ */
+function parseHeadersInput(inputKey, inputOptions) {
+    /** @type {string}*/
+    const rawHeadersString = core.getInput(inputKey, inputOptions) || '';
+    const headerStrings = rawHeadersString
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '');
+    const pairs = headerStrings
+        .map(line => {
+            const seperator = line.indexOf(':');
+            return [line.substring(0, seperator), line.substring(seperator + 1)];
+        });
+    return new Headers(pairs);
+}
+
 module.exports = {
     exportSecrets,
     parseSecretsInput,
     parseResponse: getResponseData,
-    normalizeOutputKey
+    normalizeOutputKey,
+    parseHeadersInput
 };
 
 

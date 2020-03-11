@@ -7,7 +7,8 @@ const got = require('got');
 const {
     exportSecrets,
     parseSecretsInput,
-    parseResponse
+    parseResponse,
+    parseHeadersInput
 } = require('./action');
 
 const { when } = require('jest-when');
@@ -90,6 +91,46 @@ describe('parseSecretsInput', () => {
     })
 });
 
+describe('parseHeaders', () => {
+    it('parses simple header', () => {
+        when(core.getInput)
+            .calledWith('extraHeaders')
+            .mockReturnValueOnce('TEST: 1');
+        const result = parseHeadersInput('extraHeaders');
+        expect(Array.from(result)).toContainEqual(['test', '1']);
+    });
+
+    it('parses simple header with whitespace', () => {
+        when(core.getInput)
+            .calledWith('extraHeaders')
+            .mockReturnValueOnce(`
+            TEST: 1
+            `);
+        const result = parseHeadersInput('extraHeaders');
+        expect(Array.from(result)).toContainEqual(['test', '1']);
+    });
+
+    it('parses multiple headers', () => {
+        when(core.getInput)
+            .calledWith('extraHeaders')
+            .mockReturnValueOnce(`
+            TEST: 1
+            FOO: bAr
+            `);
+        const result = parseHeadersInput('extraHeaders');
+        expect(Array.from(result)).toContainEqual(['test', '1']);
+        expect(Array.from(result)).toContainEqual(['foo', 'bAr']);
+    });
+
+    it('parses null response', () => {
+        when(core.getInput)
+            .calledWith('extraHeaders')
+            .mockReturnValueOnce(null);
+        const result = parseHeadersInput('extraHeaders');
+        expect(Array.from(result)).toHaveLength(0);
+    });
+})
+
 describe('parseResponse', () => {
     // https://www.vaultproject.io/api/secret/kv/kv-v1.html#sample-response
     it('parses K/V version 1 response', () => {
@@ -148,6 +189,12 @@ describe('exportSecrets', () => {
             .mockReturnValueOnce(version);
     }
 
+    function mockExtraHeaders(headerString) {
+        when(core.getInput)
+            .calledWith('extraHeaders')
+            .mockReturnValueOnce(headerString);
+    }
+
     function mockVaultData(data, version='2') {
         switch(version) {
             case '1':
@@ -194,6 +241,23 @@ describe('exportSecrets', () => {
     });
 
     it('simple secret retrieval from K/V v1', async () => {
+        const version = '1';
+
+        mockInput('test key');
+        mockExtraHeaders(`
+        TEST: 1
+        `);
+        mockVaultData({
+            key: 1
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
+    });
+
+    it('simple secret retrieval with extra headers', async () => {
         const version = '1';
 
         mockInput('test key');
