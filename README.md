@@ -4,6 +4,24 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
 
 By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2/) of the K/V Engine. See examples below for how to [use v1](#using-kv-version-1) as well as [other non-K/V engines](#other-secret-engines).
 
+<!-- TOC -->
+
+- [Example Usage](#example-usage)
+- [Authentication method](#authentication-method)
+- [Key Syntax](#key-syntax)
+    - [Simple Key](#simple-key)
+    - [Set Output Variable Name](#set-output-variable-name)
+    - [Multiple Secrets](#multiple-secrets)
+    - [Using K/V version 1](#using-kv-version-1)
+    - [Custom K/V Engine Path](#custom-kv-engine-path)
+    - [Other Secret Engines](#other-secret-engines)
+    - [Adding Extra Headers](#adding-extra-headers)
+- [Vault Enterprise Features](#vault-enterprise-features)
+    - [Namespace](#namespace)
+- [Masking](#masking)
+
+<!-- /TOC -->
+
 ## Example Usage
 
 ```yaml
@@ -201,6 +219,22 @@ with:
 would work fine.
 
 NOTE: The `Secret Key` is pulled from the `data` property of the response.
+
+### Adding Extra Headers
+
+If you ever need to add extra headers to the vault request, say if you need to authenticate with a firewall, all you need to do is set `extraHeaders`:
+
+```yaml
+with:
+    secrets: |
+        ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+        ci/aws secretKey | AWS_SECRET_ACCESS_KEY
+    extraHeaders: |
+      X-Secure-Id: ${{ secrets.SECURE_ID }}
+      X-Secure-Secret: ${{ secrets.SECURE_SECRET }}
+```
+
+This will automatically add the `x-secure-id` and `x-secure-secret` headers to every request to vault.
 
 ## Vault Enterprise Features
 
