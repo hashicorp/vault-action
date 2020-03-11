@@ -18,7 +18,7 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
 - [Adding Extra Headers](#adding-extra-headers)
 - [Vault Enterprise Features](#vault-enterprise-features)
     - [Namespace](#namespace)
-- [Mashing - Secrets in Logs](#mashing---secrets-in-logs)
+- [Masking - Hidding Secrets from Logs](#masking---hidding-secrets-from-logs)
 
 <!-- /TOC -->
 
@@ -258,6 +258,7 @@ steps:
             ci npm_token
 ```
 
-## Mashing - Secrets in Logs
+## Masking - Hidding Secrets from Logs
 
-This action uses Github Action's built in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
+This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
+**This only obscures secrets from output logs.** If someone has the ability to edit your workflows, then they are able to read and therefore write secrets to somewhere else just like normal GitHub Secrets.
