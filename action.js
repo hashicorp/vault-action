@@ -12,6 +12,7 @@ const VALID_KV_VERSION = [-1, 1, 2];
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
+    const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
@@ -75,6 +76,10 @@ async function exportSecrets() {
                 'X-Vault-Token': vaultToken
             },
         };
+
+        for (const [headerName, headerValue] of extraHeaders) {
+            requestOptions.headers[headerName] = headerValue;
+        }
 
         if (vaultNamespace != null) {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
@@ -216,6 +221,9 @@ function normalizeOutputKey(dataKey) {
 }
 
 // @ts-ignore
+/**
+ * @param {string} input
+ */
 function parseBoolInput(input) {
     if (input === null || input === undefined || input.trim() === '') {
         return null;
@@ -223,9 +231,29 @@ function parseBoolInput(input) {
     return Boolean(input);
 }
 
+/**
+ * @param {string} inputKey
+ * @param {any} inputOptions
+ */
+function parseHeadersInput(inputKey, inputOptions) {
+    /** @type {string}*/
+    const rawHeadersString = core.getInput(inputKey, inputOptions) || '';
+    const headerStrings = rawHeadersString
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== '');
+    const pairs = headerStrings
+        .map(line => {
+            const seperator = line.indexOf(':');
+            return [line.substring(0, seperator), line.substring(seperator + 1)];
+        });
+    return new Headers(pairs);
+}
+
 module.exports = {
     exportSecrets,
     parseSecretsInput,
     parseResponse: getResponseData,
-    normalizeOutputKey
+    normalizeOutputKey,
+    parseHeadersInput
 };
