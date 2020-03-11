@@ -13,12 +13,12 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
     - [Set Output Variable Name](#set-output-variable-name)
     - [Multiple Secrets](#multiple-secrets)
     - [Using K/V version 1](#using-kv-version-1)
-    - [Custom K/V Engine Path](#custom-kv-engine-path)
-    - [Other Secret Engines](#other-secret-engines)
-    - [Adding Extra Headers](#adding-extra-headers)
+- [Custom K/V Engine Path](#custom-kv-engine-path)
+- [Other Secret Engines](#other-secret-engines)
+- [Adding Extra Headers](#adding-extra-headers)
 - [Vault Enterprise Features](#vault-enterprise-features)
     - [Namespace](#namespace)
-- [Masking](#masking)
+- [Mashing - Secrets in Logs](#mashing---secrets-in-logs)
 
 <!-- /TOC -->
 
@@ -149,7 +149,7 @@ with:
     kv-version: 1
 ```
 
-### Custom K/V Engine Path
+## Custom K/V Engine Path
 
 When you enable the K/V Engine, by default it's placed at the path `secret`, so a secret named `ci` will be accessed from `secret/ci`. However, [if you enabled the secrets engine using a custom `path`](https://www.vaultproject.io/docs/commands/secrets/enable/#inlinecode--path-4), you
 can pass it as follows:
@@ -162,7 +162,7 @@ with:
 
 This way, the `ci` secret in the example above will be retrieved from `my-secrets/ci`.
 
-### Other Secret Engines
+## Other Secret Engines
 
 While this action primarily supports the K/V engine, it is possible to request secrets from other engines in Vault.
 
@@ -220,7 +220,7 @@ would work fine.
 
 NOTE: The `Secret Key` is pulled from the `data` property of the response.
 
-### Adding Extra Headers
+## Adding Extra Headers
 
 If you ever need to add extra headers to the vault request, say if you need to authenticate with a firewall, all you need to do is set `extraHeaders`:
 
@@ -258,6 +258,6 @@ steps:
             ci npm_token
 ```
 
-## Masking
+## Mashing - Secrets in Logs
 
-This action uses Github Action's built in masking, so all variables will automatically be masked if printed to the console or to logs.
+This action uses Github Action's built in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
