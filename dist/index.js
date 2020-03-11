@@ -5096,12 +5096,18 @@ function parseHeadersInput(inputKey, inputOptions) {
         .split('\n')
         .map(line => line.trim())
         .filter(line => line !== '');
-    const pairs = headerStrings
-        .map(line => {
+    return headerStrings
+        .reduce((map, line) => {
             const seperator = line.indexOf(':');
-            return [line.substring(0, seperator), line.substring(seperator + 1)];
-        });
-    return new Headers(pairs);
+            const key = line.substring(0, seperator).trim().toLowerCase();
+            const value = line.substring(seperator + 1).trim();
+            if (map.has(key)) {
+                map.set(key, [map.get(key), value].join(', '));
+            } else {
+                map.set(key, value);
+            }
+            return map;
+        }, new Map());
 }
 
 module.exports = {
