@@ -43,7 +43,7 @@
     },
     "devDependencies": {
         "@types/jest": "^25.1.3",
-        "@zeit/ncc": "^0.21.1",
+        "@zeit/ncc": "^0.22.0",
         "jest": "^25.1.0",
         "jest-when": "^2.7.0",
         "semantic-release": "^15.13.24"
