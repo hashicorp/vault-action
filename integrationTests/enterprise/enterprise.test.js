@@ -212,7 +212,7 @@ describe('authenticate with approle', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('method')
+            .calledWith('method', expect.anything())
             .mockReturnValueOnce('approle');
         when(core.getInput)
             .calledWith('roleId')
@@ -228,7 +228,7 @@ describe('authenticate with approle', () => {
             .mockReturnValueOnce('ns2');
     });
 
-    it('authenticate with approle', async()=> {
+    it.only('authenticate with approle', async() => {
         mockInput('test secret');
 
         await exportSecrets();

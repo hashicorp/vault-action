@@ -72,7 +72,7 @@ async function exportSecrets() {
             requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
         }
 
-        let requestPath = `${vaultUrl}/v1`;
+        let requestPath = `v1`;
         const kvRequest = !secretPath.startsWith('/')
         if (!kvRequest) {
             requestPath += secretPath;
@@ -87,7 +87,7 @@ async function exportSecrets() {
             body = responseCache.get(requestPath);
             core.debug('ℹ using cached response');
         } else {
-            const result = await got(requestPath, requestOptions);
+            const result = await client.get(requestPath, requestOptions);
             body = result.body;
             responseCache.set(requestPath, body);
         }
@@ -192,7 +192,7 @@ async function retrieveToken(method, client) {
                 responseType: 'json'
             };
 
-            const result = await client.post(`/v1/auth/approle/login`, options);
+            const result = await client.post(`v1/auth/approle/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 core.debug('✔ Vault Token has retrieved from approle');
                 return result.body.auth.client_token;
@@ -210,7 +210,7 @@ async function retrieveToken(method, client) {
                 responseType: 'json'
             };
 
-            const result = await client.post(`/v1/auth/github/login`, options);
+            const result = await client.post(`v1/auth/github/login`, options);
             if (result && result.body && result.body.auth && result.body.auth.client_token) {
                 core.debug('✔ Vault Token has retrieved from approle');
                 return result.body.auth.client_token;
