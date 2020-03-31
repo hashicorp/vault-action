@@ -228,7 +228,7 @@ describe('authenticate with approle', () => {
             .mockReturnValueOnce('ns2');
     });
 
-    it.only('authenticate with approle', async() => {
+    it('authenticate with approle', async() => {
         mockInput('test secret');
 
         await exportSecrets();

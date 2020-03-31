@@ -198,19 +198,15 @@ describe('exportSecrets', () => {
     function mockVaultData(data, version='2') {
         switch(version) {
             case '1':
-                got.mockResolvedValue({
-                    body: JSON.stringify({
-                        data
-                    })
+                got.extend.mockReturnValue({
+                    get: async () => ({ body: JSON.stringify({ data }) })
                 });
             break;
             case '2':
-                got.mockResolvedValue({
-                    body: JSON.stringify({
-                        data: {
-                            data
-                        }
-                    })
+                got.extend.mockReturnValue({
+                    get: async () => ({ body: JSON.stringify({ data: {
+                        data
+                    } }) })
                 });
             break;
         }
