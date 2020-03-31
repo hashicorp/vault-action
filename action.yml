@@ -4,17 +4,38 @@ inputs:
   url:
     description: 'The URL for the vault endpoint'
     required: true
-  token:
-    description: 'The Vault Token to be used to authenticate with Vault'
-    required: true
   secrets:
     description: 'A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details'
     required: true
   namespace:
     description: 'The Vault namespace from which to query secrets. Vault Enterprise only, unset by default'
     required: false
+  path:
+    description: 'The path of a non-default K/V engine'
+    required: false
+  kv-version:
+    description: 'The version of the K/V engine to use. Default: 2'
+    required: false
+  method:
+    description: 'The method to use to authenticate with Vault. Default: token'
+    required: false
+  token:
+    description: 'The Vault Token to be used to authenticate with Vault'
+    required: false
+  roleId:
+    description: 'The Role Id for App Role authentication'
+    required: false
+  secretId:
+    description: 'The Secret Id for App Role authentication'
+    required: false
+  githubToken:
+    description: 'The Github Token to be used to authenticate with Vault'
+    required: false
   extraHeaders:
-    description: 'A string of newline seperated extra headers to include on every request.'
+    description: 'A string of newline separated extra headers to include on every request.'
+    required: false
+  exportEnv:
+    description: 'Whether or not export secrets as environment variables. Default: true'
     required: false
 runs:
   using: 'node12'

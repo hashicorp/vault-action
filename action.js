@@ -6,13 +6,14 @@ const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got');
 
-const AUTH_METHODS = ['approle', 'token'];
+const AUTH_METHODS = ['approle', 'token', 'github'];
 const VALID_KV_VERSION = [-1, 1, 2];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
+    const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
@@ -20,40 +21,27 @@ async function exportSecrets() {
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
 
-    const vaultMethod = core.getInput('method', { required: false }) || 'token';
+    const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
     if (!AUTH_METHODS.includes(vaultMethod)) {
         throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
     }
 
-    let vaultToken = null;
-    switch (vaultMethod) {
-        case 'approle':
-            const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
-            core.debug('Try to retrieve Vault Token from approle');
-            var options = {
-                headers: {},
-                json: { role_id: vaultRoleId, secret_id: vaultSecretId },
-                responseType: 'json'
-            };
-
-            if (vaultNamespace != null) {
-                options.headers["X-Vault-Namespace"] = vaultNamespace;
-            }
-
-            /** @type {any} */
-            const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
-            if (result && result.body && result.body.auth && result.body.auth.client_token) {
-                vaultToken = result.body.auth.client_token;
-                core.debug('✔ Vault Token has retrieved from approle');
-            } else {
-                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
-            }
-            break;
-        default:
-            vaultToken = core.getInput('token', { required: true });
-            break;
+    const defaultOptions = {
+        baseUrl: vaultUrl,
+        throwHttpErrors: true,
+        headers: {}
     }
+
+    for (const [headerName, headerValue] of extraHeaders) {
+        defaultOptions.headers[headerName] = headerValue;
+    }
+
+    if (vaultNamespace != null) {
+        defaultOptions.headers["X-Vault-Namespace"] = vaultNamespace;
+    }
+
+    const client = got.extend(defaultOptions);
+    const vaultToken = await retrieveToken(vaultMethod, client);
 
     if (!enginePath) {
         enginePath = 'secret';
@@ -110,9 +98,11 @@ async function exportSecrets() {
         const secretData = getResponseData(body, dataDepth);
         const value = selectData(secretData, secretSelector, isJSONPath);
         command.issue('add-mask', value);
-        core.exportVariable(envVarName, `${value}`);
+        if (exportEnv) {
+            core.exportVariable(envVarName, `${value}`);
+        }
         core.setOutput(outputVarName, `${value}`);
-        core.debug(`✔ ${secretPath} => outputs.${outputVarName} | env.${envVarName}`);
+        core.debug(`✔ ${secretPath} => outputs.${outputVarName}${exportEnv ? ` | env.${envVarName}` : ''}`);
     }
 };
 
@@ -183,6 +173,55 @@ function parseSecretsInput(secretsInput) {
         });
     }
     return output;
+}
+
+/***
+ * Authentication with Vault and retrieve a vault token
+ * @param {string} method
+ * @param {import('got')} client
+ */
+async function retrieveToken(method, client) {
+    switch (method) {
+        case 'approle': {
+            const vaultRoleId = core.getInput('roleId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: true });
+            core.debug('Try to retrieve Vault Token from approle');
+
+            /** @type {any} */
+            var options = {
+                json: { role_id: vaultRoleId, secret_id: vaultSecretId },
+                responseType: 'json'
+            };
+
+            const result = await client.post(`/v1/auth/approle/login`, options);
+            if (result && result.body && result.body.auth && result.body.auth.client_token) {
+                core.debug('✔ Vault Token has retrieved from approle');
+                return result.body.auth.client_token;
+            } else {
+                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
+            }
+        }
+        case 'github': {
+            const githubToken = core.getInput('githubToken', { required: true });
+            core.debug('Try to retrieve Vault Token from approle');
+
+            /** @type {any} */
+            var options = {
+                json: { token: githubToken },
+                responseType: 'json'
+            };
+
+            const result = await client.post(`/v1/auth/github/login`, options);
+            if (result && result.body && result.body.auth && result.body.auth.client_token) {
+                core.debug('✔ Vault Token has retrieved from approle');
+                return result.body.auth.client_token;
+            } else {
+                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
+            }
+        }
+        default:
+            return core.getInput('token', { required: true });
+    }
 }
 
 /**

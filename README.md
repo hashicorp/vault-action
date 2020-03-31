@@ -46,14 +46,14 @@ jobs:
 
 While most workflows will likely use a vault token, you can also use an `approle` to authenticate with vaule. You can configure which by using the `method` parameter:
 
-- **token**: (by default) you must provide a token parameter
+- **token**: (by default) you must provide a `token` parameter
 ```yaml
 ...
 with:
   url: https://vault.mycompany.com:8200
   token: ${{ secrets.VaultToken }}
 ```
-- **approle**: you must provide a roleId & secretId parameter
+- **approle**: you must provide a `roleId` & `secretId` parameter
 ```yaml
 ...
 with:
@@ -61,6 +61,14 @@ with:
   method: approle
   roleId: ${{ secrets.roleId }}
   secretId: ${{ secrets.secretId }}
+```
+- **github**: you must provide the github token as `githubToken`
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: github
+  githubToken: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Key Syntax
