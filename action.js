@@ -27,8 +27,7 @@ async function exportSecrets() {
     }
 
     const defaultOptions = {
-        baseUrl: vaultUrl,
-        throwHttpErrors: true,
+        prefixUrl: vaultUrl,
         headers: {}
     }
 
@@ -41,7 +40,7 @@ async function exportSecrets() {
     }
 
     const client = got.extend(defaultOptions);
-    const vaultToken = await retrieveToken(vaultMethod, client);
+    const vaultToken = await retrieveToken(vaultMethod, /** @type {any} */ (client));
 
     if (!enginePath) {
         enginePath = 'secret';

@@ -653,6 +653,9 @@ const defaults = {
         context: {},
         _pagination: {
             transform: (response) => {
+                if (response.request.options.responseType === 'json') {
+                    return response.body;
+                }
                 return JSON.parse(response.body);
             },
             paginate: response => {
@@ -1573,7 +1576,7 @@ module.exports.iterator = (emitter, event, options) => {
 "use strict";
 
 // rfc7231 6.1
-const statusCodeCacheableByDefault = [
+const statusCodeCacheableByDefault = new Set([
     200,
     203,
     204,
@@ -1585,10 +1588,10 @@ const statusCodeCacheableByDefault = [
     410,
     414,
     501,
-];
+]);
 
 // This implementation does not understand partial responses (206)
-const understoodStatuses = [
+const understoodStatuses = new Set([
     200,
     203,
     204,
@@ -1603,7 +1606,14 @@ const understoodStatuses = [
     410,
     414,
     501,
-];
+]);
+
+const errorStatusCodes = new Set([
+    500,
+    502,
+    503, 
+    504,
+]);
 
 const hopByHopHeaders = {
     date: true, // included, because we add Age update Date
@@ -1616,6 +1626,7 @@ const hopByHopHeaders = {
     'transfer-encoding': true,
     upgrade: true,
 };
+
 const excludedFromRevalidationUpdate = {
     // Since the old body is reused, it doesn't make sense to change properties of the body
     'content-length': true,
@@ -1623,6 +1634,20 @@ const excludedFromRevalidationUpdate = {
     'transfer-encoding': true,
     'content-range': true,
 };
+
+function toNumberOrZero(s) {
+    const n = parseInt(s, 10);
+    return isFinite(n) ? n : 0;
+}
+
+// RFC 5861
+function isErrorResponse(response) {
+    // consider undefined response as faulty
+    if(!response) {
+        return true
+    }
+    return errorStatusCodes.has(response.status);
+}
 
 function parseCacheControl(header) {
     const cc = {};
@@ -1660,7 +1685,6 @@ module.exports = class CachePolicy {
             cacheHeuristic,
             immutableMinTimeToLive,
             ignoreCargoCult,
-            trustServerDate,
             _fromObject,
         } = {}
     ) {
@@ -1676,8 +1700,6 @@ module.exports = class CachePolicy {
 
         this._responseTime = this.now();
         this._isShared = shared !== false;
-        this._trustServerDate =
-            undefined !== trustServerDate ? trustServerDate : true;
         this._cacheHeuristic =
             undefined !== cacheHeuristic ? cacheHeuristic : 0.1; // 10% matches IE
         this._immutableMinTtl =
@@ -1738,7 +1760,7 @@ module.exports = class CachePolicy {
                 'HEAD' === this._method ||
                 ('POST' === this._method && this._hasExplicitExpiration())) &&
             // the response status code is understood by the cache, and
-            understoodStatuses.indexOf(this._status) !== -1 &&
+            understoodStatuses.has(this._status) &&
             // the "no-store" cache directive does not appear in request or response header fields, and
             !this._rescc['no-store'] &&
             // the "private" response directive does not appear in the response, if the cache is shared, and
@@ -1757,7 +1779,7 @@ module.exports = class CachePolicy {
                 (this._isShared && this._rescc['s-maxage']) ||
                 this._rescc.public ||
                 // has a status code that is defined as cacheable by default
-                statusCodeCacheableByDefault.indexOf(this._status) !== -1)
+                statusCodeCacheableByDefault.has(this._status))
         );
     }
 
@@ -1904,24 +1926,13 @@ module.exports = class CachePolicy {
     }
 
     /**
-     * Value of the Date response header or current time if Date was demed invalid
+     * Value of the Date response header or current time if Date was invalid
      * @return timestamp
      */
     date() {
-        if (this._trustServerDate) {
-            return this._serverDate();
-        }
-        return this._responseTime;
-    }
-
-    _serverDate() {
         const serverDate = Date.parse(this._resHeaders.date);
         if (isFinite(serverDate)) {
-            const maxClockDrift = 8 * 3600 * 1000;
-            const clockDrift = Math.abs(this._responseTime - serverDate);
-            if (clockDrift < maxClockDrift) {
-                return serverDate;
-            }
+            return serverDate;
         }
         return this._responseTime;
     }
@@ -1933,19 +1944,14 @@ module.exports = class CachePolicy {
      * @return Number
      */
     age() {
-        let age = Math.max(0, (this._responseTime - this.date()) / 1000);
-        if (this._resHeaders.age) {
-            let ageValue = this._ageValue();
-            if (ageValue > age) age = ageValue;
-        }
+        let age = this._ageValue();
 
         const residentTime = (this.now() - this._responseTime) / 1000;
         return age + residentTime;
     }
 
     _ageValue() {
-        const ageValue = parseInt(this._resHeaders.age);
-        return isFinite(ageValue) ? ageValue : 0;
+        return toNumberOrZero(this._resHeaders.age);
     }
 
     /**
@@ -1981,18 +1987,18 @@ module.exports = class CachePolicy {
             }
             // if a response includes the s-maxage directive, a shared cache recipient MUST ignore the Expires field.
             if (this._rescc['s-maxage']) {
-                return parseInt(this._rescc['s-maxage'], 10);
+                return toNumberOrZero(this._rescc['s-maxage']);
             }
         }
 
         // If a response includes a Cache-Control field with the max-age directive, a recipient MUST ignore the Expires field.
         if (this._rescc['max-age']) {
-            return parseInt(this._rescc['max-age'], 10);
+            return toNumberOrZero(this._rescc['max-age']);
         }
 
         const defaultMinTtl = this._rescc.immutable ? this._immutableMinTtl : 0;
 
-        const serverDate = this._serverDate();
+        const serverDate = this.date();
         if (this._resHeaders.expires) {
             const expires = Date.parse(this._resHeaders.expires);
             // A cache recipient MUST interpret invalid date formats, especially the value "0", as representing a time in the past (i.e., "already expired").
@@ -2016,11 +2022,22 @@ module.exports = class CachePolicy {
     }
 
     timeToLive() {
-        return Math.max(0, this.maxAge() - this.age()) * 1000;
+        const age = this.maxAge() - this.age();
+        const staleIfErrorAge = age + toNumberOrZero(this._rescc['stale-if-error']);
+        const staleWhileRevalidateAge = age + toNumberOrZero(this._rescc['stale-while-revalidate']);
+        return Math.max(0, age, staleIfErrorAge, staleWhileRevalidateAge) * 1000;
     }
 
     stale() {
         return this.maxAge() <= this.age();
+    }
+
+    _useStaleIfError() {
+        return this.maxAge() + toNumberOrZero(this._rescc['stale-if-error']) > this.age();
+    }
+
+    useStaleWhileRevalidate() {
+        return this.maxAge() + toNumberOrZero(this._rescc['stale-while-revalidate']) > this.age();
     }
 
     static fromObject(obj) {
@@ -2140,6 +2157,13 @@ module.exports = class CachePolicy {
      */
     revalidatedPolicy(request, response) {
         this._assertRequestHasHeaders(request);
+        if(this._useStaleIfError() && isErrorResponse(response)) {  // I consider the revalidation request unsuccessful
+          return {
+            modified: false,
+            matches: false,
+            policy: this,
+          };
+        }
         if (!response || !response.headers) {
             throw Error('Response headers missing');
         }
@@ -2217,7 +2241,6 @@ module.exports = class CachePolicy {
                 shared: this._isShared,
                 cacheHeuristic: this._cacheHeuristic,
                 immutableMinTimeToLive: this._immutableMinTtl,
-                trustServerDate: this._trustServerDate,
             }),
             modified: false,
             matches: true,
@@ -2887,19 +2910,21 @@ const create = (defaults) => {
             const result = await got(normalizedOptions);
             // eslint-disable-next-line no-await-in-loop
             const parsed = await pagination.transform(result);
+            const current = [];
             for (const item of parsed) {
-                if (pagination.filter(item, all)) {
-                    if (!pagination.shouldContinue(item, all)) {
+                if (pagination.filter(item, all, current)) {
+                    if (!pagination.shouldContinue(item, all, current)) {
                         return;
                     }
                     yield item;
                     all.push(item);
+                    current.push(item);
                     if (all.length === pagination.countLimit) {
                         return;
                     }
                 }
             }
-            const optionsToMerge = pagination.paginate(result);
+            const optionsToMerge = pagination.paginate(result, all, current);
             if (optionsToMerge === false) {
                 return;
             }
@@ -4860,13 +4885,14 @@ const core = __webpack_require__(470);
 const command = __webpack_require__(431);
 const got = __webpack_require__(77);
 
-const AUTH_METHODS = ['approle', 'token'];
+const AUTH_METHODS = ['approle', 'token', 'github'];
 const VALID_KV_VERSION = [-1, 1, 2];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
+    const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
 
     let enginePath = core.getInput('path', { required: false });
     let kvVersion = core.getInput('kv-version', { required: false });
@@ -4874,40 +4900,27 @@ async function exportSecrets() {
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
 
-    const vaultMethod = core.getInput('method', { required: false }) || 'token';
+    const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
     if (!AUTH_METHODS.includes(vaultMethod)) {
         throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
     }
 
-    let vaultToken = null;
-    switch (vaultMethod) {
-        case 'approle':
-            const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
-            core.debug('Try to retrieve Vault Token from approle');
-            var options = {
-                headers: {},
-                json: { role_id: vaultRoleId, secret_id: vaultSecretId },
-                responseType: 'json'
-            };
-
-            if (vaultNamespace != null) {
-                options.headers["X-Vault-Namespace"] = vaultNamespace;
-            }
-
-            /** @type {any} */
-            const result = await got.post(`${vaultUrl}/v1/auth/approle/login`, options);
-            if (result && result.body && result.body.auth && result.body.auth.client_token) {
-                vaultToken = result.body.auth.client_token;
-                core.debug('✔ Vault Token has retrieved from approle');
-            } else {
-                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
-            }
-            break;
-        default:
-            vaultToken = core.getInput('token', { required: true });
-            break;
+    const defaultOptions = {
+        baseUrl: vaultUrl,
+        throwHttpErrors: true,
+        headers: {}
     }
+
+    for (const [headerName, headerValue] of extraHeaders) {
+        defaultOptions.headers[headerName] = headerValue;
+    }
+
+    if (vaultNamespace != null) {
+        defaultOptions.headers["X-Vault-Namespace"] = vaultNamespace;
+    }
+
+    const client = got.extend(defaultOptions);
+    const vaultToken = await retrieveToken(vaultMethod, client);
 
     if (!enginePath) {
         enginePath = 'secret';
@@ -4964,9 +4977,11 @@ async function exportSecrets() {
         const secretData = getResponseData(body, dataDepth);
         const value = selectData(secretData, secretSelector, isJSONPath);
         command.issue('add-mask', value);
-        core.exportVariable(envVarName, `${value}`);
+        if (exportEnv) {
+            core.exportVariable(envVarName, `${value}`);
+        }
         core.setOutput(outputVarName, `${value}`);
-        core.debug(`✔ ${secretPath} => outputs.${outputVarName} | env.${envVarName}`);
+        core.debug(`✔ ${secretPath} => outputs.${outputVarName}${exportEnv ? ` | env.${envVarName}` : ''}`);
     }
 };
 
@@ -5037,6 +5052,55 @@ function parseSecretsInput(secretsInput) {
         });
     }
     return output;
+}
+
+/***
+ * Authentication with Vault and retrieve a vault token
+ * @param {string} method
+ * @param {import('got')} client
+ */
+async function retrieveToken(method, client) {
+    switch (method) {
+        case 'approle': {
+            const vaultRoleId = core.getInput('roleId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: true });
+            core.debug('Try to retrieve Vault Token from approle');
+
+            /** @type {any} */
+            var options = {
+                json: { role_id: vaultRoleId, secret_id: vaultSecretId },
+                responseType: 'json'
+            };
+
+            const result = await client.post(`/v1/auth/approle/login`, options);
+            if (result && result.body && result.body.auth && result.body.auth.client_token) {
+                core.debug('✔ Vault Token has retrieved from approle');
+                return result.body.auth.client_token;
+            } else {
+                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
+            }
+        }
+        case 'github': {
+            const githubToken = core.getInput('githubToken', { required: true });
+            core.debug('Try to retrieve Vault Token from approle');
+
+            /** @type {any} */
+            var options = {
+                json: { token: githubToken },
+                responseType: 'json'
+            };
+
+            const result = await client.post(`/v1/auth/github/login`, options);
+            if (result && result.body && result.body.auth && result.body.auth.client_token) {
+                core.debug('✔ Vault Token has retrieved from approle');
+                return result.body.auth.client_token;
+            } else {
+                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
+            }
+        }
+        default:
+            return core.getInput('token', { required: true });
+    }
 }
 
 /**
