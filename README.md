@@ -19,7 +19,7 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
 - [Vault Enterprise Features](#vault-enterprise-features)
     - [Namespace](#namespace)
 - [Reference](#reference)
-- [Masking - Hidding Secrets from Logs](#masking---hidding-secrets-from-logs)
+- [Masking - Hiding Secrets from Logs](#masking---hiding-secrets-from-logs)
 
 <!-- /TOC -->
 
@@ -275,20 +275,20 @@ Here is all the inputs available through `with`:
 
 | Input          | Description                                                                                                                                          | Default | Required |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `url`          | The URL for the vault endpoint                                                                                                                       |         | ✔      |
-| `secrets`      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔      |
-| `namespace`    | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         | No       |
-| `path`         | The path of a non-default K/V engine                                                                                                                 |         | No       |
-| `kv-version`   | The version of the K/V engine to use.                                                                                                                | `2`     | No       |
-| `method`       | The method to use to authenticate with Vault.                                                                                                        | `token` | No       |
-| `token`        | The Vault Token to be used to authenticate with Vault                                                                                                |         | No       |
-| `roleId`       | The Role Id for App Role authentication                                                                                                              |         | No       |
-| `secretId`     | The Secret Id for App Role authentication                                                                                                            |         | No       |
-| `githubToken`  | The Github Token to be used to authenticate with Vault                                                                                               |         | No       |
-| `extraHeaders` | A string of newline separated extra headers to include on every request.                                                                             |         | No       |
-| `exportEnv`    | Whether or not export secrets as environment variables.                                                                                              | `true`  | No       |
+| `url`          | The URL for the vault endpoint                                                                                                                       |         | ✔        |
+| `secrets`      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔        |
+| `namespace`    | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
+| `path`         | The path of a non-default K/V engine                                                                                                                 |         |          |
+| `kv-version`   | The version of the K/V engine to use.                                                                                                                | `2`     |          |
+| `method`       | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
+| `token`        | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
+| `roleId`       | The Role Id for App Role authentication                                                                                                              |         |          |
+| `secretId`     | The Secret Id for App Role authentication                                                                                                            |         |          |
+| `githubToken`  | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
+| `extraHeaders` | A string of newline separated extra headers to include on every request.                                                                             |         |          |
+| `exportEnv`    | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
 
-## Masking - Hidding Secrets from Logs
+## Masking - Hiding Secrets from Logs
 
 This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
 **This only obscures secrets from output logs.** If someone has the ability to edit your workflows, then they are able to read and therefore write secrets to somewhere else just like normal GitHub Secrets.
