@@ -47,6 +47,6 @@
         "@zeit/ncc": "^0.22.0",
         "jest": "^25.1.0",
         "jest-when": "^2.7.0",
-        "semantic-release": "^15.13.24"
+        "semantic-release": "^17.0.4"
     }
 }
