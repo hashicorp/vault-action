@@ -275,8 +275,8 @@ Here is all the inputs available through `with`:
 
 | Input          | Description                                                                                                                                          | Default | Required |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `url`          | The URL for the vault endpoint                                                                                                                       |         | No       |
-| `secrets`      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | No       |
+| `url`          | The URL for the vault endpoint                                                                                                                       |         | ✔      |
+| `secrets`      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔      |
 | `namespace`    | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         | No       |
 | `path`         | The path of a non-default K/V engine                                                                                                                 |         | No       |
 | `kv-version`   | The version of the K/V engine to use.                                                                                                                | `2`     | No       |
