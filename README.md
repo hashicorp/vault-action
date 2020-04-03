@@ -18,6 +18,7 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
 - [Adding Extra Headers](#adding-extra-headers)
 - [Vault Enterprise Features](#vault-enterprise-features)
     - [Namespace](#namespace)
+- [Reference](#reference)
 - [Masking - Hidding Secrets from Logs](#masking---hidding-secrets-from-logs)
 
 <!-- /TOC -->
@@ -267,6 +268,22 @@ steps:
             ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
             ci npm_token
 ```
+
+## Reference
+| Option       | Description                                                                                                                                          | Default | Required |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| url          | The URL for the vault endpoint                                                                                                                       |         | true     |
+| secrets      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | true     |
+| namespace    | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         | false    |
+| path         | The path of a non-default K/V engine                                                                                                                 |         | false    |
+| kv-version   | The version of the K/V engine to use.                                                                                                                | 2       | false    |
+| method       | The method to use to authenticate with Vault.                                                                                                        | token   | false    |
+| token        | The Vault Token to be used to authenticate with Vault                                                                                                |         | false    |
+| roleId       | The Role Id for App Role authentication                                                                                                              |         | false    |
+| secretId     | The Secret Id for App Role authentication                                                                                                            |         | false    |
+| githubToken  | The Github Token to be used to authenticate with Vault                                                                                               |         | false    |
+| extraHeaders | A string of newline separated extra headers to include on every request.                                                                             |         | false    |
+| exportEnv    | Whether or not export secrets as environment variables.                                                                                              | true    | false    |
 
 ## Masking - Hidding Secrets from Logs
 

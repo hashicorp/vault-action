@@ -1,5 +1,5 @@
 name: 'Vault Secrets'
-description: 'A Github Action that allows you to consume the v2 K/V backend of HashiCorp Vault as secure environment variables'
+description: 'A Github Action that allows you to consume the v2 K/V backend of HashiCorp Vault™ as secure environment variables'
 inputs:
   url:
     description: 'The URL for the vault endpoint'
@@ -14,10 +14,12 @@ inputs:
     description: 'The path of a non-default K/V engine'
     required: false
   kv-version:
-    description: 'The version of the K/V engine to use. Default: 2'
+    description: 'The version of the K/V engine to use.'
+    default: '2'
     required: false
   method:
-    description: 'The method to use to authenticate with Vault. Default: token'
+    description: 'The method to use to authenticate with Vault.'
+    default: 'token'
     required: false
   token:
     description: 'The Vault Token to be used to authenticate with Vault'
@@ -35,7 +37,8 @@ inputs:
     description: 'A string of newline separated extra headers to include on every request.'
     required: false
   exportEnv:
-    description: 'Whether or not export secrets as environment variables. Default: true'
+    description: 'Whether or not export secrets as environment variables.'
+    default: 'true'
     required: false
 runs:
   using: 'node12'
