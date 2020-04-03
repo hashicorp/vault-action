@@ -109,6 +109,8 @@ steps:
 
 ```
 
+_**Note:** If you'd like to only use outputs and disable automatic environment variables, you can set the `exportEnv` option to `false`._
+
 ### Set Output Variable Name
 
 However, if you want to set it to a specific name, say `NPM_TOKEN`, you could do this instead:
