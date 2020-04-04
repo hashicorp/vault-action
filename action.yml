@@ -33,6 +33,9 @@ inputs:
   githubToken:
     description: 'The Github Token to be used to authenticate with Vault'
     required: false
+  authPayload:
+    description: 'The JSON payload to be sent to Vault when using a custom authentication method.'
+    required: false
   extraHeaders:
     description: 'A string of newline separated extra headers to include on every request.'
     required: false

@@ -1,10 +1,10 @@
 // @ts-check
-
 // @ts-ignore
 const core = require('@actions/core');
 // @ts-ignore
 const command = require('@actions/core/lib/command');
 const got = require('got');
+const { retrieveToken } = require('./auth');
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
 const VALID_KV_VERSION = [-1, 1, 2];
@@ -172,55 +172,6 @@ function parseSecretsInput(secretsInput) {
         });
     }
     return output;
-}
-
-/***
- * Authentication with Vault and retrieve a vault token
- * @param {string} method
- * @param {import('got')} client
- */
-async function retrieveToken(method, client) {
-    switch (method) {
-        case 'approle': {
-            const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
-            core.debug('Try to retrieve Vault Token from approle');
-
-            /** @type {any} */
-            var options = {
-                json: { role_id: vaultRoleId, secret_id: vaultSecretId },
-                responseType: 'json'
-            };
-
-            const result = await client.post(`v1/auth/approle/login`, options);
-            if (result && result.body && result.body.auth && result.body.auth.client_token) {
-                core.debug('✔ Vault Token has retrieved from approle');
-                return result.body.auth.client_token;
-            } else {
-                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
-            }
-        }
-        case 'github': {
-            const githubToken = core.getInput('githubToken', { required: true });
-            core.debug('Try to retrieve Vault Token from approle');
-
-            /** @type {any} */
-            var options = {
-                json: { token: githubToken },
-                responseType: 'json'
-            };
-
-            const result = await client.post(`v1/auth/github/login`, options);
-            if (result && result.body && result.body.auth && result.body.auth.client_token) {
-                core.debug('✔ Vault Token has retrieved from approle');
-                return result.body.auth.client_token;
-            } else {
-                throw Error(`No token was retrieved with the role_id and secret_id provided.`);
-            }
-        }
-        default:
-            return core.getInput('token', { required: true });
-    }
 }
 
 /**
