@@ -5,7 +5,7 @@ const core = require('@actions/core');
 const got = require('got');
 const { when } = require('jest-when');
 
-const { exportSecrets } = require('../../action');
+const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
 

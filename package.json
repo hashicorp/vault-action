@@ -4,7 +4,7 @@
     "description": "A Github Action that allows you to consume vault secrets as secure environment variables.",
     "main": "dist/index.js",
     "scripts": {
-        "build": "ncc build index.js -o dist",
+        "build": "ncc build src/index.js -o dist",
         "test": "jest",
         "test:integration:basic": "jest -c integrationTests/basic/jest.config.js",
         "test:integration:enterprise": "jest -c integrationTests/enterprise/jest.config.js",
@@ -38,8 +38,8 @@
     },
     "homepage": "https://github.com/RichiCoder1/vault-action#readme",
     "dependencies": {
-        "@actions/core": "^1.2.2",
-        "got": "^10.2.2"
+        "got": "^10.2.2",
+        "@actions/core": "^1.2.3"
     },
     "devDependencies": {
         "@types/got": "^9.6.9",
