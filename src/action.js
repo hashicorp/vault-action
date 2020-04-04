@@ -1,9 +1,7 @@
 // @ts-check
-// @ts-ignore
 const core = require('@actions/core');
-// @ts-ignore
 const command = require('@actions/core/lib/command');
-const got = require('got');
+const got = require('got').default;
 const { retrieveToken } = require('./auth');
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
@@ -16,6 +14,7 @@ async function exportSecrets() {
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
 
     let enginePath = core.getInput('path', { required: false });
+    /** @type {number | string} */
     let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
@@ -40,7 +39,7 @@ async function exportSecrets() {
     }
 
     const client = got.extend(defaultOptions);
-    const vaultToken = await retrieveToken(vaultMethod, /** @type {any} */ (client));
+    const vaultToken = await retrieveToken(vaultMethod, client);
 
     if (!enginePath) {
         enginePath = 'secret';
@@ -207,17 +206,6 @@ function selectData(data, selector, isJSONPath) {
  */
 function normalizeOutputKey(dataKey) {
     return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
-}
-
-// @ts-ignore
-/**
- * @param {string} input
- */
-function parseBoolInput(input) {
-    if (input === null || input === undefined || input.trim() === '') {
-        return null;
-    }
-    return Boolean(input);
 }
 
 /**

@@ -1,9 +1,10 @@
+// @ts-check
 const core = require('@actions/core');
 
 /***
- * Authentication with Vault and retrieve a vault token
+ * Authenticate with Vault and retrieve a Vault token that can be used for requests.
  * @param {string} method
- * @param {import('got')} client
+ * @param {import('got').Got} client
  */
 async function retrieveToken(method, client) {
     switch (method) {
@@ -32,28 +33,49 @@ async function retrieveToken(method, client) {
 }
 
 /***
- * Authentication with Vault and retrieve a vault token
- * @param {import('got')} client
+ * Call the appropriate login endpoint and parse out the token in the response.
+ * @param {import('got').Got} client
  * @param {string} method
  * @param {any} payload
  */
 async function getClientToken(client, method, payload) {
-    /** @type {any} */
+    /** @type {'json'} */
+    const responseType = 'json';
     var options = {
         json: payload,
-        responseType: 'json'
+        responseType,
     };
 
     core.debug(`Retrieving Vault Token from v1/auth/${method}/login endpoint`);
+
+    /** @type {import('got').Response<VaultLoginResponse>} */
     const response = await client.post(`v1/auth/${method}/login`, options);
     if (response && response.body && response.body.auth && response.body.auth.client_token) {
         core.debug('✔ Vault Token successfully retrieved');
+
+        core.startGroup('Token Info');
+        core.debug(`Operating under policies: ${JSON.stringify(response.body.auth.policies)}`);
+        core.debug(`Token Metadata: ${JSON.stringify(response.body.auth.metadata)}`);
+        core.endGroup();
+
         return response.body.auth.client_token;
     } else {
         throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
     }
 }
 
+/***
+ * @typedef {Object} VaultLoginResponse
+ * @property {{
+ *  client_token: string;
+ *  accessor: string;
+ *  policies: string[];
+ *  metadata: unknown;
+ *  lease_duration: number;
+ *  renewable: boolean;
+ * }} auth
+ */
+
 module.exports = {
-    retrieveToken
-}
+    retrieveToken,
+};
