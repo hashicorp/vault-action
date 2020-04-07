@@ -45,7 +45,7 @@ jobs:
 
 ## Authentication method
 
-While most workflows will likely use a vault token, you can also use an `approle` to authenticate with vaule. You can configure which by using the `method` parameter:
+While most workflows will likely use a vault token, you can also use an `approle` to authenticate with Vault. You can configure which by using the `method` parameter:
 
 - **token**: (by default) you must provide a `token` parameter
 ```yaml
@@ -72,6 +72,8 @@ with:
   githubToken: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+If any other method is specified and you provide an `authPayload`, the action will attempt to `POST` to `auth/${method}/login` with the provided payload and parse out the client token.
+
 ## Key Syntax
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
@@ -97,7 +99,7 @@ with:
 NPMTOKEN=somelongtoken
 ```
 
-You can also access the secret via ouputs:
+You can also access the secret via outputs:
 
 ```yaml
 steps:
@@ -285,6 +287,7 @@ Here is all the inputs available through `with`:
 | `roleId`       | The Role Id for App Role authentication                                                                                                              |         |          |
 | `secretId`     | The Secret Id for App Role authentication                                                                                                            |         |          |
 | `githubToken`  | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
+| `authPayload`  | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders` | A string of newline separated extra headers to include on every request.                                                                             |         |          |
 | `exportEnv`    | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
 
