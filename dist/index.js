@@ -1557,12 +1557,13 @@ module.exports.iterator = (emitter, event, options) => {
 /***/ 151:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
+// @ts-check
 const core = __webpack_require__(470);
 
 /***
- * Authentication with Vault and retrieve a vault token
+ * Authenticate with Vault and retrieve a Vault token that can be used for requests.
  * @param {string} method
- * @param {import('got')} client
+ * @param {import('got').Got} client
  */
 async function retrieveToken(method, client) {
     switch (method) {
@@ -1591,31 +1592,52 @@ async function retrieveToken(method, client) {
 }
 
 /***
- * Authentication with Vault and retrieve a vault token
- * @param {import('got')} client
+ * Call the appropriate login endpoint and parse out the token in the response.
+ * @param {import('got').Got} client
  * @param {string} method
  * @param {any} payload
  */
 async function getClientToken(client, method, payload) {
-    /** @type {any} */
+    /** @type {'json'} */
+    const responseType = 'json';
     var options = {
         json: payload,
-        responseType: 'json'
+        responseType,
     };
 
     core.debug(`Retrieving Vault Token from v1/auth/${method}/login endpoint`);
+
+    /** @type {import('got').Response<VaultLoginResponse>} */
     const response = await client.post(`v1/auth/${method}/login`, options);
     if (response && response.body && response.body.auth && response.body.auth.client_token) {
         core.debug('✔ Vault Token successfully retrieved');
+
+        core.startGroup('Token Info');
+        core.debug(`Operating under policies: ${JSON.stringify(response.body.auth.policies)}`);
+        core.debug(`Token Metadata: ${JSON.stringify(response.body.auth.metadata)}`);
+        core.endGroup();
+
         return response.body.auth.client_token;
     } else {
         throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
     }
 }
 
+/***
+ * @typedef {Object} VaultLoginResponse
+ * @property {{
+ *  client_token: string;
+ *  accessor: string;
+ *  policies: string[];
+ *  metadata: unknown;
+ *  lease_duration: number;
+ *  renewable: boolean;
+ * }} auth
+ */
+
 module.exports = {
-    retrieveToken
-}
+    retrieveToken,
+};
 
 
 /***/ }),
@@ -5711,11 +5733,9 @@ module.exports = require("dns");
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 // @ts-check
-// @ts-ignore
 const core = __webpack_require__(470);
-// @ts-ignore
 const command = __webpack_require__(431);
-const got = __webpack_require__(77);
+const got = __webpack_require__(77).default;
 const { retrieveToken } = __webpack_require__(151);
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
@@ -5728,14 +5748,16 @@ async function exportSecrets() {
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
 
     let enginePath = core.getInput('path', { required: false });
+    /** @type {number | string} */
     let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
-    if (!AUTH_METHODS.includes(vaultMethod)) {
-        throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
+    const authPayload = core.getInput('authPayload', { required: false });
+    if (!AUTH_METHODS.includes(vaultMethod) && !authPayload) {
+        throw Error(`Sorry, the provided authentication method ${vaultMethod} is not currently supported and no custom authPayload was provided.`);
     }
 
     const defaultOptions = {
@@ -5752,7 +5774,7 @@ async function exportSecrets() {
     }
 
     const client = got.extend(defaultOptions);
-    const vaultToken = await retrieveToken(vaultMethod, /** @type {any} */ (client));
+    const vaultToken = await retrieveToken(vaultMethod, client);
 
     if (!enginePath) {
         enginePath = 'secret';
@@ -5919,17 +5941,6 @@ function selectData(data, selector, isJSONPath) {
  */
 function normalizeOutputKey(dataKey) {
     return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
-}
-
-// @ts-ignore
-/**
- * @param {string} input
- */
-function parseBoolInput(input) {
-    if (input === null || input === undefined || input.trim() === '') {
-        return null;
-    }
-    return Boolean(input);
 }
 
 /**
