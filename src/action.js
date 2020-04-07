@@ -21,8 +21,9 @@ async function exportSecrets() {
     const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
-    if (!AUTH_METHODS.includes(vaultMethod)) {
-        throw Error(`Sorry, the authentication method ${vaultMethod} is not currently supported.`);
+    const authPayload = core.getInput('authPayload', { required: false });
+    if (!AUTH_METHODS.includes(vaultMethod) && !authPayload) {
+        throw Error(`Sorry, the provided authentication method ${vaultMethod} is not currently supported and no custom authPayload was provided.`);
     }
 
     const defaultOptions = {
