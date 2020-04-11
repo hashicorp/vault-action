@@ -2,7 +2,8 @@
 const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got').default;
-const { retrieveToken } = require('./auth');
+const jsonata = require('jsonata');
+const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
 const VALID_KV_VERSION = [-1, 1, 2];
@@ -39,8 +40,9 @@ async function exportSecrets() {
         defaultOptions.headers["X-Vault-Namespace"] = vaultNamespace;
     }
 
+    const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
+    defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
-    const vaultToken = await retrieveToken(vaultMethod, client);
 
     if (!enginePath) {
         enginePath = 'secret';
@@ -55,62 +57,39 @@ async function exportSecrets() {
         throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
     }
 
-    const responseCache = new Map();
-    for (const secretRequest of secretRequests) {
-        const { secretPath, outputVarName, envVarName, secretSelector, isJSONPath } = secretRequest;
-        const requestOptions = {
-            headers: {
-                'X-Vault-Token': vaultToken
-            },
-        };
+    const requests = secretRequests.map(request => {
+        const { path, selector } = request;
 
-        for (const [headerName, headerValue] of extraHeaders) {
-            requestOptions.headers[headerName] = headerValue;
+        if (path.startsWith('/')) {
+            return request;
         }
+        const kvPath = (kvVersion === 2)
+            ? `/${enginePath}/data/${path}`
+            : `/${enginePath}/${path}`;
+        const kvSelector = (kvVersion === 2)
+            ? `data.data.${selector}`
+            : `data.${selector}`;
+        return { ...request, path: kvPath, selector: kvSelector };
+    });
 
-        if (vaultNamespace != null) {
-            requestOptions.headers["X-Vault-Namespace"] = vaultNamespace;
-        }
+    const results = await getSecrets(requests, client);
 
-        let requestPath = `v1`;
-        const kvRequest = !secretPath.startsWith('/')
-        if (!kvRequest) {
-            requestPath += secretPath;
-        } else {
-           requestPath += (kvVersion === 2)
-                    ? `/${enginePath}/data/${secretPath}`
-                    : `/${enginePath}/${secretPath}`;
-        }
-
-        let body;
-        if (responseCache.has(requestPath)) {
-            body = responseCache.get(requestPath);
-            core.debug('ℹ using cached response');
-        } else {
-            const result = await client.get(requestPath, requestOptions);
-            body = result.body;
-            responseCache.set(requestPath, body);
-        }
-
-        let dataDepth = isJSONPath === true ? 0 : kvRequest === false ? 1 : kvVersion;
-
-        const secretData = getResponseData(body, dataDepth);
-        const value = selectData(secretData, secretSelector, isJSONPath);
+    for (const result of results) {
+        const { value, request } = result;        
         command.issue('add-mask', value);
         if (exportEnv) {
-            core.exportVariable(envVarName, `${value}`);
+            core.exportVariable(request.envVarName, `${value}`);
         }
-        core.setOutput(outputVarName, `${value}`);
-        core.debug(`✔ ${secretPath} => outputs.${outputVarName}${exportEnv ? ` | env.${envVarName}` : ''}`);
+        core.setOutput(request.outputVarName, `${value}`);
+        core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
     }
 };
 
 /** @typedef {Object} SecretRequest 
- * @property {string} secretPath
+ * @property {string} path
  * @property {string} envVarName
  * @property {string} outputVarName
- * @property {string} secretSelector
- * @property {boolean} isJSONPath
+ * @property {string} selector
 */
 
 /**
@@ -127,12 +106,12 @@ function parseSecretsInput(secretsInput) {
     /** @type {SecretRequest[]} */
     const output = [];
     for (const secret of secrets) {
-        let path = secret;
+        let pathSpec = secret;
         let outputVarName = null;
 
         const renameSigilIndex = secret.lastIndexOf('|');
         if (renameSigilIndex > -1) {
-            path = secret.substring(0, renameSigilIndex).trim();
+            pathSpec = secret.substring(0, renameSigilIndex).trim();
             outputVarName = secret.substring(renameSigilIndex + 1).trim();
 
             if (outputVarName.length < 1) {
@@ -140,7 +119,7 @@ function parseSecretsInput(secretsInput) {
             }
         }
 
-        const pathParts = path
+        const pathParts = pathSpec
             .split(/\s+/)
             .map(part => part.trim())
             .filter(part => part.length !== 0);
@@ -149,56 +128,33 @@ function parseSecretsInput(secretsInput) {
             throw Error(`You must provide a valid path and key. Input: "${secret}"`);
         }
 
-        const [secretPath, secretSelector] = pathParts;
+        const [path, selector] = pathParts;
 
-        const isJSONPath = secretSelector.includes('.');
+        /** @type {any} */
+        const selectorAst = jsonata(selector).ast();
 
-        if (isJSONPath && !outputVarName) {
+        if (selectorAst.type !== "path") {
+            throw Error(`Invalid path selector.`);
+        }
+
+        if ((selectorAst.steps > 1 || selectorAst.steps[0].stages) && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
         let envVarName = outputVarName;
         if (!outputVarName) {
-            outputVarName = secretSelector;
+            outputVarName = selector;
             envVarName = normalizeOutputKey(outputVarName);
         }
 
         output.push({
-            secretPath,
+            path,
             envVarName,
             outputVarName,
-            secretSelector,
-            isJSONPath
+            selector
         });
     }
     return output;
-}
-
-/**
- * Parses a JSON response and returns the secret data
- * @param {string} responseBody
- * @param {number} dataLevel
- */
-function getResponseData(responseBody, dataLevel) {
-    let secretData = JSON.parse(responseBody);
-
-    for (let i = 0; i < dataLevel; i++) {
-        secretData = secretData['data'];
-    }
-    return secretData;
-}
-
-/**
- * Parses a JSON response and returns the secret data
- * @param {Object} data
- * @param {string} selector
- */
-function selectData(data, selector, isJSONPath) {
-    if (!isJSONPath) {
-        return data[selector];
-    }
-
-    // TODO: JSONPath
 }
 
 /**
@@ -206,7 +162,7 @@ function selectData(data, selector, isJSONPath) {
  * @param {string} dataKey
  */
 function normalizeOutputKey(dataKey) {
-    return dataKey.replace('/', '__').replace(/[^\w-]/, '').toUpperCase();
+    return dataKey.replace('/', '__').replace('.', '__').replace(/[^\w-]/, '').toUpperCase();
 }
 
 /**
@@ -237,7 +193,6 @@ function parseHeadersInput(inputKey, inputOptions) {
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    parseResponse: getResponseData,
     normalizeOutputKey,
     parseHeadersInput
 };

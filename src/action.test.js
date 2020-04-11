@@ -17,11 +17,10 @@ describe('parseSecretsInput', () => {
     it('parses simple secret', () => {
         const output = parseSecretsInput('test key');
         expect(output).toContainEqual({
-            secretPath: 'test',
-            secretSelector: 'key',
+            path: 'test',
+            selector: 'key',
             outputVarName: 'key',
-            envVarName: 'KEY',
-            isJSONPath: false
+            envVarName: 'KEY'
         });
     });
 
@@ -49,10 +48,10 @@ describe('parseSecretsInput', () => {
 
         expect(output).toHaveLength(2);
         expect(output[0]).toMatchObject({
-            secretPath: 'first',
+            path: 'first',
         });
         expect(output[1]).toMatchObject({
-            secretPath: 'second',
+            path: 'second',
         });
     });
 
@@ -78,7 +77,7 @@ describe('parseSecretsInput', () => {
 
         expect(output).toHaveLength(3);
         expect(output[0]).toMatchObject({
-            secretPath: 'first',
+            path: 'first',
         });
         expect(output[1]).toMatchObject({
             outputVarName: 'b',
@@ -129,40 +128,7 @@ describe('parseHeaders', () => {
         const result = parseHeadersInput('extraHeaders');
         expect(Array.from(result)).toHaveLength(0);
     });
-})
-
-describe('parseResponse', () => {
-    // https://www.vaultproject.io/api/secret/kv/kv-v1.html#sample-response
-    it('parses K/V version 1 response', () => {
-        const response = JSON.stringify({
-            data: {
-                foo: 'bar'
-            }
-        })
-        const output = parseResponse(response, 1);
-
-        expect(output).toEqual({
-            foo: 'bar'
-        });
-    });
-
-    // https://www.vaultproject.io/api/secret/kv/kv-v2.html#read-secret-version
-    it('parses K/V version 2 response', () => {
-        const response = JSON.stringify({
-            data: {
-                data: {
-                    foo: 'bar'
-                }
-            }
-        })
-        const output = parseResponse(response, 2);
-
-        expect(output).toEqual({
-            foo: 'bar'
-        });
-    });
 });
-
 
 describe('exportSecrets', () => {
     beforeEach(() => {

@@ -1,10 +1,7 @@
-const core = require('@actions/core');
-const { exportSecrets } = require('./action');
+const auth = require('./auth');
+const secrets = require('./secrets');
 
-(async () => {
-    try {
-        await core.group('Get Vault Secrets', exportSecrets);
-    } catch (error) {
-        core.setFailed(error.message);
-    }
-})();
+module.exports = {
+    auth,
+    secrets
+};

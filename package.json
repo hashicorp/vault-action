@@ -10,12 +10,17 @@
         "test:integration:enterprise": "jest -c integrationTests/enterprise/jest.config.js",
         "test:e2e": "jest -c integrationTests/e2e/jest.config.js"
     },
+    "files": [
+        "src/**/*",
+        "dist/**/*"
+    ],
     "release": {
         "branch": "master",
         "plugins": [
             "@semantic-release/commit-analyzer",
             "@semantic-release/release-notes-generator",
-            "@semantic-release/github"
+            "@semantic-release/github",
+            "@semantic-release/npm"
         ],
         "ci": false
     },
@@ -38,8 +43,9 @@
     },
     "homepage": "https://github.com/RichiCoder1/vault-action#readme",
     "dependencies": {
+        "@actions/core": "^1.2.3",
         "got": "^10.2.2",
-        "@actions/core": "^1.2.3"
+        "jsonata": "^1.8.2"
     },
     "devDependencies": {
         "@types/got": "^9.6.9",
