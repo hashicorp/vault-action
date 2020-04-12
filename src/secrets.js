@@ -56,6 +56,10 @@ async function getSecrets(secretRequests, client) {
  */
 function selectData(data, selector) {
     let result = JSON.stringify(jsonata(selector).evaluate(data));
+    // Compat for custom engines
+    if (!result && !selector.includes('.') && selector !== 'data' && 'data' in data) {
+        result = JSON.stringify(jsonata(`data.${selector}`).evaluate(data));
+    }
     if (result.startsWith(`"`)) {
         result = result.substring(1, result.length - 1);
     }
