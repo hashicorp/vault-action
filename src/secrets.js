@@ -55,11 +55,15 @@ async function getSecrets(secretRequests, client) {
  * @param {string} selector 
  */
 function selectData(data, selector) {
-    let result = JSON.stringify(jsonata(selector).evaluate(data));
+    const ata = jsonata(selector);
+    let result = JSON.stringify(ata.evaluate(data));
     // Compat for custom engines
-    if (!result && !selector.includes('.') && selector !== 'data' && 'data' in data) {
+    if (!result && ata.ast().type === "path" && ata.ast()['steps'].length === 1 && selector !== 'data' && 'data' in data) {
         result = JSON.stringify(jsonata(`data.${selector}`).evaluate(data));
+    } else if (!result) {
+        throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
     }
+
     if (result.startsWith(`"`)) {
         result = result.substring(1, result.length - 1);
     }

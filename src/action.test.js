@@ -87,7 +87,7 @@ describe('parseSecretsInput', () => {
             outputVarName: 'SOME_C',
             envVarName: 'SOME_C',
         });
-    })
+    });
 });
 
 describe('parseHeaders', () => {
@@ -190,6 +190,18 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
+    it('intl secret retrieval', async () => {
+        mockInput('测试 测试');
+        mockVaultData({
+            测试: 1
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('测试', '1');
+        expect(core.setOutput).toBeCalledWith('测试', '1');
+    });
+
     it('mapped secret retrieval', async () => {
         mockInput('test key|TEST_NAME');
         mockVaultData({
@@ -232,5 +244,17 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
+    });
+
+    it('nested secret retrieval', async () => {
+        mockInput('test key.value');
+        mockVaultData({
+            key: { value: 1 }
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY__VALUE', '1');
+        expect(core.setOutput).toBeCalledWith('key__value', '1');
     });
 });

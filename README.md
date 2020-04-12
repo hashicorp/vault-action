@@ -12,6 +12,7 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
     - [Simple Key](#simple-key)
     - [Set Output Variable Name](#set-output-variable-name)
     - [Multiple Secrets](#multiple-secrets)
+    - [Nested Secrets](#nested-secrets)
     - [Using K/V version 1](#using-kv-version-1)
 - [Custom K/V Engine Path](#custom-kv-engine-path)
 - [Other Secret Engines](#other-secret-engines)
@@ -20,6 +21,7 @@ By default, this action pulls from  [Version 2](https://www.vaultproject.io/docs
     - [Namespace](#namespace)
 - [Reference](#reference)
 - [Masking - Hiding Secrets from Logs](#masking---hiding-secrets-from-logs)
+- [Normalization](#normalization)
 
 <!-- /TOC -->
 
@@ -81,7 +83,7 @@ The `secrets` parameter is a set of multiple secret requests separated by the `;
 Each secret request is comprised of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
 
 ```raw
-{{ Secret Path }} {{ Secret Key }} | {{ Output Variable Name }}
+{{ Secret Path }} {{ Secret Key or Selector }} | {{ Env/Output Variable Name }}
 ```
 
 ### Simple Key
@@ -151,6 +153,21 @@ with:
         ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
 
+### Nested Secrets
+
+By default, `vault-action` will read the key specified of `data.data` for the K/V v2 engine (default), or `data` for K/V v1 and other secrets engines (see below for more info).
+If you need to retrieve a sub-key from a JSON document, or are interested in some other component of the Vault response, you can specify a different key as the path to the desired out.
+
+_**Important**_: You must specify an [Output Variable Name](#set-output-variable-name) when using this method.
+
+```yaml
+with:
+    secrets: |
+        my/path pair.key | NESTED_SECRET ;
+```
+
+Under the covers, we're using [JSONata](https://jsonata.org/) to provide the querying functionality. Any valid JSONata syntax is valid here, and will be outputed as a `JSON.stringify`-ied result.
+
 ### Using K/V version 1
 
 By default, `vault-action` expects a K/V engine using [version 2](https://www.vaultproject.io/docs/secrets/kv/kv-v2.html).
@@ -179,7 +196,7 @@ This way, the `ci` secret in the example above will be retrieved from `my-secret
 
 While this action primarily supports the K/V engine, it is possible to request secrets from other engines in Vault.
 
-To do so when specifying the `Secret Path`, just append a leading formard slash (`/`) and specify the path as described in the Vault API documentation.
+To do so when specifying the `Secret Path`, just append a leading forward slash (`/`) and specify the path as described in the Vault API documentation.
 
 For example, to retrieve a stored secret from the [`cubbyhole` engine](https://www.vaultproject.io/api-docs/secret/cubbyhole/), assuming you have a stored secret at the path `foo` with the contents:
 
@@ -231,7 +248,7 @@ with:
 
 would work fine.
 
-NOTE: The `Secret Key` is pulled from the `data` property of the response.
+*NOTE: Per [Nested Secrets](#nested-secrets), the `Key` is pulled from the `data` property of the response.*
 
 ## Adding Extra Headers
 
@@ -247,13 +264,13 @@ with:
       X-Secure-Secret: ${{ secrets.SECURE_SECRET }}
 ```
 
-This will automatically add the `x-secure-id` and `x-secure-secret` headers to every request to vault.
+This will automatically add the `x-secure-id` and `x-secure-secret` headers to every request to Vault.
 
 ## Vault Enterprise Features
 
 ### Namespace
 
-If you need to retrieve secrets from a specific vault namespace, all that's required is an additional parameter specifying the namespace.
+If you need to retrieve secrets from a specific Vault namespace, all that's required is an additional parameter specifying the namespace.
 
 ```yaml
 steps:
@@ -273,7 +290,7 @@ steps:
 
 ## Reference
 
-Here is all the inputs available through `with`:
+Here are all the inputs available through `with`:
 
 | Input          | Description                                                                                                                                          | Default | Required |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
@@ -295,3 +312,7 @@ Here is all the inputs available through `with`:
 
 This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
 **This only obscures secrets from output logs.** If someone has the ability to edit your workflows, then they are able to read and therefore write secrets to somewhere else just like normal GitHub Secrets.
+
+## Normalization
+
+To make it simpler to consume certain secrets as env vars, if no Env/Output Var Name is specified `vault-action` will replace and `.` chars with `__`, remove any other non-letter or number characters. If you're concerned about the result, it's recommended to provider an explicit Output Var Key.

@@ -136,18 +136,14 @@ function parseSecretsInput(secretsInput) {
         /** @type {any} */
         const selectorAst = jsonata(selector).ast();
 
-        if (selectorAst.type !== "path") {
-            throw Error(`Invalid path selector.`);
-        }
-
-        if ((selectorAst.steps > 1 || selectorAst.steps[0].stages) && !outputVarName) {
+        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
         let envVarName = outputVarName;
         if (!outputVarName) {
-            outputVarName = selector;
-            envVarName = normalizeOutputKey(outputVarName);
+            outputVarName = normalizeOutputKey(selector);
+            envVarName = normalizeOutputKey(selector, true);
         }
 
         output.push({
@@ -161,11 +157,17 @@ function parseSecretsInput(secretsInput) {
 }
 
 /**
- * Replaces any forward-slash characters to
+ * Replaces any dot chars to __ and removes non-ascii charts
  * @param {string} dataKey
+ * @param {boolean=} isEnvVar
  */
-function normalizeOutputKey(dataKey) {
-    return dataKey.replace('/', '__').replace('.', '__').replace(/[^\w-]/, '').toUpperCase();
+function normalizeOutputKey(dataKey, isEnvVar = false) {
+    let outputKey = dataKey
+        .replace('.', '__').replace(/[^\p{L}\p{N}_-]/gu, '');
+    if (isEnvVar) {
+        outputKey = outputKey.toUpperCase();
+    }
+    return outputKey;
 }
 
 /**
