@@ -43,11 +43,14 @@
     },
     "homepage": "https://github.com/RichiCoder1/vault-action#readme",
     "dependencies": {
-        "@actions/core": "^1.2.3",
         "got": "^10.2.2",
         "jsonata": "^1.8.2"
     },
+    "peerDependencies": {
+        "@actions/core": ">=1 <2"
+    },
     "devDependencies": {
+        "@actions/core": "^1.2.3",
         "@types/got": "^9.6.9",
         "@types/jest": "^25.1.3",
         "@zeit/ncc": "^0.22.0",
