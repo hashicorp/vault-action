@@ -155,7 +155,7 @@ with:
 
 ### Nested Secrets
 
-By default, `vault-action` will read the key specified of `data.data` for the K/V v2 engine (default), or `data` for K/V v1 and other secrets engines (see below for more info).
+By default, `vault-action` will read the key from `data.data` in the response for the K/V v2 engine (default), or `data` for K/V v1 and other Secret Engines (see below for more info).
 If you need to retrieve a sub-key from a JSON document, or are interested in some other component of the Vault response, you can specify a different key as the path to the desired out.
 
 _**Important**_: You must specify an [Output Variable Name](#set-output-variable-name) when using this method.
