@@ -92,7 +92,7 @@ If any other method is specified and you provide an `authPayload`, the action wi
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
 
-Each secret request is comprised of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
+Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
 
 ```raw
 {{ Secret Path }} {{ Secret Key or Selector }} | {{ Env/Output Variable Name }}
@@ -178,7 +178,7 @@ with:
         my/path pair.key | NESTED_SECRET ;
 ```
 
-Under the covers, we're using [JSONata](https://jsonata.org/) to provide the querying functionality. Any valid JSONata syntax is valid here, and will be outputed as a `JSON.stringify`-ied result.
+Under the covers, we're using [JSONata](https://jsonata.org/) to provide the querying functionality. Any valid JSONata syntax is valid here, and will be outputted as a `JSON.stringify`-ied result.
 
 ### Using K/V version 1
 
@@ -327,4 +327,4 @@ This action uses GitHub Action's built-in masking, so all variables will automat
 
 ## Normalization
 
-To make it simpler to consume certain secrets as env vars, if no Env/Output Var Name is specified `vault-action` will replace and `.` chars with `__`, remove any other non-letter or number characters. If you're concerned about the result, it's recommended to provider an explicit Output Var Key.
+To make it simpler to consume certain secrets as env vars, if no Env/Output Var Name is specified `vault-action` will replace and `.` chars with `__`, remove any other non-letter or number characters. If you're concerned about the result, it's recommended to provide an explicit Output Var Key.
