@@ -1,4 +1,15 @@
-# vault-action
+# Vault GitHub Action
+
+---
+**NOTE**
+
+This repository was recently adopted by HashiCorp.  We're actively working on adding 
+additional functionality to this action soon:
+
+- [ ] TLS
+- [ ] mTLS
+- [ ] Simplify secret request UX
+---
 
 A helper action for easily pulling secrets from HashiCorp Vault™.
 
@@ -34,7 +45,7 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
-              uses: RichiCoder1/vault-action
+              uses: hashicorp/vault-action
               with:
                 url: https://vault.mycompany.com:8200
                 token: ${{ secrets.VaultToken }}
@@ -276,7 +287,7 @@ If you need to retrieve secrets from a specific Vault namespace, all that's requ
 steps:
     # ...
     - name: Import Secrets
-      uses: RichiCoder1/vault-action
+      uses: hashicorp/vault-action
       with:
         url: https://vault-enterprise.mycompany.com:8200
         method: token
