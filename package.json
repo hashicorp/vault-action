@@ -26,7 +26,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/RichiCoder1/vault-action.git"
+        "url": "git+https://github.com/hashicorp/vault-action.git"
     },
     "keywords": [
         "hashicorp",
@@ -36,12 +36,12 @@
         "github-actions",
         "javascript"
     ],
-    "author": "Richard Simpson <richardsimpson@outlook.com>",
+    "author": "HashiCorp",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/RichiCoder1/vault-action/issues"
+        "url": "https://github.com/hashicorp/vault-action/issues"
     },
-    "homepage": "https://github.com/RichiCoder1/vault-action#readme",
+    "homepage": "https://github.com/hashicorp/vault-action#readme",
     "dependencies": {
         "got": "^10.2.2",
         "jsonata": "^1.8.2"
