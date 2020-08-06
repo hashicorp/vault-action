@@ -43,6 +43,19 @@ inputs:
     description: 'Whether or not export secrets as environment variables.'
     default: 'true'
     required: false
+  caCertificate:
+    description: 'Base64 encoded CA certificate to verify the Vault server certificate.'
+    required: false
+  clientCertificate:
+    description: 'Base64 encoded client certificate for mTLS communication with the Vault server.'
+    required: false
+  clientKey:
+    description: 'Base64 encoded client key for mTLS communication with the Vault server.'
+    required: false
+  tlsSkipVerify:
+    description: 'When set to true, disables verification of the Vault server certificate.  Setting this to true in production is not recommended.'
+    required: false
+    default: "false"
 runs:
   using: 'node12'
   main: 'dist/index.js'

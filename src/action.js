@@ -29,7 +29,28 @@ async function exportSecrets() {
 
     const defaultOptions = {
         prefixUrl: vaultUrl,
-        headers: {}
+        headers: {},
+        https: {}
+    }
+
+    const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
+    if (tlsSkipVerify === true) {
+        defaultOptions.https.rejectUnauthorized = true;
+    }
+
+    const caCertificateRaw = core.getInput('caCertificate', { required: false });
+    if (caCertificateRaw != null) {
+        defaultOptions.https.certificateAuthority = Buffer.from(caCertificateRaw, 'base64').toString();
+    }
+
+    const clientCertificateRaw = core.getInput('clientCertificate', { required: false });
+    if (clientCertificateRaw != null) {
+	    defaultOptions.https.certificate = Buffer.from(clientCertificateRaw, 'base64').toString();
+    }
+
+    const clientKeyRaw = core.getInput('clientKey', { required: false });
+    if (clientKeyRaw != null) {
+	    defaultOptions.https.key = Buffer.from(clientKeyRaw, 'base64').toString();
     }
 
     for (const [headerName, headerValue] of extraHeaders) {

@@ -3,124 +3,152 @@ on:
     branches:
       - master
   pull_request:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+
     - uses: actions/setup-node@v1
       with:
         node-version: ''
-    - name: setup npm cache
+
+    - name: Setup NPM Cache
       uses: actions/cache@v1
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
-    - name: npm install
+
+    - name: NPM Install
       run: npm ci
-    - name: npm build
+
+    - name: NPM Build
       run: npm run build
-    - name: npm run test
+
+    - name: NPM Run Test
       run: npm run test
 
-  integration:
+  integrationOSS:
     runs-on: ubuntu-latest
 
-    services:
-      vaultBasic:
-        image: vault:1.2.3
-        ports:
-          - 8200/tcp
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: testtoken
-        options: --cap-add=IPC_LOCK
-      vaultEnterprise:
-        image: hashicorp/vault-enterprise:1.3.0_ent
-        ports:
-          - 8200/tcp
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: testtoken
-        options: --cap-add=IPC_LOCK
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Run docker-compose
+      run: docker-compose up -d vault
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ''
+
+    - name: Setup NPM Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: NPM Install
+      run: npm ci
+
+    - name: NPM Build
+      run: npm run build
+
+    - name: NPM Run test;integration:basic
+      run: npm run test:integration:basic
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: 8200
+        CI: true
+
+  integrationEnterprise:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ''
-      - name: setup npm cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: npm install
-        run: npm ci
-      - name: npm build
-        run: npm run build
-      - name: npm run test:integration:basic
-        run: npm run test:integration:basic
-        env:
-          VAULT_HOST: localhost
-          VAULT_PORT: ${{ job.services.vaultBasic.ports[8200] }}
-          CI: true
-      - name: npm run test:integration:enterprise
-        run: npm run test:integration:enterprise
-        env:
-          VAULT_HOST: localhost
-          VAULT_PORT: ${{ job.services.vaultEnterprise.ports[8200] }}
-          CI: true
+    - uses: actions/checkout@v1
+
+    - name: Run docker-compose
+      run: docker-compose up -d vault-enterprise
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ''
+
+    - name: Setup NPM Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: NPM Install
+      run: npm ci
+
+    - name: NPM Build
+      run: npm run build
+
+    - name: NPM Run test:intergration:enterprise
+      run: npm run test:integration:enterprise
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: 8200
+        CI: true
 
   e2e:
     runs-on: ubuntu-latest
 
-    services:
-      vault:
-        image: vault:1.3.0
-        ports:
-          - 8200/tcp
-        env:
-          VAULT_DEV_ROOT_TOKEN_ID: testtoken
-        options: --cap-add=IPC_LOCK
-
     steps:
     - uses: actions/checkout@v1
+
+    - name: Run docker-compose
+      run: docker-compose up -d vault
+
     - uses: actions/setup-node@v1
       with:
         node-version: ''
-    - name: setup npm cache
+
+    - name: Setup NPM Cache
       uses: actions/cache@v1
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
-    - name: npm install
+
+    - name: NPM Install
       run: npm ci
-    - name: npm build
+
+    - name: NPM Build
       run: npm run build
-    - name: setup vault
+
+    - name: Setup Vault
       run: node ./integrationTests/e2e/setup.js
       env:
         VAULT_HOST: localhost
-        VAULT_PORT: ${{ job.services.vault.ports[8200] }}
-    - name: use vault action (default K/V version 2)
+        VAULT_PORT: 8200
+
+    - name: Test Vault Action (default KV V2)
       uses: ./
       id: kv-secrets
       with:
-        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        url: http://localhost:8200
         token: testtoken
         secrets: |
           test secret ;
           test secret | NAMED_SECRET ;
           nested/test otherSecret ;
-    - name: use vault action (custom K/V version 1)
+
+    - name: Test Vault Action (default KV V1)
       uses: ./
       with:
-        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        url: http://localhost:8200
         token: testtoken
         path: my-secret
         kv-version: 1
@@ -128,16 +156,100 @@ jobs:
           test altSecret ;
           test altSecret | NAMED_ALTSECRET ;
           nested/test otherAltSecret ;
-    - name: use vault action (using cubbyhole engine)
+
+    - name: Test Vault Action (cubbyhole)
       uses: ./
       with:
-        url: http://localhost:${{ job.services.vault.ports[8200] }}
+        url: http://localhost:8200
         token: testtoken
         secrets: |
           /cubbyhole/test foo ;
           /cubbyhole/test zip | NAMED_CUBBYSECRET ;
-    - name: verify
+
+    - name: Verify Vault Action Outputs
       run: npm run test:e2e
+      env:
+        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
+
+  e2e-tls:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Run docker-compose
+      run: docker-compose up -d vault-tls
+
+    - uses: actions/setup-node@v1
+      with:
+        node-version: ''
+
+    - name: Setup NPM Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: NPM Install
+      run: npm ci
+
+    - name: NPM Build
+      run: npm run build
+
+    - name: Setup Vault
+      run: node ./integrationTests/e2e-tls/setup.js
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: 8200
+        VAULTCA: ${{ secrets.VAULTCA }}
+        VAULT_CLIENT_CERT: ${{ secrets.VAULT_CLIENT_CERT }}
+        VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
+
+    - name: Test Vault Action (default KV V2)
+      uses: ./
+      id: kv-secrets
+      with:
+        url: https://localhost:8200
+        token: ${{ env.VAULT_TOKEN }}
+        caCertificate: ${{ secrets.VAULTCA }}
+        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+        secrets: |
+          test secret ;
+          test secret | NAMED_SECRET ;
+          nested/test otherSecret ;
+
+    - name: Test Vault Action (default KV V1)
+      uses: ./
+      with:
+        url: https://localhost:8200
+        token: ${{ env.VAULT_TOKEN }}
+        path: my-secret
+        kv-version: 1
+        caCertificate: ${{ secrets.VAULTCA }}
+        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+        secrets: |
+          test altSecret ;
+          test altSecret | NAMED_ALTSECRET ;
+          nested/test otherAltSecret ;
+
+    - name: Test Vault Action (cubbyhole)
+      uses: ./
+      with:
+        url: https://localhost:8200
+        token: ${{ env.VAULT_TOKEN }}
+        secrets: |
+          /cubbyhole/test foo ;
+          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+        caCertificate: ${{ secrets.VAULTCA }}
+        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+
+    - name: Verify Vault Action Outputs
+      run: npm run test:e2e-tls
       env:
         OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
