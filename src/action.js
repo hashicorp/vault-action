@@ -33,8 +33,8 @@ async function exportSecrets() {
         https: {}
     }
 
-    const tlsSkipVerify = core.getInput('tlsSkipVerify', { required: false }) != 'false';
-    if (tlsSkipVerify == true) {
+    const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
+    if (tlsSkipVerify === true) {
         defaultOptions.https.rejectUnauthorized = true;
     }
 
