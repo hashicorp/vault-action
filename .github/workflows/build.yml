@@ -221,6 +221,17 @@ jobs:
           test secret | NAMED_SECRET ;
           nested/test otherSecret ;
 
+    - name: Test Vault Action (tlsSkipVerify)
+      uses: ./
+      with:
+        url: https://localhost:8200
+        token: ${{ env.VAULT_TOKEN }}
+        tlsSkipVerify: true
+        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+        secrets: |
+          tlsSkipVerify skip ;
+
     - name: Test Vault Action (default KV V1)
       uses: ./
       with:
@@ -255,7 +266,7 @@ jobs:
 
 # Removing publish step for now.
 #  publish:
-#    if: github.event_name	== 'push' && contains(github.ref, 'master')
+
 #    runs-on: ubuntu-latest
 #    needs: [build, integration, e2e]
 #    steps:
