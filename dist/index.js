@@ -11106,7 +11106,7 @@ const { exportSecrets } = __webpack_require__(928);
 
 (async () => {
     try {
-        await core.group('Test Get Vault Secrets', exportSecrets);
+        await core.group('Get Vault Secrets', exportSecrets);
     } catch (error) {
         core.setFailed(error.message);
     }
@@ -14126,27 +14126,24 @@ async function exportSecrets() {
         https: {}
     }
 
-    const tlsSkipVerify = core.getInput('tlsSkipVerify', { required: false }) != 'false';
-    if (tlsSkipVerify == true) {
+    const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
+    if (tlsSkipVerify === true) {
         defaultOptions.https.rejectUnauthorized = true;
     }
 
     const caCertificateRaw = core.getInput('caCertificate', { required: false });
-    console.log(caCertificateRaw)
-    if (caCertificateRaw != "" || caCertificateRaw != undefined) {
-        defaultOptions.https.certificateAuthority = Buffer.from(caCertificateRaw, 'base64');
+    if (caCertificateRaw != null) {
+        defaultOptions.https.certificateAuthority = Buffer.from(caCertificateRaw, 'base64').toString();
     }
 
-    console.log(defaultOptions.https.certificateAuthority.toString())
-
     const clientCertificateRaw = core.getInput('clientCertificate', { required: false });
-    if (clientCertificateRaw != "") {
-	    defaultOptions.https.certificate = Buffer.from(clientCertificateRaw, 'base64');
+    if (clientCertificateRaw != null) {
+	    defaultOptions.https.certificate = Buffer.from(clientCertificateRaw, 'base64').toString();
     }
 
     const clientKeyRaw = core.getInput('clientKey', { required: false });
-    if (clientKeyRaw != "") {
-	    defaultOptions.https.key = Buffer.from(clientCertificateRaw, 'base64');
+    if (clientKeyRaw != null) {
+	    defaultOptions.https.key = Buffer.from(clientKeyRaw, 'base64').toString();
     }
 
     for (const [headerName, headerValue] of extraHeaders) {
