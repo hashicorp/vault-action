@@ -9,5 +9,6 @@ describe('e2e-tls', () => {
         expect(process.env.OTHERALTSECRET).toBe("OTHERCUSTOMSECRET");
         expect(process.env.FOO).toBe("bar");
         expect(process.env.NAMED_CUBBYSECRET).toBe("zap");
+        expect(process.env.SKIP).toBe("true");
     });
 });

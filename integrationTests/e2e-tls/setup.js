@@ -113,6 +113,23 @@ const clientKeyRaw = `${process.env.VAULT_CLIENT_KEY}`;
             }
         });
 
+        await got(`https://${vaultUrl}/v1/secret/data/tlsSkipVerify`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': rootToken,
+            },
+            https: {
+                certificateAuthority: caCertificate,
+                certificate: clientCertificate,
+                key: clientKey,
+            },
+            json: {
+                data: {
+                    skip: 'true',
+                },
+            }
+        });
+
         await got(`https://${vaultUrl}/v1/sys/mounts/my-secret`, {
             method: 'POST',
             headers: {

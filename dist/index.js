@@ -14128,7 +14128,7 @@ async function exportSecrets() {
 
     const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
     if (tlsSkipVerify === true) {
-        defaultOptions.https.rejectUnauthorized = true;
+        defaultOptions.https.rejectUnauthorized = false;
     }
 
     const caCertificateRaw = core.getInput('caCertificate', { required: false });
