@@ -10552,9 +10552,9 @@ async function getSecrets(secretRequests, client) {
     const responseCache = new Map();
     const results = [];
     for (const secretRequest of secretRequests) {
-        const { path, selector } = secretRequest;
+        let { path, selector } = secretRequest;
 
-        const requestPath = `v1${path}`;
+        const requestPath = `v1/${path}`;
         let body;
         let cachedResponse = false;
         if (responseCache.has(requestPath)) {
@@ -10566,7 +10566,13 @@ async function getSecrets(secretRequests, client) {
             responseCache.set(requestPath, body);
         }
 
-        const value = selectData(JSON.parse(body), selector);
+        selector = "data." + selector
+        body = JSON.parse(body)
+        if (body.data["data"] != undefined) {
+            selector = "data." + selector
+        }
+
+        const value = selectData(body, selector);
         results.push({
             request: secretRequest,
             value,
@@ -14099,17 +14105,12 @@ const jsonata = __webpack_require__(350);
 const { auth: { retrieveToken }, secrets: { getSecrets } } = __webpack_require__(676);
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
-const VALID_KV_VERSION = [-1, 1, 2];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
-
-    let enginePath = core.getInput('path', { required: false });
-    /** @type {number | string} */
-    let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
@@ -14158,32 +14159,9 @@ async function exportSecrets() {
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
-    if (!enginePath) {
-        enginePath = 'secret';
-    }
-
-    if (!kvVersion) {
-        kvVersion = 2;
-    }
-    kvVersion = +kvVersion;
-
-    if (Number.isNaN(kvVersion) || !VALID_KV_VERSION.includes(kvVersion)) {
-        throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
-    }
-
     const requests = secretRequests.map(request => {
         const { path, selector } = request;
-
-        if (path.startsWith('/')) {
-            return request;
-        }
-        const kvPath = (kvVersion === 2)
-            ? `/${enginePath}/data/${path}`
-            : `/${enginePath}/${path}`;
-        const kvSelector = (kvVersion === 2)
-            ? `data.data.${selector}`
-            : `data.${selector}`;
-        return { ...request, path: kvPath, selector: kvSelector };
+        return request;
     });
 
     const results = await getSecrets(requests, client);

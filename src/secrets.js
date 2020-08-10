@@ -25,9 +25,9 @@ async function getSecrets(secretRequests, client) {
     const responseCache = new Map();
     const results = [];
     for (const secretRequest of secretRequests) {
-        const { path, selector } = secretRequest;
+        let { path, selector } = secretRequest;
 
-        const requestPath = `v1${path}`;
+        const requestPath = `v1/${path}`;
         let body;
         let cachedResponse = false;
         if (responseCache.has(requestPath)) {
@@ -39,7 +39,13 @@ async function getSecrets(secretRequests, client) {
             responseCache.set(requestPath, body);
         }
 
-        const value = selectData(JSON.parse(body), selector);
+        selector = "data." + selector
+        body = JSON.parse(body)
+        if (body.data["data"] != undefined) {
+            selector = "data." + selector
+        }
+
+        const value = selectData(body, selector);
         results.push({
             request: secretRequest,
             value,

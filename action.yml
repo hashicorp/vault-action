@@ -10,13 +10,6 @@ inputs:
   namespace:
     description: 'The Vault namespace from which to query secrets. Vault Enterprise only, unset by default'
     required: false
-  path:
-    description: 'The path of a non-default K/V engine'
-    required: false
-  kv-version:
-    description: 'The version of the K/V engine to use.'
-    default: '2'
-    required: false
   method:
     description: 'The method to use to authenticate with Vault.'
     default: 'token'
