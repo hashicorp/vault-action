@@ -7,7 +7,7 @@ const { when } = require('jest-when');
 
 const { exportSecrets } = require('../../src/action');
 
-const vaultUrl = `http://${process.env.VAULT_HOST || '0.0.0.0'}:${process.env.VAULT_PORT || '8200'}`;
+const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
 
 describe('integration', () => {
     beforeAll(async () => {
