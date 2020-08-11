@@ -56,7 +56,7 @@ describe('integration', () => {
     });
 
     it('get simple secret', async () => {
-        mockInput('test secret');
+        mockInput('secret/data/test secret');
 
         await exportSecrets();
 
@@ -64,7 +64,7 @@ describe('integration', () => {
     });
 
     it('re-map secret', async () => {
-        mockInput('test secret | TEST_KEY');
+        mockInput('secret/data/test secret | TEST_KEY');
 
         await exportSecrets();
 
@@ -72,7 +72,7 @@ describe('integration', () => {
     });
 
     it('get nested secret', async () => {
-        mockInput('nested/test otherSecret');
+        mockInput('secret/data/nested/test otherSecret');
 
         await exportSecrets();
 
@@ -81,9 +81,9 @@ describe('integration', () => {
 
     it('get multiple secrets', async () => {
         mockInput(`
-        test secret ;
-        test secret | NAMED_SECRET ;
-        nested/test otherSecret ;`);
+        secret/data/test secret ;
+        secret/data/test secret | NAMED_SECRET ;
+        secret/data/nested/test otherSecret ;`);
 
         await exportSecrets();
 
@@ -95,9 +95,7 @@ describe('integration', () => {
     });
 
     it('get secret from K/V v1', async () => {
-        mockInput('test secret');
-        mockEngineName('my-secret');
-        mockVersion('1');
+        mockInput('my-secret/test secret');
 
         await exportSecrets();
 
@@ -105,9 +103,7 @@ describe('integration', () => {
     });
 
     it('get nested secret from K/V v1', async () => {
-        mockInput('nested/test otherSecret');
-        mockEngineName('my-secret');
-        mockVersion('1');
+        mockInput('my-secret/nested/test otherSecret');
 
         await exportSecrets();
 
@@ -229,7 +225,7 @@ describe('authenticate with approle', () => {
     });
 
     it('authenticate with approle', async() => {
-        mockInput('test secret');
+        mockInput('secret/data/test secret');
 
         await exportSecrets();
 

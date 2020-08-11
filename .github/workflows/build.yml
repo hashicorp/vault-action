@@ -141,21 +141,19 @@ jobs:
         url: http://localhost:8200
         token: testtoken
         secrets: |
-          test secret ;
-          test secret | NAMED_SECRET ;
-          nested/test otherSecret ;
+          secret/data/test secret ;
+          secret/data/test secret | NAMED_SECRET ;
+          secret/data/nested/test otherSecret ;
 
     - name: Test Vault Action (default KV V1)
       uses: ./
       with:
         url: http://localhost:8200
         token: testtoken
-        path: my-secret
-        kv-version: 1
         secrets: |
-          test altSecret ;
-          test altSecret | NAMED_ALTSECRET ;
-          nested/test otherAltSecret ;
+          my-secret/test altSecret ;
+          my-secret/test altSecret | NAMED_ALTSECRET ;
+          my-secret/nested/test otherAltSecret ;
 
     - name: Test Vault Action (cubbyhole)
       uses: ./
@@ -217,9 +215,9 @@ jobs:
         clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
         clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
         secrets: |
-          test secret ;
-          test secret | NAMED_SECRET ;
-          nested/test otherSecret ;
+          secret/data/test secret ;
+          secret/data/test secret | NAMED_SECRET ;
+          secret/data/nested/test otherSecret ;
 
     - name: Test Vault Action (tlsSkipVerify)
       uses: ./
@@ -230,22 +228,20 @@ jobs:
         clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
         clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
         secrets: |
-          tlsSkipVerify skip ;
+          secret/data/tlsSkipVerify skip ;
 
     - name: Test Vault Action (default KV V1)
       uses: ./
       with:
         url: https://localhost:8200
         token: ${{ env.VAULT_TOKEN }}
-        path: my-secret
-        kv-version: 1
         caCertificate: ${{ secrets.VAULTCA }}
         clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
         clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
         secrets: |
-          test altSecret ;
-          test altSecret | NAMED_ALTSECRET ;
-          nested/test otherAltSecret ;
+          my-secret/test altSecret ;
+          my-secret/test altSecret | NAMED_ALTSECRET ;
+          my-secret/nested/test otherAltSecret ;
 
     - name: Test Vault Action (cubbyhole)
       uses: ./

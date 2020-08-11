@@ -42,9 +42,21 @@ describe('integration', () => {
             }
         });
 
+        await got(`${vaultUrl}/v1/secret/data/foobar`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                data: {
+                    fookv2: 'bar',
+                },
+            }
+        });
+
         // Enable custom secret engine
         try {
-            await got(`${vaultUrl}/v1/sys/mounts/my-secret`, {
+            await got(`${vaultUrl}/v1/sys/mounts/secret-kv1`, {
                 method: 'POST',
                 headers: {
                     'X-Vault-Token': 'testtoken',
@@ -62,7 +74,7 @@ describe('integration', () => {
             }
         }
 
-        await got(`${vaultUrl}/v1/my-secret/test`, {
+        await got(`${vaultUrl}/v1/secret-kv1/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -72,7 +84,17 @@ describe('integration', () => {
             }
         });
 
-        await got(`${vaultUrl}/v1/my-secret/nested/test`, {
+        await got(`${vaultUrl}/v1/secret-kv1/foobar`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': 'testtoken',
+            },
+            json: {
+                fookv1: 'bar',
+            }
+        });
+
+        await got(`${vaultUrl}/v1/secret-kv1/nested/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': 'testtoken',
@@ -101,20 +123,8 @@ describe('integration', () => {
             .mockReturnValueOnce(secrets);
     }
 
-    function mockEngineName(name) {
-        when(core.getInput)
-            .calledWith('path')
-            .mockReturnValueOnce(name);
-    }
-
-    function mockVersion(version) {
-        when(core.getInput)
-            .calledWith('kv-version')
-            .mockReturnValueOnce(version);
-    }
-
     it('get simple secret', async () => {
-        mockInput('test secret');
+        mockInput('secret/data/test secret');
 
         await exportSecrets();
 
@@ -122,7 +132,7 @@ describe('integration', () => {
     });
 
     it('re-map secret', async () => {
-        mockInput('test secret | TEST_KEY');
+        mockInput('secret/data/test secret | TEST_KEY');
 
         await exportSecrets();
 
@@ -130,7 +140,7 @@ describe('integration', () => {
     });
 
     it('get nested secret', async () => {
-        mockInput('nested/test otherSecret');
+        mockInput('secret/data/nested/test otherSecret');
 
         await exportSecrets();
 
@@ -139,9 +149,9 @@ describe('integration', () => {
 
     it('get multiple secrets', async () => {
         mockInput(`
-        test secret ;
-        test secret | NAMED_SECRET ;
-        nested/test otherSecret ;`);
+        secret/data/test secret ;
+        secret/data/test secret | NAMED_SECRET ;
+        secret/data/nested/test otherSecret ;`);
 
         await exportSecrets();
 
@@ -152,10 +162,16 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
     });
 
+    it('leading slash kvv2', async () => {
+        mockInput('/secret/data/foobar fookv2');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('FOOKV2', 'bar');
+    });
+
     it('get secret from K/V v1', async () => {
-        mockInput('test secret');
-        mockEngineName('my-secret');
-        mockVersion('1');
+        mockInput('secret-kv1/test secret');
 
         await exportSecrets();
 
@@ -163,13 +179,19 @@ describe('integration', () => {
     });
 
     it('get nested secret from K/V v1', async () => {
-        mockInput('nested/test otherSecret');
-        mockEngineName('my-secret');
-        mockVersion('1');
+        mockInput('secret-kv1/nested/test otherSecret');
 
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERCUSTOMSECRET');
+    });
+
+    it('leading slash kvv1', async () => {
+        mockInput('/secret-kv1/foobar fookv1');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('FOOKV1', 'bar');
     });
 
     describe('generic engines', () => {

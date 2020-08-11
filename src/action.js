@@ -6,17 +6,12 @@ const jsonata = require('jsonata');
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github'];
-const VALID_KV_VERSION = [-1, 1, 2];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
-
-    let enginePath = core.getInput('path', { required: false });
-    /** @type {number | string} */
-    let kvVersion = core.getInput('kv-version', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
@@ -65,32 +60,9 @@ async function exportSecrets() {
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
-    if (!enginePath) {
-        enginePath = 'secret';
-    }
-
-    if (!kvVersion) {
-        kvVersion = 2;
-    }
-    kvVersion = +kvVersion;
-
-    if (Number.isNaN(kvVersion) || !VALID_KV_VERSION.includes(kvVersion)) {
-        throw Error(`You must provide a valid K/V version (${VALID_KV_VERSION.slice(1).join(', ')}). Input: "${kvVersion}"`);
-    }
-
     const requests = secretRequests.map(request => {
         const { path, selector } = request;
-
-        if (path.startsWith('/')) {
-            return request;
-        }
-        const kvPath = (kvVersion === 2)
-            ? `/${enginePath}/data/${path}`
-            : `/${enginePath}/${path}`;
-        const kvSelector = (kvVersion === 2)
-            ? `data.data.${selector}`
-            : `data.${selector}`;
-        return { ...request, path: kvPath, selector: kvSelector };
+        return request;
     });
 
     const results = await getSecrets(requests, client);
