@@ -6,4 +6,6 @@ Features:
 
 Improvements:
 
+* Breaking change: removed KV specific parameters and generalized secret UX [GH-102](https://github.com/hashicorp/vault-action/pull/102)
+
 Bugs:
