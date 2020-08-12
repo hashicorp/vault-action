@@ -40,6 +40,7 @@ jobs:
               with:
                 url: https://vault.mycompany.com:8200
                 token: ${{ secrets.VaultToken }}
+                caCertificate: ${{ secrets.VAULTCA }}
                 secrets: |
                     secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
                     secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
@@ -57,6 +58,7 @@ While most workflows will likely use a vault token, you can also use an `approle
 with:
   url: https://vault.mycompany.com:8200
   token: ${{ secrets.VaultToken }}
+  caCertificate: ${{ secrets.VAULTCA }}
 ```
 - **approle**: you must provide a `roleId` & `secretId` parameter
 ```yaml
@@ -66,6 +68,7 @@ with:
   method: approle
   roleId: ${{ secrets.roleId }}
   secretId: ${{ secrets.secretId }}
+  caCertificate: ${{ secrets.VAULTCA }}
 ```
 - **github**: you must provide the github token as `githubToken`
 ```yaml
@@ -74,6 +77,7 @@ with:
   url: https://vault.mycompany.com:8200
   method: github
   githubToken: ${{ secrets.GITHUB_TOKEN }}
+  caCertificate: ${{ secrets.VAULTCA }}
 ```
 
 If any other method is specified and you provide an `authPayload`, the action will attempt to `POST` to `auth/${method}/login` with the provided payload and parse out the client token.
@@ -220,6 +224,7 @@ steps:
       with:
         url: https://vault-enterprise.mycompany.com:8200
         method: token
+        caCertificate: ${{ secrets.VAULTCA }}
         token: ${{ secrets.VaultToken }}
         namespace: ns1
         secrets: |
@@ -232,19 +237,23 @@ steps:
 
 Here are all the inputs available through `with`:
 
-| Input          | Description                                                                                                                                          | Default | Required |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `url`          | The URL for the vault endpoint                                                                                                                       |         | ✔        |
-| `secrets`      | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔        |
-| `namespace`    | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
-| `method`       | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
-| `token`        | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
-| `roleId`       | The Role Id for App Role authentication                                                                                                              |         |          |
-| `secretId`     | The Secret Id for App Role authentication                                                                                                            |         |          |
-| `githubToken`  | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
-| `authPayload`  | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
-| `extraHeaders` | A string of newline separated extra headers to include on every request.                                                                             |         |          |
-| `exportEnv`    | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
+| Input               | Description                                                                                                                                          | Default | Required |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `url`               | The URL for the vault endpoint                                                                                                                       |         | ✔        |
+| `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔        |
+| `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
+| `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
+| `token`             | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
+| `roleId`            | The Role Id for App Role authentication                                                                                                              |         |          |
+| `secretId`          | The Secret Id for App Role authentication                                                                                                            |         |          |
+| `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
+| `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
+| `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
+| `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
+| `caCertificate`     | Base64 encoded CA certificate the server certificate was signed with.                                                                                |         |          |
+| `clientCertificate` | Base64 encoded client certificate the action uses to authenticate with Vault when mTLS is enabled.                                                   |         |          |
+| `clientKey`         | Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.                                                           |         |          |
+| `tlsSkipVerify`     | When set to true, disables verification of server certificates when testing the action.                                                              | `false` |          | 
 
 ## Masking - Hiding Secrets from Logs
 
