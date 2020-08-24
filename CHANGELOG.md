@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.0.0 (August 24th, 2020)
+
 Features:
 
 * Added TLS and mTLS support [GH-97](https://github.com/hashicorp/vault-action/pull/97)
