@@ -1,5 +1,5 @@
 name: 'Vault Secrets'
-description: 'A Github Action that allows you to consume the v2 K/V backend of HashiCorp Vault™ as secure environment variables'
+description: 'A Github Action that allows you to consume HashiCorp Vault™ secrets as secure environment variables'
 inputs:
   url:
     description: 'The URL for the vault endpoint'
