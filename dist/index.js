@@ -19,7 +19,13 @@ module.exports =
 /******/ 		};
 /******/
 /******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		var threw = true;
+/******/ 		try {
+/******/ 			modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			threw = false;
+/******/ 		} finally {
+/******/ 			if(threw) delete installedModules[moduleId];
+/******/ 		}
 /******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
@@ -229,25 +235,36 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CancelError = exports.ParseError = void 0;
-const p_cancelable_1 = __webpack_require__(557);
-Object.defineProperty(exports, "CancelError", { enumerable: true, get: function () { return p_cancelable_1.CancelError; } });
 const core_1 = __webpack_require__(946);
+/**
+An error to be thrown when server response code is 2xx, and parsing body fails.
+Includes a `response` property.
+*/
 class ParseError extends core_1.RequestError {
     constructor(error, response) {
         const { options } = response.request;
         super(`${error.message} in "${options.url.toString()}"`, error, response.request);
         this.name = 'ParseError';
-        Object.defineProperty(this, 'response', {
-            enumerable: false,
-            value: response
-        });
     }
 }
 exports.ParseError = ParseError;
+/**
+An error to be thrown when the request is aborted with `.cancel()`.
+*/
+class CancelError extends core_1.RequestError {
+    constructor(request) {
+        super('Promise was canceled', {}, request);
+        this.name = 'CancelError';
+    }
+    get isCanceled() {
+        return true;
+    }
+}
+exports.CancelError = CancelError;
 __exportStar(__webpack_require__(946), exports);
 
 
@@ -581,7 +598,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const url_1 = __webpack_require__(835);
@@ -690,7 +707,8 @@ const defaults = {
             stackAllItems: true
         },
         parseJson: (text) => JSON.parse(text),
-        stringifyJson: (object) => JSON.stringify(object)
+        stringifyJson: (object) => JSON.stringify(object),
+        cacheOptions: {}
     },
     handlers: [create_1.defaultHandler],
     mutableDefaults: false
@@ -792,6 +810,39 @@ class Response extends Readable {
 }
 
 module.exports = Response;
+
+
+/***/ }),
+
+/***/ 121:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const types_1 = __webpack_require__(36);
+const parseBody = (response, responseType, parseJson, encoding) => {
+    const { rawBody } = response;
+    try {
+        if (responseType === 'text') {
+            return rawBody.toString(encoding);
+        }
+        if (responseType === 'json') {
+            return rawBody.length === 0 ? '' : parseJson(rawBody.toString());
+        }
+        if (responseType === 'buffer') {
+            return Buffer.from(rawBody);
+        }
+        throw new types_1.ParseError({
+            message: `Unknown body type '${responseType}'`,
+            name: 'Error'
+        }, response);
+    }
+    catch (error) {
+        throw new types_1.ParseError(error, response);
+    }
+};
+exports.default = parseBody;
 
 
 /***/ }),
@@ -2182,6 +2233,13 @@ exports.default = deepFreeze;
 
 /***/ }),
 
+/***/ 293:
+/***/ (function(module) {
+
+module.exports = require("buffer");
+
+/***/ }),
+
 /***/ 303:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -2314,11 +2372,10 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultHandler = void 0;
-const p_cancelable_1 = __webpack_require__(557);
 const is_1 = __webpack_require__(534);
 const as_promise_1 = __webpack_require__(577);
 const create_rejection_1 = __webpack_require__(910);
@@ -2332,14 +2389,23 @@ const errors = {
     MaxRedirectsError: as_promise_1.MaxRedirectsError,
     TimeoutError: as_promise_1.TimeoutError,
     ParseError: as_promise_1.ParseError,
-    CancelError: p_cancelable_1.CancelError,
+    CancelError: as_promise_1.CancelError,
     UnsupportedProtocolError: as_promise_1.UnsupportedProtocolError,
     UploadError: as_promise_1.UploadError
 };
 // The `delay` package weighs 10KB (!)
-const delay = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const { normalizeArguments, mergeOptions } = as_promise_1.PromisableRequest;
-const getPromiseOrStream = (options) => options.isStream ? new core_1.default(options.url, options) : as_promise_1.default(options);
+const delay = async (ms) => new Promise(resolve => {
+    setTimeout(resolve, ms);
+});
+const { normalizeArguments } = core_1.default;
+const mergeOptions = (...sources) => {
+    let mergedOptions;
+    for (const source of sources) {
+        mergedOptions = normalizeArguments(undefined, source, mergedOptions);
+    }
+    return mergedOptions;
+};
+const getPromiseOrStream = (options) => options.isStream ? new core_1.default(undefined, options) : as_promise_1.default(options);
 const isGotInstance = (value) => ('defaults' in value && 'options' in value.defaults);
 const aliases = [
     'get',
@@ -2381,7 +2447,7 @@ const create = (defaults) => {
         return result;
     }));
     // Got interface
-    const got = ((url, options) => {
+    const got = ((url, options, _defaults) => {
         var _a, _b;
         let iteration = 0;
         const iterateHandlers = (newOptions) => {
@@ -2408,7 +2474,7 @@ const create = (defaults) => {
                 initHookError = error;
             }
             // Normalize options & call handlers
-            const normalizedOptions = normalizeArguments(url, options, defaults.options);
+            const normalizedOptions = normalizeArguments(url, options, _defaults !== null && _defaults !== void 0 ? _defaults : defaults.options);
             normalizedOptions[core_1.kIsNormalizedAlready] = true;
             if (initHookError) {
                 throw new as_promise_1.RequestError(initHookError.message, initHookError, normalizedOptions);
@@ -2471,9 +2537,10 @@ const create = (defaults) => {
                 // eslint-disable-next-line no-await-in-loop
                 await delay(pagination.backoff);
             }
+            // @ts-expect-error FIXME!
             // TODO: Throw when result is not an instance of Response
             // eslint-disable-next-line no-await-in-loop
-            const result = (await got(normalizedOptions));
+            const result = (await got(undefined, undefined, normalizedOptions));
             // eslint-disable-next-line no-await-in-loop
             const parsed = await pagination.transform(result);
             const current = [];
@@ -2505,12 +2572,10 @@ const create = (defaults) => {
             numberOfRequests++;
         }
     });
-    got.paginate = ((url, options) => {
-        return paginateEach(url, options);
-    });
+    got.paginate = paginateEach;
     got.paginate.all = (async (url, options) => {
         const results = [];
-        for await (const item of got.paginate(url, options)) {
+        for await (const item of paginateEach(url, options)) {
             results.push(item);
         }
         return results;
@@ -2526,13 +2591,14 @@ const create = (defaults) => {
             return got(url, { ...options, method, isStream: true });
         });
     }
-    Object.assign(got, { ...errors, mergeOptions });
+    Object.assign(got, errors);
     Object.defineProperty(got, 'defaults', {
         value: defaults.mutableDefaults ? defaults : deep_freeze_1.default(defaults),
         writable: defaults.mutableDefaults,
         configurable: defaults.mutableDefaults,
         enumerable: true
     });
+    got.mergeOptions = mergeOptions;
     return got;
 };
 exports.default = create;
@@ -2576,6 +2642,8 @@ module.exports = cloneResponse;
  *   This project is licensed under the MIT License, see LICENSE
  */
 
+const utils = require('./utils');
+
 /**
  * DateTime formatting and parsing functions
  * Implements the xpath-functions format-date-time specification
@@ -2583,6 +2651,8 @@ module.exports = cloneResponse;
  */
 const dateTime = (function () {
     'use strict';
+
+    const stringToArray = utils.stringToArray;
 
     const few = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
         'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
@@ -2842,7 +2912,7 @@ const dateTime = (function () {
                     formattedInteger = padding + formattedInteger;
                 }
                 if (format.zeroCode !== 0x30) {
-                    formattedInteger = Array.from(formattedInteger).map(code => {
+                    formattedInteger = stringToArray(formattedInteger).map(code => {
                         return String.fromCodePoint(code.codePointAt(0) + format.zeroCode - 0x30);
                     }).join('');
                 }
@@ -2943,7 +3013,7 @@ const dateTime = (function () {
                 let optionalDigits = 0;
                 let groupingSeparators = [];
                 let separatorPosition = 0;
-                const formatCodepoints = Array.from(primaryFormat, c => c.codePointAt(0)).reverse(); // reverse the array to determine positions of grouping-separator-signs
+                const formatCodepoints = stringToArray(primaryFormat).map(c => c.codePointAt(0)).reverse(); // reverse the array to determine positions of grouping-separator-signs
                 formatCodepoints.forEach((codePoint) => {
                     // step though each char in the picture to determine the digit group
                     let digit = false;
@@ -3385,7 +3455,7 @@ const dateTime = (function () {
         return componentValue;
     };
 
-    const iso8601Spec = analyseDateTimePicture('[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01].[f001][Z01:01t]');
+    let iso8601Spec = null;
 
     /**
      * formats the date/time as specified by the XPath fn:format-dateTime function
@@ -3479,6 +3549,9 @@ const dateTime = (function () {
         let formatSpec;
         if(typeof picture === 'undefined') {
             // default to ISO 8601 format
+            if (iso8601Spec === null) {
+                iso8601Spec = analyseDateTimePicture('[Y0001]-[M01]-[D01]T[H01]:[m01]:[s01].[f001][Z01:01t]');
+            }
             formatSpec = iso8601Spec;
         } else {
             formatSpec = analyseDateTimePicture(picture);
@@ -3863,7 +3936,7 @@ const dateTime = (function () {
 
 module.exports = dateTime;
 
-},{}],2:[function(require,module,exports){
+},{"./utils":6}],2:[function(require,module,exports){
 (function (global){
 /**
  * © Copyright IBM Corp. 2016, 2018 All Rights Reserved
@@ -3886,6 +3959,7 @@ const functions = (() => {
     var isIterable = utils.isIterable;
     var getFunctionArity = utils.getFunctionArity;
     var deepEquals = utils.isDeepEqual;
+    var stringToArray = utils.stringToArray;
 
     /**
      * Sum function
@@ -4017,7 +4091,7 @@ const functions = (() => {
             return undefined;
         }
 
-        var strArray = Array.from(str);
+        var strArray = stringToArray(str);
         var strLength = strArray.length;
 
         if (strLength + start < 0) {
@@ -4114,7 +4188,7 @@ const functions = (() => {
             return undefined;
         }
 
-        return Array.from(str).length;
+        return stringToArray(str).length;
     }
 
     /**
@@ -5299,6 +5373,11 @@ const functions = (() => {
      * @returns {boolean} - NOT arg
      */
     function not(arg) {
+        // undefined inputs always return undefined
+        if (typeof arg === 'undefined') {
+            return undefined;
+        }
+
         return !boolean(arg);
     }
 
@@ -5538,7 +5617,7 @@ const functions = (() => {
                 var res =  lookup(input[ii], key);
                 if (typeof res !== 'undefined') {
                     if (Array.isArray(res)) {
-                        result.push(...res);
+                        res.forEach(val => result.push(val));
                     } else {
                         result.push(res);
                     }
@@ -6215,7 +6294,7 @@ var jsonata = (function() {
                     resultSequence.push(res);
                 } else {
                     // res is a sequence - flatten it into the parent sequence
-                    Array.prototype.push.apply(resultSequence, res);
+                    res.forEach(val => resultSequence.push(val));
                 }
             });
         }
@@ -9964,6 +10043,19 @@ const utils = (() => {
         return false;
     }
 
+    /**
+     * converts a string to an array of characters
+     * @param {string} str - the input string
+     * @returns {Array} - the array of characters
+     */
+    function stringToArray(str) {
+        var arr = [];
+        for (let char of str) {
+            arr.push(char);
+        }
+        return arr;
+    }
+
     return {
         isNumeric,
         isArrayOfStrings,
@@ -9974,7 +10066,8 @@ const utils = (() => {
         isLambda,
         isIterable,
         getFunctionArity,
-        isDeepEqual
+        isDeepEqual,
+        stringToArray
     };
 })();
 
@@ -10312,6 +10405,22 @@ module.exports = require("stream");
 
 /***/ }),
 
+/***/ 422:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isResponseOk = void 0;
+exports.isResponseOk = (response) => {
+    const { statusCode } = response;
+    const limitStatusCode = response.request.options.followRedirect ? 299 : 399;
+    return (statusCode >= 200 && statusCode <= limitStatusCode) || statusCode === 304;
+};
+
+
+/***/ }),
+
 /***/ 431:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -10379,14 +10488,28 @@ class Command {
         return cmdStr;
     }
 }
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return (s || '')
+    return toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return (s || '')
+    return toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -10610,141 +10733,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 468:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseBody = exports.knownBodyTypes = void 0;
-const is_1 = __webpack_require__(534);
-const types_1 = __webpack_require__(36);
-const core_1 = __webpack_require__(946);
-if (!core_1.knownHookEvents.includes('beforeRetry')) {
-    core_1.knownHookEvents.push('beforeRetry', 'afterResponse');
-}
-exports.knownBodyTypes = ['json', 'buffer', 'text'];
-exports.parseBody = (response, responseType, parseJson, encoding) => {
-    const { rawBody } = response;
-    try {
-        if (responseType === 'text') {
-            return rawBody.toString(encoding);
-        }
-        if (responseType === 'json') {
-            return rawBody.length === 0 ? '' : parseJson(rawBody.toString());
-        }
-        if (responseType === 'buffer') {
-            return Buffer.from(rawBody);
-        }
-        throw new types_1.ParseError({
-            message: `Unknown body type '${responseType}'`,
-            name: 'Error'
-        }, response);
-    }
-    catch (error) {
-        throw new types_1.ParseError(error, response);
-    }
-};
-class PromisableRequest extends core_1.default {
-    static normalizeArguments(url, nonNormalizedOptions, defaults) {
-        const options = super.normalizeArguments(url, nonNormalizedOptions, defaults);
-        if (is_1.default.null_(options.encoding)) {
-            throw new TypeError('To get a Buffer, set `options.responseType` to `buffer` instead');
-        }
-        is_1.assert.any([is_1.default.string, is_1.default.undefined], options.encoding);
-        is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.resolveBodyOnly);
-        is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.methodRewriting);
-        is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.isStream);
-        is_1.assert.any([is_1.default.string, is_1.default.undefined], options.responseType);
-        // `options.responseType`
-        if (options.responseType === undefined) {
-            options.responseType = 'text';
-        }
-        // `options.retry`
-        const { retry } = options;
-        if (defaults) {
-            options.retry = { ...defaults.retry };
-        }
-        else {
-            options.retry = {
-                calculateDelay: retryObject => retryObject.computedValue,
-                limit: 0,
-                methods: [],
-                statusCodes: [],
-                errorCodes: [],
-                maxRetryAfter: undefined
-            };
-        }
-        if (is_1.default.object(retry)) {
-            options.retry = {
-                ...options.retry,
-                ...retry
-            };
-            options.retry.methods = [...new Set(options.retry.methods.map(method => method.toUpperCase()))];
-            options.retry.statusCodes = [...new Set(options.retry.statusCodes)];
-            options.retry.errorCodes = [...new Set(options.retry.errorCodes)];
-        }
-        else if (is_1.default.number(retry)) {
-            options.retry.limit = retry;
-        }
-        if (is_1.default.undefined(options.retry.maxRetryAfter)) {
-            options.retry.maxRetryAfter = Math.min(
-            // TypeScript is not smart enough to handle `.filter(x => is.number(x))`.
-            // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
-            ...[options.timeout.request, options.timeout.connect].filter(is_1.default.number));
-        }
-        // `options.pagination`
-        if (is_1.default.object(options.pagination)) {
-            if (defaults) {
-                options.pagination = {
-                    ...defaults.pagination,
-                    ...options.pagination
-                };
-            }
-            const { pagination } = options;
-            if (!is_1.default.function_(pagination.transform)) {
-                throw new Error('`options.pagination.transform` must be implemented');
-            }
-            if (!is_1.default.function_(pagination.shouldContinue)) {
-                throw new Error('`options.pagination.shouldContinue` must be implemented');
-            }
-            if (!is_1.default.function_(pagination.filter)) {
-                throw new TypeError('`options.pagination.filter` must be implemented');
-            }
-            if (!is_1.default.function_(pagination.paginate)) {
-                throw new Error('`options.pagination.paginate` must be implemented');
-            }
-        }
-        // JSON mode
-        if (options.responseType === 'json' && options.headers.accept === undefined) {
-            options.headers.accept = 'application/json';
-        }
-        return options;
-    }
-    static mergeOptions(...sources) {
-        let mergedOptions;
-        for (const source of sources) {
-            mergedOptions = PromisableRequest.normalizeArguments(undefined, source, mergedOptions);
-        }
-        return mergedOptions;
-    }
-    _beforeError(error) {
-        if (this.destroyed) {
-            return;
-        }
-        if (!(error instanceof core_1.RequestError)) {
-            error = new core_1.RequestError(error.message, error, this);
-        }
-        // Let the promise decide whether to abort or not
-        // It is also responsible for the `beforeError` hook
-        this.emit('error', error);
-    }
-}
-exports.default = PromisableRequest;
-
-
-/***/ }),
-
 /***/ 470:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -10790,11 +10778,13 @@ var ExitCode;
 /**
  * Sets env variable for this action and future actions in the job
  * @param name the name of the variable to set
- * @param val the value of the variable
+ * @param val the value of the variable. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    process.env[name] = val;
-    command_1.issueCommand('set-env', { name }, val);
+    const convertedVal = command_1.toCommandValue(val);
+    process.env[name] = convertedVal;
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -10833,12 +10823,22 @@ exports.getInput = getInput;
  * Sets the value of an output.
  *
  * @param     name     name of the output to set
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
     command_1.issueCommand('set-output', { name }, value);
 }
 exports.setOutput = setOutput;
+/**
+ * Enables or disables the echoing of commands into stdout for the rest of the step.
+ * Echoing is disabled by default if ACTIONS_STEP_DEBUG is not set.
+ *
+ */
+function setCommandEcho(enabled) {
+    command_1.issue('echo', enabled ? 'on' : 'off');
+}
+exports.setCommandEcho = setCommandEcho;
 //-----------------------------------------------------------------------
 // Results
 //-----------------------------------------------------------------------
@@ -10872,18 +10872,18 @@ function debug(message) {
 exports.debug = debug;
 /**
  * Adds an error issue
- * @param message error issue message
+ * @param message error issue message. Errors will be converted to string via toString()
  */
 function error(message) {
-    command_1.issue('error', message);
+    command_1.issue('error', message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
  * Adds an warning issue
- * @param message warning issue message
+ * @param message warning issue message. Errors will be converted to string via toString()
  */
 function warning(message) {
-    command_1.issue('warning', message);
+    command_1.issue('warning', message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
 /**
@@ -10941,8 +10941,9 @@ exports.group = group;
  * Saves state for current action, the state can only be retrieved by this action's post job execution.
  *
  * @param     name     name of the state to store
- * @param     value    value to store
+ * @param     value    value to store. Non-string values will be converted to a string via JSON.stringify
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
     command_1.issueCommand('save-state', { name }, value);
 }
@@ -11315,7 +11316,7 @@ is.array = (value, assertion) => {
     if (!Array.isArray(value)) {
         return false;
     }
-    if (!assertion) {
+    if (!is.function_(assertion)) {
         return true;
     }
     return value.every(assertion);
@@ -12264,18 +12265,18 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
     o[k2] = m[k];
 }));
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PromisableRequest = void 0;
 const events_1 = __webpack_require__(614);
+const is_1 = __webpack_require__(534);
 const PCancelable = __webpack_require__(557);
-const calculate_retry_delay_1 = __webpack_require__(927);
 const types_1 = __webpack_require__(36);
-const core_1 = __webpack_require__(468);
-exports.PromisableRequest = core_1.default;
+const parse_body_1 = __webpack_require__(121);
+const core_1 = __webpack_require__(946);
 const proxy_events_1 = __webpack_require__(628);
 const get_buffer_1 = __webpack_require__(452);
+const is_response_ok_1 = __webpack_require__(422);
 const proxiedRequestEvents = [
     'request',
     'response',
@@ -12283,53 +12284,26 @@ const proxiedRequestEvents = [
     'uploadProgress',
     'downloadProgress'
 ];
-function asPromise(options) {
-    let retryCount = 0;
+function asPromise(normalizedOptions) {
     let globalRequest;
     let globalResponse;
     const emitter = new events_1.EventEmitter();
-    const promise = new PCancelable((resolve, _reject, onCancel) => {
-        const makeRequest = () => {
-            // Support retries
-            // `options.throwHttpErrors` needs to be always true,
-            // so the HTTP errors are caught and the request is retried.
-            // The error is **eventually** thrown if the user value is true.
-            const { throwHttpErrors } = options;
-            if (!throwHttpErrors) {
-                options.throwHttpErrors = true;
-            }
-            // Note from @szmarczak: I think we should use `request.options` instead of the local options
-            const request = new core_1.default(options.url, options);
+    const promise = new PCancelable((resolve, reject, onCancel) => {
+        const makeRequest = (retryCount) => {
+            const request = new core_1.default(undefined, normalizedOptions);
+            request.retryCount = retryCount;
             request._noPipe = true;
             onCancel(() => request.destroy());
-            const reject = (error) => {
-                void (async () => {
-                    try {
-                        for (const hook of options.hooks.beforeError) {
-                            // eslint-disable-next-line no-await-in-loop
-                            error = await hook(error);
-                        }
-                    }
-                    catch (error_) {
-                        _reject(new types_1.RequestError(error_.message, error_, request));
-                        return;
-                    }
-                    _reject(error);
-                })();
-            };
+            onCancel.shouldReject = false;
+            onCancel(() => reject(new types_1.CancelError(request)));
             globalRequest = request;
-            const onResponse = async (response) => {
+            request.once('response', async (response) => {
                 var _a;
                 response.retryCount = retryCount;
                 if (response.request.aborted) {
                     // Canceled while downloading - will throw a `CancelError` or `TimeoutError` error
                     return;
                 }
-                const isOk = () => {
-                    const { statusCode } = response;
-                    const limitStatusCode = options.followRedirect ? 299 : 399;
-                    return (statusCode >= 200 && statusCode <= limitStatusCode) || statusCode === 304;
-                };
                 // Download body
                 let rawBody;
                 try {
@@ -12341,22 +12315,25 @@ function asPromise(options) {
                     // See request.once('error')
                     return;
                 }
+                if (request._isAboutToError) {
+                    return;
+                }
                 // Parse body
                 const contentEncoding = ((_a = response.headers['content-encoding']) !== null && _a !== void 0 ? _a : '').toLowerCase();
                 const isCompressed = ['gzip', 'deflate', 'br'].includes(contentEncoding);
+                const { options } = request;
                 if (isCompressed && !options.decompress) {
                     response.body = rawBody;
                 }
                 else {
                     try {
-                        response.body = core_1.parseBody(response, options.responseType, options.parseJson, options.encoding);
+                        response.body = parse_body_1.default(response, options.responseType, options.parseJson, options.encoding);
                     }
                     catch (error) {
                         // Fallback to `utf8`
                         response.body = rawBody.toString();
-                        if (isOk()) {
-                            // TODO: Call `request._beforeError`, see https://github.com/nodejs/node/issues/32995
-                            reject(error);
+                        if (is_response_ok_1.isResponseOk(response)) {
+                            request._beforeError(error);
                             return;
                         }
                     }
@@ -12391,99 +12368,40 @@ function asPromise(options) {
                     }
                 }
                 catch (error) {
-                    // TODO: Call `request._beforeError`, see https://github.com/nodejs/node/issues/32995
-                    reject(new types_1.RequestError(error.message, error, request));
+                    request._beforeError(new types_1.RequestError(error.message, error, request));
                     return;
                 }
-                if (throwHttpErrors && !isOk()) {
-                    reject(new types_1.HTTPError(response));
+                if (!is_response_ok_1.isResponseOk(response)) {
+                    request._beforeError(new types_1.HTTPError(response));
                     return;
                 }
                 globalResponse = response;
-                resolve(options.resolveBodyOnly ? response.body : response);
-            };
-            const onError = async (error) => {
+                resolve(request.options.resolveBodyOnly ? response.body : response);
+            });
+            const onError = (error) => {
                 if (promise.isCanceled) {
                     return;
                 }
-                if (!request.options) {
-                    reject(error);
+                const { options } = request;
+                if (error instanceof types_1.HTTPError && !options.throwHttpErrors) {
+                    const { response } = error;
+                    resolve(request.options.resolveBodyOnly ? response.body : response);
                     return;
                 }
-                request.off('response', onResponse);
-                let gotUnexpectedError = false;
-                const onUnexpectedError = (error) => {
-                    gotUnexpectedError = true;
-                    reject(error);
-                };
-                // If this is an HTTP error, then it can throw again with `ECONNRESET` or `Parse Error`
-                request.once('error', onUnexpectedError);
-                let backoff;
-                retryCount++;
-                try {
-                    backoff = await options.retry.calculateDelay({
-                        attemptCount: retryCount,
-                        retryOptions: options.retry,
-                        error,
-                        computedValue: calculate_retry_delay_1.default({
-                            attemptCount: retryCount,
-                            retryOptions: options.retry,
-                            error,
-                            computedValue: 0
-                        })
-                    });
-                }
-                catch (error_) {
-                    // Don't emit the `response` event
-                    request.destroy();
-                    reject(new types_1.RequestError(error_.message, error, request));
-                    return;
-                }
-                // Another error was thrown already
-                if (gotUnexpectedError) {
-                    return;
-                }
-                request.off('error', onUnexpectedError);
-                if (backoff) {
-                    // Don't emit the `response` event
-                    request.destroy();
-                    const retry = async () => {
-                        options.throwHttpErrors = throwHttpErrors;
-                        try {
-                            for (const hook of options.hooks.beforeRetry) {
-                                // eslint-disable-next-line no-await-in-loop
-                                await hook(options, error, retryCount);
-                            }
-                        }
-                        catch (error_) {
-                            // Don't emit the `response` event
-                            request.destroy();
-                            reject(new types_1.RequestError(error_.message, error, request));
-                            return;
-                        }
-                        makeRequest();
-                    };
-                    setTimeout(retry, backoff);
-                    return;
-                }
-                // The retry has not been made
-                retryCount--;
-                if (error instanceof types_1.HTTPError) {
-                    // The error will be handled by the `response` event
-                    void onResponse(request._response);
-                    // Reattach the error handler, because there may be a timeout later.
-                    request.once('error', onError);
-                    return;
-                }
-                // Don't emit the `response` event
-                request.destroy();
                 reject(error);
             };
-            request.once('response', onResponse);
             request.once('error', onError);
+            request.once('retry', (newRetryCount, error) => {
+                var _a;
+                if (is_1.default.nodeStream((_a = error.request) === null || _a === void 0 ? void 0 : _a.options.body)) {
+                    onError(error);
+                    return;
+                }
+                makeRequest(newRetryCount);
+            });
             proxy_events_1.default(request, emitter, proxiedRequestEvents);
         };
-        makeRequest();
+        makeRequest(0);
     });
     promise.on = (event, fn) => {
         emitter.on(event, fn);
@@ -12493,14 +12411,16 @@ function asPromise(options) {
         const newPromise = (async () => {
             // Wait until downloading has ended
             await promise;
-            return core_1.parseBody(globalResponse, responseType, options.parseJson, options.encoding);
+            const { options } = globalResponse.request;
+            return parse_body_1.default(globalResponse, responseType, options.parseJson, options.encoding);
         })();
         Object.defineProperties(newPromise, Object.getOwnPropertyDescriptors(promise));
         return newPromise;
     };
     promise.json = () => {
-        if (!globalRequest.writableFinished && options.headers.accept === undefined) {
-            options.headers.accept = 'application/json';
+        const { headers } = globalRequest.options;
+        if (!globalRequest.writableFinished && headers.accept === undefined) {
+            headers.accept = 'application/json';
         }
         return shortcut('json');
     };
@@ -12510,6 +12430,43 @@ function asPromise(options) {
 }
 exports.default = asPromise;
 __exportStar(__webpack_require__(36), exports);
+
+
+/***/ }),
+
+/***/ 594:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.retryAfterStatusCodes = void 0;
+exports.retryAfterStatusCodes = new Set([413, 429, 503]);
+const calculateRetryDelay = ({ attemptCount, retryOptions, error, retryAfter }) => {
+    if (attemptCount > retryOptions.limit) {
+        return 0;
+    }
+    const hasMethod = retryOptions.methods.includes(error.options.method);
+    const hasErrorCode = retryOptions.errorCodes.includes(error.code);
+    const hasStatusCode = error.response && retryOptions.statusCodes.includes(error.response.statusCode);
+    if (!hasMethod || (!hasErrorCode && !hasStatusCode)) {
+        return 0;
+    }
+    if (error.response) {
+        if (retryAfter) {
+            if (retryOptions.maxRetryAfter === undefined || retryAfter > retryOptions.maxRetryAfter) {
+                return 0;
+            }
+            return retryAfter;
+        }
+        if (error.response.statusCode === 413) {
+            return 0;
+        }
+    }
+    const noise = Math.random() * 100;
+    return ((2 ** (attemptCount - 1)) * 1000) + noise;
+};
+exports.default = calculateRetryDelay;
 
 
 /***/ }),
@@ -14048,52 +14005,6 @@ exports.default = createRejection;
 
 /***/ }),
 
-/***/ 927:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const types_1 = __webpack_require__(36);
-const retryAfterStatusCodes = new Set([413, 429, 503]);
-const isErrorWithResponse = (error) => (error instanceof types_1.HTTPError || error instanceof types_1.ParseError || error instanceof types_1.MaxRedirectsError);
-const calculateRetryDelay = ({ attemptCount, retryOptions, error }) => {
-    if (attemptCount > retryOptions.limit) {
-        return 0;
-    }
-    const hasMethod = retryOptions.methods.includes(error.options.method);
-    const hasErrorCode = retryOptions.errorCodes.includes(error.code);
-    const hasStatusCode = isErrorWithResponse(error) && retryOptions.statusCodes.includes(error.response.statusCode);
-    if (!hasMethod || (!hasErrorCode && !hasStatusCode)) {
-        return 0;
-    }
-    if (isErrorWithResponse(error)) {
-        const { response } = error;
-        if (response && 'retry-after' in response.headers && retryAfterStatusCodes.has(response.statusCode)) {
-            let after = Number(response.headers['retry-after']);
-            if (Number.isNaN(after)) {
-                after = Date.parse(response.headers['retry-after']) - Date.now();
-            }
-            else {
-                after *= 1000;
-            }
-            if (retryOptions.maxRetryAfter === undefined || after > retryOptions.maxRetryAfter) {
-                return 0;
-            }
-            return after;
-        }
-        if (response.statusCode === 413) {
-            return 0;
-        }
-    }
-    const noise = Math.random() * 100;
-    return ((2 ** (attemptCount - 1)) * 1000) + noise;
-};
-exports.default = calculateRetryDelay;
-
-
-/***/ }),
-
 /***/ 928:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -14328,7 +14239,11 @@ const options_to_url_1 = __webpack_require__(907);
 const weakable_map_1 = __webpack_require__(48);
 const get_buffer_1 = __webpack_require__(452);
 const dns_ip_version_1 = __webpack_require__(738);
+const is_response_ok_1 = __webpack_require__(422);
 const deprecation_warning_1 = __webpack_require__(189);
+const normalize_arguments_1 = __webpack_require__(992);
+const calculate_retry_delay_1 = __webpack_require__(594);
+const globalDnsCache = new cacheable_lookup_1.default();
 const kRequest = Symbol('request');
 const kResponse = Symbol('response');
 const kResponseSize = Symbol('responseSize');
@@ -14345,10 +14260,19 @@ const kTriggerRead = Symbol('triggerRead');
 const kBody = Symbol('body');
 const kJobs = Symbol('jobs');
 const kOriginalResponse = Symbol('originalResponse');
+const kRetryTimeout = Symbol('retryTimeout');
 exports.kIsNormalizedAlready = Symbol('isNormalizedAlready');
 const supportsBrotli = is_1.default.string(process.versions.brotli);
 exports.withoutBody = new Set(['GET', 'HEAD']);
-exports.knownHookEvents = ['init', 'beforeRequest', 'beforeRedirect', 'beforeError'];
+exports.knownHookEvents = [
+    'init',
+    'beforeRequest',
+    'beforeRedirect',
+    'beforeError',
+    'beforeRetry',
+    // Promise-Only
+    'afterResponse'
+];
 function validateSearchParameters(searchParameters) {
     // eslint-disable-next-line guard-for-in
     for (const key in searchParameters) {
@@ -14405,6 +14329,10 @@ exports.setNonEnumerableProperties = (sources, to) => {
     }
     Object.defineProperties(to, properties);
 };
+/**
+An error to be thrown when a request fails.
+Contains a `code` property with error class code, like `ECONNREFUSED`.
+*/
 class RequestError extends Error {
     constructor(message, error, self) {
         var _a;
@@ -14451,6 +14379,10 @@ class RequestError extends Error {
     }
 }
 exports.RequestError = RequestError;
+/**
+An error to be thrown when the server redirects you more than ten times.
+Includes a `response` property.
+*/
 class MaxRedirectsError extends RequestError {
     constructor(request) {
         super(`Redirected ${request.options.maxRedirects} times. Aborting.`, {}, request);
@@ -14458,6 +14390,10 @@ class MaxRedirectsError extends RequestError {
     }
 }
 exports.MaxRedirectsError = MaxRedirectsError;
+/**
+An error to be thrown when the server response code is not 2xx nor 3xx if `options.followRedirect` is `true`, but always except for 304.
+Includes a `response` property.
+*/
 class HTTPError extends RequestError {
     constructor(response) {
         super(`Response code ${response.statusCode} (${response.statusMessage})`, {}, response.request);
@@ -14465,6 +14401,10 @@ class HTTPError extends RequestError {
     }
 }
 exports.HTTPError = HTTPError;
+/**
+An error to be thrown when a cache method fails.
+For example, if the database goes down or there's a filesystem error.
+*/
 class CacheError extends RequestError {
     constructor(error, request) {
         super(error.message, error, request);
@@ -14472,6 +14412,9 @@ class CacheError extends RequestError {
     }
 }
 exports.CacheError = CacheError;
+/**
+An error to be thrown when the request body is a stream and an error occurs while reading from that stream.
+*/
 class UploadError extends RequestError {
     constructor(error, request) {
         super(error.message, error, request);
@@ -14479,6 +14422,10 @@ class UploadError extends RequestError {
     }
 }
 exports.UploadError = UploadError;
+/**
+An error to be thrown when the request is aborted due to a timeout.
+Includes an `event` and `timings` property.
+*/
 class TimeoutError extends RequestError {
     constructor(error, timings, request) {
         super(error.message, error, request);
@@ -14488,6 +14435,9 @@ class TimeoutError extends RequestError {
     }
 }
 exports.TimeoutError = TimeoutError;
+/**
+An error to be thrown when reading from response stream fails.
+*/
 class ReadError extends RequestError {
     constructor(error, request) {
         super(error.message, error, request);
@@ -14495,6 +14445,9 @@ class ReadError extends RequestError {
     }
 }
 exports.ReadError = ReadError;
+/**
+An error to be thrown when given an unsupported protocol.
+*/
 class UnsupportedProtocolError extends RequestError {
     constructor(options) {
         super(`Unsupported protocol "${options.url.protocol}"`, {}, options);
@@ -14513,6 +14466,9 @@ const proxiedRequestEvents = [
 class Request extends stream_1.Duplex {
     constructor(url, options = {}, defaults) {
         super({
+            // This must be false, to enable throwing after destroy
+            // It is used for retry logic in Promise API
+            autoDestroy: false,
             // It needs to be zero because we're just proxying the data to another stream
             highWaterMark: 0
         });
@@ -14524,6 +14480,7 @@ class Request extends stream_1.Duplex {
         this[kStopReading] = false;
         this[kTriggerRead] = false;
         this[kJobs] = [];
+        this.retryCount = 0;
         // TODO: Remove this when targeting Node.js >= 12
         this._progressCallbacks = [];
         const unlockWrite = () => this._unlockWrite();
@@ -14581,6 +14538,8 @@ class Request extends stream_1.Duplex {
                 for (const job of this[kJobs]) {
                     job();
                 }
+                // Prevent memory leak
+                this[kJobs].length = 0;
                 this.requestInitialized = true;
             }
             catch (error) {
@@ -14596,7 +14555,7 @@ class Request extends stream_1.Duplex {
         })(options);
     }
     static normalizeArguments(url, options, defaults) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         const rawOptions = options;
         if (is_1.default.object(url) && !is_1.default.urlInstance(url)) {
             options = { ...defaults, ...url, ...options };
@@ -14650,6 +14609,7 @@ class Request extends stream_1.Duplex {
             is_1.assert.any([is_1.default.string, is_1.default.object, is_1.default.array, is_1.default.undefined], options.https.certificate);
             is_1.assert.any([is_1.default.string, is_1.default.undefined], options.https.passphrase);
         }
+        is_1.assert.any([is_1.default.object, is_1.default.undefined], options.cacheOptions);
         // `options.method`
         if (is_1.default.string(options.method)) {
             options.method = options.method.toUpperCase();
@@ -14707,14 +14667,14 @@ class Request extends stream_1.Duplex {
         options.username = (_b = options.username) !== null && _b !== void 0 ? _b : '';
         options.password = (_c = options.password) !== null && _c !== void 0 ? _c : '';
         // `options.prefixUrl` & `options.url`
-        if (options.prefixUrl) {
+        if (is_1.default.undefined(options.prefixUrl)) {
+            options.prefixUrl = (_d = defaults === null || defaults === void 0 ? void 0 : defaults.prefixUrl) !== null && _d !== void 0 ? _d : '';
+        }
+        else {
             options.prefixUrl = options.prefixUrl.toString();
             if (options.prefixUrl !== '' && !options.prefixUrl.endsWith('/')) {
                 options.prefixUrl += '/';
             }
-        }
-        else {
-            options.prefixUrl = '';
         }
         if (is_1.default.string(options.url)) {
             if (options.url.startsWith('/')) {
@@ -14781,9 +14741,7 @@ class Request extends stream_1.Duplex {
                 getCookieString = util_1.promisify(getCookieString.bind(options.cookieJar));
                 options.cookieJar = {
                     setCookie,
-                    // TODO: Fix this when upgrading to TypeScript 4.
-                    // @ts-expect-error TypeScript thinks that promisifying callback(error, string) will result in Promise<void>
-                    getCookieString
+                    getCookieString: getCookieString
                 };
             }
         }
@@ -14824,9 +14782,11 @@ class Request extends stream_1.Duplex {
                 }), cache));
             }
         }
+        // `options.cacheOptions`
+        options.cacheOptions = { ...options.cacheOptions };
         // `options.dnsCache`
         if (options.dnsCache === true) {
-            options.dnsCache = new cacheable_lookup_1.default();
+            options.dnsCache = globalDnsCache;
         }
         else if (!is_1.default.undefined(options.dnsCache) && !options.dnsCache.lookup) {
             throw new TypeError(`Parameter \`dnsCache\` must be a CacheableLookup instance or a boolean, got ${is_1.default(options.dnsCache)}`);
@@ -14914,10 +14874,10 @@ class Request extends stream_1.Duplex {
                 }
             }
         }
-        options.maxRedirects = (_d = options.maxRedirects) !== null && _d !== void 0 ? _d : 0;
+        options.maxRedirects = (_e = options.maxRedirects) !== null && _e !== void 0 ? _e : 0;
         // Set non-enumerable properties
         exports.setNonEnumerableProperties([defaults, rawOptions], options);
-        return options;
+        return normalize_arguments_1.default(options, defaults);
     }
     _lockWrite() {
         const onLockedWrite = () => {
@@ -15019,6 +14979,7 @@ class Request extends stream_1.Duplex {
         typedResponse.request = this;
         typedResponse.isFromCache = response.fromCache || false;
         typedResponse.ip = this.ip;
+        typedResponse.retryCount = this.retryCount;
         this[kIsFromCache] = typedResponse.isFromCache;
         this[kResponseSize] = Number(response.headers['content-length']) || undefined;
         this[kResponse] = response;
@@ -15056,7 +15017,7 @@ class Request extends stream_1.Duplex {
         }
         if (options.followRedirect && response.headers.location && redirectCodes.has(statusCode)) {
             // We're being redirected, we don't care about the response.
-            // It'd be besto to abort the request, but we can't because
+            // It'd be best to abort the request, but we can't because
             // we would have to sacrifice the TCP connection. We don't want that.
             response.resume();
             if (this[kRequest]) {
@@ -15092,7 +15053,7 @@ class Request extends stream_1.Duplex {
                 const redirectString = redirectUrl.toString();
                 decodeURI(redirectString);
                 // Redirecting to a different site, clear sensitive data.
-                if (redirectUrl.hostname !== url.hostname) {
+                if (redirectUrl.hostname !== url.hostname || redirectUrl.port !== url.port) {
                     if ('host' in options.headers) {
                         delete options.headers.host;
                     }
@@ -15103,8 +15064,14 @@ class Request extends stream_1.Duplex {
                         delete options.headers.authorization;
                     }
                     if (options.username || options.password) {
+                        // TODO: Fix this ignore.
+                        // @ts-expect-error
                         delete options.username;
+                        // @ts-expect-error
                         delete options.password;
+                    }
+                    if ('port' in options) {
+                        delete options.port;
                     }
                 }
                 this.redirects.push(redirectString);
@@ -15122,16 +15089,9 @@ class Request extends stream_1.Duplex {
             }
             return;
         }
-        const limitStatusCode = options.followRedirect ? 299 : 399;
-        const isOk = (statusCode >= 200 && statusCode <= limitStatusCode) || statusCode === 304;
-        if (options.throwHttpErrors && !isOk) {
-            // Normally we would have to use `void [await] this._beforeError(error)` everywhere,
-            // but since there's `void (async () => { ... })()` inside of it, we don't have to.
+        if (options.isStream && options.throwHttpErrors && !is_response_ok_1.isResponseOk(typedResponse)) {
             this._beforeError(new HTTPError(typedResponse));
-            // This is equivalent to this.destroyed
-            if (this[kStopReading]) {
-                return;
-            }
+            return;
         }
         response.on('readable', () => {
             if (this[kTriggerRead]) {
@@ -15168,6 +15128,7 @@ class Request extends stream_1.Duplex {
             await this._onResponseBase(response);
         }
         catch (error) {
+            /* istanbul ignore next: better safe than sorry */
             this._beforeError(error);
         }
     }
@@ -15205,9 +15166,6 @@ class Request extends stream_1.Duplex {
             body.once('error', (error) => {
                 this._beforeError(new UploadError(error, this));
             });
-            body.once('end', () => {
-                delete options.body;
-            });
         }
         else {
             this._unlockWrite();
@@ -15228,6 +15186,8 @@ class Request extends stream_1.Duplex {
             // TODO: Remove `utils/url-to-options.ts` when `cacheable-request` is fixed
             Object.assign(options, url_to_options_1.default(url));
             // `http-cache-semantics` checks this
+            // TODO: Fix this ignore.
+            // @ts-expect-error
             delete options.url;
             let request;
             // This is ugly
@@ -15249,7 +15209,7 @@ class Request extends stream_1.Duplex {
         });
     }
     async _makeRequest() {
-        var _a;
+        var _a, _b, _c, _d, _e;
         const { options } = this;
         const { headers } = options;
         for (const key in headers) {
@@ -15315,14 +15275,20 @@ class Request extends stream_1.Duplex {
         // Prepare plain HTTP request options
         options[kRequest] = realFn;
         delete options.request;
+        // TODO: Fix this ignore.
+        // @ts-expect-error
         delete options.timeout;
         const requestOptions = options;
+        requestOptions.shared = (_b = options.cacheOptions) === null || _b === void 0 ? void 0 : _b.shared;
+        requestOptions.cacheHeuristic = (_c = options.cacheOptions) === null || _c === void 0 ? void 0 : _c.cacheHeuristic;
+        requestOptions.immutableMinTimeToLive = (_d = options.cacheOptions) === null || _d === void 0 ? void 0 : _d.immutableMinTimeToLive;
+        requestOptions.ignoreCargoCult = (_e = options.cacheOptions) === null || _e === void 0 ? void 0 : _e.ignoreCargoCult;
         // If `dnsLookupIpVersion` is not present do not override `family`
         if (options.dnsLookupIpVersion !== undefined) {
             try {
                 requestOptions.family = dns_ip_version_1.dnsLookupIpVersionToFamily(options.dnsLookupIpVersion);
             }
-            catch (_b) {
+            catch (_f) {
                 throw new Error('Invalid `dnsLookupIpVersion` option value');
             }
         }
@@ -15356,6 +15322,28 @@ class Request extends stream_1.Duplex {
             options.request = request;
             options.timeout = timeout;
             options.agent = agent;
+            // HTTPS options restore
+            if (options.https) {
+                if ('rejectUnauthorized' in options.https) {
+                    delete requestOptions.rejectUnauthorized;
+                }
+                if (options.https.checkServerIdentity) {
+                    // @ts-expect-error - This one will be removed when we remove the alias.
+                    delete requestOptions.checkServerIdentity;
+                }
+                if (options.https.certificateAuthority) {
+                    delete requestOptions.ca;
+                }
+                if (options.https.certificate) {
+                    delete requestOptions.cert;
+                }
+                if (options.https.key) {
+                    delete requestOptions.key;
+                }
+                if (options.https.passphrase) {
+                    delete requestOptions.passphrase;
+                }
+            }
             if (isClientRequest(requestOrResponse)) {
                 this._onRequest(requestOrResponse);
                 // Emit the response after the stream has been ended
@@ -15379,34 +15367,97 @@ class Request extends stream_1.Duplex {
             throw new RequestError(error.message, error, this);
         }
     }
+    async _error(error) {
+        try {
+            for (const hook of this.options.hooks.beforeError) {
+                // eslint-disable-next-line no-await-in-loop
+                error = await hook(error);
+            }
+        }
+        catch (error_) {
+            error = new RequestError(error_.message, error_, this);
+        }
+        this.destroy(error);
+    }
     _beforeError(error) {
-        if (this.destroyed) {
+        if (this[kStopReading]) {
             return;
         }
+        const { options } = this;
+        const retryCount = this.retryCount + 1;
         this[kStopReading] = true;
         if (!(error instanceof RequestError)) {
             error = new RequestError(error.message, error, this);
         }
+        const typedError = error;
+        const { response } = typedError;
         void (async () => {
-            try {
-                const { response } = error;
-                if (response) {
-                    response.setEncoding(this._readableState.encoding);
+            if (response && !response.body) {
+                response.setEncoding(this._readableState.encoding);
+                try {
                     response.rawBody = await get_buffer_1.default(response);
                     response.body = response.rawBody.toString();
                 }
+                catch (_a) { }
             }
-            catch (_a) { }
-            try {
-                for (const hook of this.options.hooks.beforeError) {
-                    // eslint-disable-next-line no-await-in-loop
-                    error = await hook(error);
+            if (this.listenerCount('retry') !== 0) {
+                let backoff;
+                try {
+                    let retryAfter;
+                    if (response && 'retry-after' in response.headers) {
+                        retryAfter = Number(response.headers['retry-after']);
+                        if (Number.isNaN(retryAfter)) {
+                            retryAfter = Date.parse(response.headers['retry-after']) - Date.now();
+                            if (retryAfter <= 0) {
+                                retryAfter = 1;
+                            }
+                        }
+                        else {
+                            retryAfter *= 1000;
+                        }
+                    }
+                    backoff = await options.retry.calculateDelay({
+                        attemptCount: retryCount,
+                        retryOptions: options.retry,
+                        error: typedError,
+                        retryAfter,
+                        computedValue: calculate_retry_delay_1.default({
+                            attemptCount: retryCount,
+                            retryOptions: options.retry,
+                            error: typedError,
+                            retryAfter,
+                            computedValue: 0
+                        })
+                    });
+                }
+                catch (error_) {
+                    void this._error(new RequestError(error_.message, error_, this));
+                    return;
+                }
+                if (backoff) {
+                    const retry = async () => {
+                        try {
+                            for (const hook of this.options.hooks.beforeRetry) {
+                                // eslint-disable-next-line no-await-in-loop
+                                await hook(this.options, typedError, retryCount);
+                            }
+                        }
+                        catch (error_) {
+                            void this._error(new RequestError(error_.message, error, this));
+                            return;
+                        }
+                        // Something forced us to abort the retry
+                        if (this.destroyed) {
+                            return;
+                        }
+                        this.destroy();
+                        this.emit('retry', retryCount, error);
+                    };
+                    this[kRetryTimeout] = setTimeout(retry, backoff);
+                    return;
                 }
             }
-            catch (error_) {
-                error = new RequestError(error_.message, error_, this);
-            }
-            this.destroy(error);
+            void this._error(typedError);
         })();
     }
     _read() {
@@ -15443,6 +15494,10 @@ class Request extends stream_1.Duplex {
         }
     }
     _writeRequest(chunk, encoding, callback) {
+        if (this[kRequest].destroyed) {
+            // Probably the `ClientRequest` instance will throw
+            return;
+        }
         this._progressCallbacks.push(() => {
             this[kUploadedSize] += Buffer.byteLength(chunk, encoding);
             const progress = this.uploadProgress;
@@ -15493,6 +15548,8 @@ class Request extends stream_1.Duplex {
     _destroy(error, callback) {
         var _a;
         this[kStopReading] = true;
+        // Prevent further retries
+        clearTimeout(this[kRetryTimeout]);
         if (kRequest in this) {
             this[kCancelTimeouts]();
             // TODO: Remove the next `if` when these get fixed:
@@ -15506,10 +15563,19 @@ class Request extends stream_1.Duplex {
         }
         callback(error);
     }
+    get _isAboutToError() {
+        return this[kStopReading];
+    }
+    /**
+    The remote IP address.
+    */
     get ip() {
         var _a;
         return (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.socket.remoteAddress;
     }
+    /**
+    Indicates whether the request has been aborted or not.
+    */
     get aborted() {
         var _a, _b, _c;
         return ((_b = (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.destroyed) !== null && _b !== void 0 ? _b : this.destroyed) && !((_c = this[kOriginalResponse]) === null || _c === void 0 ? void 0 : _c.complete);
@@ -15518,6 +15584,9 @@ class Request extends stream_1.Duplex {
         var _a;
         return (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.socket;
     }
+    /**
+    Progress event for downloading (receiving a response).
+    */
     get downloadProgress() {
         let percent;
         if (this[kResponseSize]) {
@@ -15535,6 +15604,9 @@ class Request extends stream_1.Duplex {
             total: this[kResponseSize]
         };
     }
+    /**
+    Progress event for uploading (sending a request).
+    */
     get uploadProgress() {
         let percent;
         if (this[kBodySize]) {
@@ -15552,15 +15624,42 @@ class Request extends stream_1.Duplex {
             total: this[kBodySize]
         };
     }
+    /**
+    The object contains the following properties:
+
+    - `start` - Time when the request started.
+    - `socket` - Time when a socket was assigned to the request.
+    - `lookup` - Time when the DNS lookup finished.
+    - `connect` - Time when the socket successfully connected.
+    - `secureConnect` - Time when the socket securely connected.
+    - `upload` - Time when the request finished uploading.
+    - `response` - Time when the request fired `response` event.
+    - `end` - Time when the response fired `end` event.
+    - `error` - Time when the request fired `error` event.
+    - `abort` - Time when the request fired `abort` event.
+    - `phases`
+        - `wait` - `timings.socket - timings.start`
+        - `dns` - `timings.lookup - timings.socket`
+        - `tcp` - `timings.connect - timings.lookup`
+        - `tls` - `timings.secureConnect - timings.connect`
+        - `request` - `timings.upload - (timings.secureConnect || timings.connect)`
+        - `firstByte` - `timings.response - timings.upload`
+        - `download` - `timings.end - timings.response`
+        - `total` - `(timings.end || timings.error || timings.abort) - timings.start`
+
+    If something has not been measured yet, it will be `undefined`.
+
+    __Note__: The time is a `number` representing the milliseconds elapsed since the UNIX epoch.
+    */
     get timings() {
         var _a;
         return (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.timings;
     }
+    /**
+    Whether the response was retrieved from the cache.
+    */
     get isFromCache() {
         return this[kIsFromCache];
-    }
-    get _response() {
-        return this[kResponse];
     }
     pipe(destination, options) {
         if (this[kStartedReading]) {
@@ -15741,11 +15840,98 @@ module.exports.protocolCache = cache;
 
 /***/ }),
 
+/***/ 992:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const is_1 = __webpack_require__(534);
+const normalizeArguments = (options, defaults) => {
+    if (is_1.default.null_(options.encoding)) {
+        throw new TypeError('To get a Buffer, set `options.responseType` to `buffer` instead');
+    }
+    is_1.assert.any([is_1.default.string, is_1.default.undefined], options.encoding);
+    is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.resolveBodyOnly);
+    is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.methodRewriting);
+    is_1.assert.any([is_1.default.boolean, is_1.default.undefined], options.isStream);
+    is_1.assert.any([is_1.default.string, is_1.default.undefined], options.responseType);
+    // `options.responseType`
+    if (options.responseType === undefined) {
+        options.responseType = 'text';
+    }
+    // `options.retry`
+    const { retry } = options;
+    if (defaults) {
+        options.retry = { ...defaults.retry };
+    }
+    else {
+        options.retry = {
+            calculateDelay: retryObject => retryObject.computedValue,
+            limit: 0,
+            methods: [],
+            statusCodes: [],
+            errorCodes: [],
+            maxRetryAfter: undefined
+        };
+    }
+    if (is_1.default.object(retry)) {
+        options.retry = {
+            ...options.retry,
+            ...retry
+        };
+        options.retry.methods = [...new Set(options.retry.methods.map(method => method.toUpperCase()))];
+        options.retry.statusCodes = [...new Set(options.retry.statusCodes)];
+        options.retry.errorCodes = [...new Set(options.retry.errorCodes)];
+    }
+    else if (is_1.default.number(retry)) {
+        options.retry.limit = retry;
+    }
+    if (is_1.default.undefined(options.retry.maxRetryAfter)) {
+        options.retry.maxRetryAfter = Math.min(
+        // TypeScript is not smart enough to handle `.filter(x => is.number(x))`.
+        // eslint-disable-next-line unicorn/no-fn-reference-in-iterator
+        ...[options.timeout.request, options.timeout.connect].filter(is_1.default.number));
+    }
+    // `options.pagination`
+    if (is_1.default.object(options.pagination)) {
+        if (defaults) {
+            options.pagination = {
+                ...defaults.pagination,
+                ...options.pagination
+            };
+        }
+        const { pagination } = options;
+        if (!is_1.default.function_(pagination.transform)) {
+            throw new Error('`options.pagination.transform` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.shouldContinue)) {
+            throw new Error('`options.pagination.shouldContinue` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.filter)) {
+            throw new TypeError('`options.pagination.filter` must be implemented');
+        }
+        if (!is_1.default.function_(pagination.paginate)) {
+            throw new Error('`options.pagination.paginate` must be implemented');
+        }
+    }
+    // JSON mode
+    if (options.responseType === 'json' && options.headers.accept === undefined) {
+        options.headers.accept = 'application/json';
+    }
+    return options;
+};
+exports.default = normalizeArguments;
+
+
+/***/ }),
+
 /***/ 997:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
+const {constants: BufferConstants} = __webpack_require__(293);
 const pump = __webpack_require__(453);
 const bufferStream = __webpack_require__(375);
 
@@ -15771,7 +15957,8 @@ async function getStream(inputStream, options) {
 	let stream;
 	await new Promise((resolve, reject) => {
 		const rejectPromise = error => {
-			if (error) { // A null check
+			// Don't retrieve an oversized buffer.
+			if (error && stream.getBufferedLength() <= BufferConstants.MAX_LENGTH) {
 				error.bufferedData = stream.getBufferedValue();
 			}
 
