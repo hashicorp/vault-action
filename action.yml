@@ -36,6 +36,10 @@ inputs:
     description: 'Whether or not export secrets as environment variables.'
     default: 'true'
     required: false
+  exportToken:
+    description: 'Whether or not export Vault token as environment variables.'
+    default: 'false'
+    required: false
   caCertificate:
     description: 'Base64 encoded CA certificate to verify the Vault server certificate.'
     required: false
