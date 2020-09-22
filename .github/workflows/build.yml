@@ -4,8 +4,6 @@ on:
       - master
   pull_request_target:
     types: [opened, closed, reopened]
-    branches:
-      - master
 
 jobs:
   build:
