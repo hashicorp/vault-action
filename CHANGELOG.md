@@ -1,5 +1,8 @@
 ## Unreleased
 
+Features:
+* Added `exportToken` to share the Vault token as an environment variable [GH-127](https://github.com/hashicorp/vault-action/pull/127)
+
 ## 2.0.1 (September 15th, 2020)
 
 Improvements:
