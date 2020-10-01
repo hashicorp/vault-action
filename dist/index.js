@@ -10688,9 +10688,7 @@ async function getSecrets(secretRequests, client) {
             body = result.body;
             responseCache.set(requestPath, body);
         }
-        if (!selector.match(/.*[\.].*/)) {
-            selector = '"' + selector + '"'
-        }
+
         selector = "data." + selector
         body = JSON.parse(body)
         if (body.data["data"] != undefined) {
@@ -10716,7 +10714,7 @@ function selectData(data, selector) {
     const ata = jsonata(selector);
     let result = JSON.stringify(ata.evaluate(data));
     // Compat for custom engines
-    if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
+    if (!result && ata.ast().type === "path" && ata.ast()['steps'].length === 1 && selector !== 'data' && 'data' in data) {
         result = JSON.stringify(jsonata(`data.${selector}`).evaluate(data));
     } else if (!result) {
         throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
@@ -14024,7 +14022,6 @@ async function exportSecrets() {
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
-    const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
     const secretsInput = core.getInput('secrets', { required: true });
     const secretRequests = parseSecretsInput(secretsInput);
@@ -14072,11 +14069,6 @@ async function exportSecrets() {
     const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
-
-    if (exportToken === true) {
-        command.issue('add-mask', vaultToken);
-        core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
-    }
 
     const requests = secretRequests.map(request => {
         const { path, selector } = request;
@@ -14142,13 +14134,12 @@ function parseSecretsInput(secretsInput) {
             throw Error(`You must provide a valid path and key. Input: "${secret}"`);
         }
 
-        const [path, selectorQuoted] = pathParts;
+        const [path, selector] = pathParts;
 
         /** @type {any} */
-        const selectorAst = jsonata(selectorQuoted).ast();
-        const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
+        const selectorAst = jsonata(selector).ast();
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -14175,7 +14166,7 @@ function parseSecretsInput(secretsInput) {
  */
 function normalizeOutputKey(dataKey, isEnvVar = false) {
     let outputKey = dataKey
-        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
+        .replace('.', '__').replace(/[^\p{L}\p{N}_-]/gu, '');
     if (isEnvVar) {
         outputKey = outputKey.toUpperCase();
     }
