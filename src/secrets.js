@@ -38,7 +38,9 @@ async function getSecrets(secretRequests, client) {
             body = result.body;
             responseCache.set(requestPath, body);
         }
-
+        if (!selector.match(/.*[\.].*/)) {
+            selector = '"' + selector + '"'
+        }
         selector = "data." + selector
         body = JSON.parse(body)
         if (body.data["data"] != undefined) {
@@ -64,7 +66,7 @@ function selectData(data, selector) {
     const ata = jsonata(selector);
     let result = JSON.stringify(ata.evaluate(data));
     // Compat for custom engines
-    if (!result && ata.ast().type === "path" && ata.ast()['steps'].length === 1 && selector !== 'data' && 'data' in data) {
+    if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
         result = JSON.stringify(jsonata(`data.${selector}`).evaluate(data));
     } else if (!result) {
         throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);

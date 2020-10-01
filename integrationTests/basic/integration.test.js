@@ -37,7 +37,7 @@ describe('integration', () => {
             },
             json: {
                 data: {
-                    otherSecret: 'OTHERSUPERSECRET',
+                    "other-Secret-dash": 'OTHERSUPERSECRET',
                 },
             }
         });
@@ -100,7 +100,7 @@ describe('integration', () => {
                 'X-Vault-Token': 'testtoken',
             },
             json: {
-                otherSecret: 'OTHERCUSTOMSECRET',
+                "other-Secret-dash": 'OTHERCUSTOMSECRET',
             },
         });
     });
@@ -140,18 +140,18 @@ describe('integration', () => {
     });
 
     it('get nested secret', async () => {
-        mockInput('secret/data/nested/test otherSecret');
+        mockInput(`secret/data/nested/test "other-Secret-dash"`);
 
         await exportSecrets();
 
-        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
     });
 
     it('get multiple secrets', async () => {
         mockInput(`
         secret/data/test secret ;
         secret/data/test secret | NAMED_SECRET ;
-        secret/data/nested/test otherSecret ;`);
+        secret/data/nested/test "other-Secret-dash" ;`);
 
         await exportSecrets();
 
@@ -159,7 +159,7 @@ describe('integration', () => {
 
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
         expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET');
-        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET');
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
     });
 
     it('leading slash kvv2', async () => {
@@ -179,11 +179,11 @@ describe('integration', () => {
     });
 
     it('get nested secret from K/V v1', async () => {
-        mockInput('secret-kv1/nested/test otherSecret');
+        mockInput('secret-kv1/nested/test "other-Secret-dash"');
 
         await exportSecrets();
 
-        expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERCUSTOMSECRET');
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERCUSTOMSECRET');
     });
 
     it('leading slash kvv1', async () => {

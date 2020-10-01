@@ -178,6 +178,12 @@ describe('exportSecrets', () => {
         }
     }
 
+    function mockExportToken(doExport) {
+        when(core.getInput)
+            .calledWith('exportToken')
+            .mockReturnValueOnce(doExport);
+    }
+
     it('simple secret retrieval', async () => {
         mockInput('test key');
         mockVaultData({
@@ -256,5 +262,36 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY__VALUE', '1');
         expect(core.setOutput).toBeCalledWith('key__value', '1');
+    });
+
+    it('export Vault token', async () => {
+        mockInput('test key');
+        mockVaultData({
+            key: 1
+        });
+        mockExportToken("true")
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(2);
+
+        expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
+    });
+
+    it('not export Vault token', async () => {
+        mockInput('test key');
+        mockVaultData({
+            key: 1
+        });
+        mockExportToken("false")
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
     });
 });
