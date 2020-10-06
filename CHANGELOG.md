@@ -1,7 +1,12 @@
 ## Unreleased
 
+## 2.1.0 (October 6th, 2020)
+
 Features:
 * Added `exportToken` to share the Vault token as an environment variable [GH-127](https://github.com/hashicorp/vault-action/pull/127)
+
+Security:
+* `action/core` updated to 1.2.6 to address minor CVE [GH-130](https://github.com/hashicorp/vault-action/pull/130)
 
 ## 2.0.1 (September 15th, 2020)
 
