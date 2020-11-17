@@ -1,5 +1,6 @@
 // @ts-check
 const core = require('@actions/core');
+const fs = require('fs');
 
 /***
  * Authenticate with Vault and retrieve a Vault token that can be used for requests.
@@ -17,6 +18,17 @@ async function retrieveToken(method, client) {
             const githubToken = core.getInput('githubToken', { required: true });
             return await getClientToken(client, method, { token: githubToken });
         }
+        case 'kubernetes': {
+            const tokenPath = core.getInput('tokenPath', { required: true })
+            const data = fs.readFileSync(tokenPath, 'utf8')
+            const roleName = core.getInput('roleName', { required: true })
+            if (!(roleName && data) && data != "") {
+                throw new Error("Role Name must be set and a kubernetes token must set")
+            }
+            const payload = { jwt: data, role: roleName }
+            return await getClientToken(client, method, payload)
+        }
+
         default: {
             if (!method || method === 'token') {
                 return core.getInput('token', { required: true });

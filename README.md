@@ -80,6 +80,16 @@ with:
   caCertificate: ${{ secrets.VAULTCA }}
 ```
 
+- **kubernetes**: you must provide the path to the token in the `tokenPath`variable as well as the roleName for kuberentes bases auth this is interesting if [kubernetes auth](https://www.vaultproject.io/docs/auth/kubernetes) in combination with self hosted runners is deployed:
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: kubernetes
+  roleName: ${{ secrets.KUBE_ROLENAME }}
+  tokenPath: /var/run/secrets/kubernetes.io/serviceaccount/token
+```
+
 If any other method is specified and you provide an `authPayload`, the action will attempt to `POST` to `auth/${method}/login` with the provided payload and parse out the client token.
 
 ## Key Syntax
@@ -247,6 +257,8 @@ Here are all the inputs available through `with`:
 | `roleId`            | The Role Id for App Role authentication                                                                                                              |         |          |
 | `secretId`          | The Secret Id for App Role authentication                                                                                                            |         |          |
 | `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
+| `roleName`          | The rolename of the serviceaccount for the kubernetes authentification                                                                                               |         |          |
+| `tokenPath`         | The path to the serviceacconut secret with the jwt-token for kubernetes based authentification                                                                                               |         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
 | `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |

@@ -26,6 +26,12 @@ inputs:
   githubToken:
     description: 'The Github Token to be used to authenticate with Vault'
     required: false
+  roleName:
+    description: "The role name for the kubernetes authentification"
+    required: false
+  tokenPath:
+    description: "The path to the kubernetes service account secret, the action reads the content of this file on the runner"
+    required: false
   authPayload:
     description: 'The JSON payload to be sent to Vault when using a custom authentication method.'
     required: false
