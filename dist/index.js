@@ -163,7 +163,7 @@ exports.default = (url) => {
         href: url.href,
         path: `${url.pathname || ''}${url.search || ''}`
     };
-    if (is_1.default.string(url.port) && url.port.length !== 0) {
+    if (is_1.default.string(url.port) && url.port.length > 0) {
         options.port = Number(url.port);
     }
     if (url.username || url.password) {
@@ -2509,7 +2509,7 @@ const create = (defaults) => {
         return result;
     }));
     // Got interface
-    const got = ((url, options, _defaults) => {
+    const got = ((url, options = {}, _defaults) => {
         var _a, _b;
         let iteration = 0;
         const iterateHandlers = (newOptions) => {
@@ -2530,7 +2530,7 @@ const create = (defaults) => {
             let initHookError;
             try {
                 callInitHooks(defaults.options.hooks.init, options);
-                callInitHooks((_a = options === null || options === void 0 ? void 0 : options.hooks) === null || _a === void 0 ? void 0 : _a.init, options);
+                callInitHooks((_a = options.hooks) === null || _a === void 0 ? void 0 : _a.init, options);
             }
             catch (error) {
                 initHookError = error;
@@ -2544,11 +2544,11 @@ const create = (defaults) => {
             return iterateHandlers(normalizedOptions);
         }
         catch (error) {
-            if (options === null || options === void 0 ? void 0 : options.isStream) {
+            if (options.isStream) {
                 throw error;
             }
             else {
-                return create_rejection_1.default(error, defaults.options.hooks.beforeError, (_b = options === null || options === void 0 ? void 0 : options.hooks) === null || _b === void 0 ? void 0 : _b.beforeError);
+                return create_rejection_1.default(error, defaults.options.hooks.beforeError, (_b = options.hooks) === null || _b === void 0 ? void 0 : _b.beforeError);
             }
         }
     });
@@ -12083,7 +12083,11 @@ class CacheableLookup {
 				const newPromise = this.queryAndCache(hostname);
 				this._pending[hostname] = newPromise;
 
-				cached = await newPromise;
+				try {
+					cached = await newPromise;
+				} finally {
+					delete this._pending[hostname];
+				}
 			}
 		}
 
@@ -12197,29 +12201,21 @@ class CacheableLookup {
 			return this._dnsLookup(hostname, all);
 		}
 
-		try {
-			let query = await this._resolve(hostname);
+		let query = await this._resolve(hostname);
 
-			if (query.entries.length === 0 && this._fallback) {
-				query = await this._lookup(hostname);
+		if (query.entries.length === 0 && this._fallback) {
+			query = await this._lookup(hostname);
 
-				if (query.entries.length !== 0) {
-					// Use `dns.lookup(...)` for that particular hostname
-					this._hostnamesToFallback.add(hostname);
-				}
+			if (query.entries.length !== 0) {
+				// Use `dns.lookup(...)` for that particular hostname
+				this._hostnamesToFallback.add(hostname);
 			}
-
-			const cacheTtl = query.entries.length === 0 ? this.errorTtl : query.cacheTtl;
-			await this._set(hostname, query.entries, cacheTtl);
-
-			delete this._pending[hostname];
-
-			return query.entries;
-		} catch (error) {
-			delete this._pending[hostname];
-
-			throw error;
 		}
+
+		const cacheTtl = query.entries.length === 0 ? this.errorTtl : query.cacheTtl;
+		await this._set(hostname, query.entries, cacheTtl);
+
+		return query.entries;
 	}
 
 	_tick(ms) {
@@ -12458,9 +12454,10 @@ function asPromise(normalizedOptions) {
                 reject(error);
             };
             request.once('error', onError);
+            const previousBody = request.options.body;
             request.once('retry', (newRetryCount, error) => {
-                var _a;
-                if (is_1.default.nodeStream((_a = error.request) === null || _a === void 0 ? void 0 : _a.options.body)) {
+                var _a, _b;
+                if (previousBody === ((_a = error.request) === null || _a === void 0 ? void 0 : _a.options.body) && is_1.default.nodeStream((_b = error.request) === null || _b === void 0 ? void 0 : _b.options.body)) {
                     onError(error);
                     return;
                 }
@@ -12884,6 +12881,9 @@ exports.default = async (body, headers) => {
     }
     if (body instanceof fs_1.ReadStream) {
         const { size } = await statAsync(body.path);
+        if (size === 0) {
+            return undefined;
+        }
         return size;
     }
     return undefined;
@@ -14440,7 +14440,7 @@ class RequestError extends Error {
         }
         this.timings = (_a = this.request) === null || _a === void 0 ? void 0 : _a.timings;
         // Recover the original stacktrace
-        if (!is_1.default.undefined(error.stack)) {
+        if (is_1.default.string(error.stack) && is_1.default.string(this.stack)) {
             const indexOfMessage = this.stack.indexOf(this.message) + this.message.length;
             const thisStackTrace = this.stack.slice(indexOfMessage).split('\n').reverse();
             const errorStackTrace = error.stack.slice(error.stack.indexOf(error.message) + error.message.length).split('\n').reverse();
@@ -14916,7 +14916,7 @@ class Request extends stream_1.Duplex {
         if (defaults && !areHooksDefault) {
             for (const event of exports.knownHookEvents) {
                 const defaultHooks = defaults.hooks[event];
-                if (defaultHooks.length !== 0) {
+                if (defaultHooks.length > 0) {
                     // See https://github.com/microsoft/TypeScript/issues/31445#issuecomment-576929044
                     options.hooks[event] = [
                         ...defaults.hooks[event],
@@ -15238,12 +15238,7 @@ class Request extends stream_1.Duplex {
             request.destroy();
             // Node.js <= 12.18.2 mistakenly emits the response `end` first.
             (_a = request.res) === null || _a === void 0 ? void 0 : _a.removeAllListeners('end');
-            if (error instanceof timed_out_1.TimeoutError) {
-                error = new TimeoutError(error, this.timings, this);
-            }
-            else {
-                error = new RequestError(error.message, error, this);
-            }
+            error = error instanceof timed_out_1.TimeoutError ? new TimeoutError(error, this.timings, this) : new RequestError(error.message, error, this);
             this._beforeError(error);
         });
         this[kUnproxyEvents] = proxy_events_1.default(request, this, proxiedRequestEvents);
@@ -15607,7 +15602,7 @@ class Request extends stream_1.Duplex {
         });
         // TODO: What happens if it's from cache? Then this[kRequest] won't be defined.
         this[kRequest].write(chunk, encoding, (error) => {
-            if (!error && this._progressCallbacks.length !== 0) {
+            if (!error && this._progressCallbacks.length > 0) {
                 this._progressCallbacks.shift()();
             }
             callback(error);
@@ -15671,7 +15666,7 @@ class Request extends stream_1.Duplex {
     */
     get ip() {
         var _a;
-        return (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.socket.remoteAddress;
+        return (_a = this.socket) === null || _a === void 0 ? void 0 : _a.remoteAddress;
     }
     /**
     Indicates whether the request has been aborted or not.
@@ -15681,8 +15676,8 @@ class Request extends stream_1.Duplex {
         return ((_b = (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.destroyed) !== null && _b !== void 0 ? _b : this.destroyed) && !((_c = this[kOriginalResponse]) === null || _c === void 0 ? void 0 : _c.complete);
     }
     get socket() {
-        var _a;
-        return (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.socket;
+        var _a, _b;
+        return (_b = (_a = this[kRequest]) === null || _a === void 0 ? void 0 : _a.socket) !== null && _b !== void 0 ? _b : undefined;
     }
     /**
     Progress event for downloading (receiving a response).

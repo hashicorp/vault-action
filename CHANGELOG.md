@@ -1,5 +1,14 @@
 ## Unreleased
 
+## 2.1.1 (December 15th, 2020)
+
+Improvements:
+* bump jest from 26.5.0 to 26.6.3 [GH-150](https://github.com/hashicorp/vault-action/pull/150)
+* bump semantic-release from 17.1.2 to 17.3.0 [GH-158](https://github.com/hashicorp/vault-action/pull/158)
+* bump got from 11.7.0 to 11.8.1 [GH-163](https://github.com/hashicorp/vault-action/pull/163)
+* bump @types/jest from 26.0.14 to 26.0.19 [GH-164](https://github.com/hashicorp/vault-action/pull/164)
+* bump ini from 1.3.5 to 1.3.8 [GH-167](https://github.com/hashicorp/vault-action/pull/167)
+
 ## 2.1.0 (October 6th, 2020)
 
 Features:
