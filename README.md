@@ -36,7 +36,7 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
-              uses: hashicorp/vault-action@v2.1.0
+              uses: hashicorp/vault-action@v2.1.1
               with:
                 url: https://vault.mycompany.com:8200
                 token: ${{ secrets.VaultToken }}
@@ -161,9 +161,9 @@ with:
 
 ## Other Secret Engines
 
-Vault Action currently supports retrieving secrets from any engine where secrets 
-are retrieved via `GET` requests.  This means secret engines such as PKI are currently 
-not supported due to their requirement of sending parameters along with the request 
+Vault Action currently supports retrieving secrets from any engine where secrets
+are retrieved via `GET` requests.  This means secret engines such as PKI are currently
+not supported due to their requirement of sending parameters along with the request
 (such as `common_name`).
 
 For example, to request a secret from the `cubbyhole` secret engine:
@@ -254,7 +254,7 @@ Here are all the inputs available through `with`:
 | `caCertificate`     | Base64 encoded CA certificate the server certificate was signed with.                                                                                |         |          |
 | `clientCertificate` | Base64 encoded client certificate the action uses to authenticate with Vault when mTLS is enabled.                                                   |         |          |
 | `clientKey`         | Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.                                                           |         |          |
-| `tlsSkipVerify`     | When set to true, disables verification of server certificates when testing the action.                                                              | `false` |          | 
+| `tlsSkipVerify`     | When set to true, disables verification of server certificates when testing the action.                                                              | `false` |          |
 
 ## Masking - Hiding Secrets from Logs
 
