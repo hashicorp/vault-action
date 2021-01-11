@@ -1,5 +1,8 @@
 ## Unreleased
 
+Bugs:
+* fixed bug where newlines were being rendered for multi-line secrets [GH-173](https://github.com/hashicorp/vault-action/pull/173)
+
 ## 2.1.1 (December 15th, 2020)
 
 Improvements:
