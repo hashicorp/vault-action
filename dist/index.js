@@ -10772,7 +10772,7 @@ function selectData(data, selector) {
     }
 
     if (result.startsWith(`"`)) {
-        result = result.substring(1, result.length - 1);
+        result = JSON.parse(result);
     }
     return result;
 }
