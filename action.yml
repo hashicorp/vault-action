@@ -30,7 +30,7 @@ inputs:
     description: "The role name for the kubernetes authentification"
     required: false
   tokenPath:
-    description: "The path to the kubernetes service account secret, the action reads the content of this file on the runner"
+    description: "The path where the Kubernetes service account JWT is located"
     required: false
   authPayload:
     description: 'The JSON payload to be sent to Vault when using a custom authentication method.'
