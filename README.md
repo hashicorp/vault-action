@@ -73,10 +73,10 @@ with:
 - **github**: you must provide the github token as `githubToken`
 
 **Notice: [Vault GitHub authentication](https://www.vaultproject.io/docs/auth/github)
-requires `org:read` permissions for authentication. The auto-generated `GITHUB_TOKEN`
+requires `read:org` permissions for authentication. The auto-generated `GITHUB_TOKEN`
 created for projects does not have these permissions and GitHub does not allow this
 token's permissions to be modified. A new GitHub Token secret must be created with
-`org:read` permissions to use this authentication method.**
+`read:org` permissions to use this authentication method.**
 
 ```yaml
 ...
