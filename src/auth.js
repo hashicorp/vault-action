@@ -1,5 +1,6 @@
 // @ts-check
 const core = require('@actions/core');
+const rsasign = require('jsrsasign');
 
 /***
  * Authenticate with Vault and retrieve a Vault token that can be used for requests.
@@ -17,6 +18,15 @@ async function retrieveToken(method, client) {
             const githubToken = core.getInput('githubToken', { required: true });
             return await getClientToken(client, method, { token: githubToken });
         }
+        case 'jwt': {
+            const role = core.getInput('role', { required: true });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: true });
+            const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
+            const keyPassword = core.getInput('jwtKeyPassword', { required: false });
+            const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
+            const jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            return await getClientToken(client, method, { jwt: jwt, role: role });
+        }
         default: {
             if (!method || method === 'token') {
                 return core.getInput('token', { required: true });
@@ -30,6 +40,32 @@ async function retrieveToken(method, client) {
             }
         }
     }
+}
+
+/***
+ * Generates signed Json Web Token with specified private key and ttl
+ * @param {string} privateKey
+ * @param {string} keyPassword
+ * @param {number} ttl
+ */
+function generateJwt(privateKey, keyPassword, ttl) {
+    const alg = 'RS256';
+    const header = { alg: alg, typ: 'JWT' };
+    const now = rsasign.KJUR.jws.IntDate.getNow();
+    const payload = {
+        iss: 'vault-action',
+        iat: now,
+        nbf: now,
+        exp: now + ttl,
+        event: process.env.GITHUB_EVENT_NAME,
+        workflow: process.env.GITHUB_WORKFLOW,
+        sha: process.env.GITHUB_SHA,
+        actor: process.env.GITHUB_ACTOR,
+        repository: process.env.GITHUB_REPOSITORY,
+        ref: process.env.GITHUB_REF
+    };
+    const decryptedKey = rsasign.KEYUTIL.getKey(privateKey, keyPassword);
+    return rsasign.KJUR.jws.JWS.sign(alg, JSON.stringify(header), JSON.stringify(payload), decryptedKey);
 }
 
 /***
