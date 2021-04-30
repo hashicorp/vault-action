@@ -1,5 +1,8 @@
 ## Unreleased
 
+Bugs:
+* multi-line secrets are now properly masked in logs [GH-208](https://github.com/hashicorp/vault-action/pull/208)
+
 ## 2.1.2 (January 21st, 2021)
 
 Bugs:
