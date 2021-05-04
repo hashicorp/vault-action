@@ -78,7 +78,7 @@ async function exportSecrets() {
         if (cachedResponse) {
             core.debug('ℹ using cached response');
         }
-        for (const line of value.split('\n')) {
+        for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
                 command.issue('add-mask', line);
             }
