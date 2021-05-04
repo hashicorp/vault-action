@@ -216,70 +216,9 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 16:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
-"use strict";
-
-const {constants: BufferConstants} = __webpack_require__(293);
-const pump = __webpack_require__(453);
-const bufferStream = __webpack_require__(375);
-
-class MaxBufferError extends Error {
-	constructor() {
-		super('maxBuffer exceeded');
-		this.name = 'MaxBufferError';
-	}
-}
-
-async function getStream(inputStream, options) {
-	if (!inputStream) {
-		return Promise.reject(new Error('Expected a stream'));
-	}
-
-	options = {
-		maxBuffer: Infinity,
-		...options
-	};
-
-	const {maxBuffer} = options;
-
-	let stream;
-	await new Promise((resolve, reject) => {
-		const rejectPromise = error => {
-			// Don't retrieve an oversized buffer.
-			if (error && stream.getBufferedLength() <= BufferConstants.MAX_LENGTH) {
-				error.bufferedData = stream.getBufferedValue();
-			}
-
-			reject(error);
-		};
-
-		stream = pump(inputStream, bufferStream(options), error => {
-			if (error) {
-				rejectPromise(error);
-				return;
-			}
-
-			resolve();
-		});
-
-		stream.on('data', () => {
-			if (stream.getBufferedLength() > maxBuffer) {
-				rejectPromise(new MaxBufferError());
-			}
-		});
-	});
-
-	return stream.getBufferedValue();
-}
-
-module.exports = getStream;
-// TODO: Remove this for the next major release
-module.exports.default = getStream;
-module.exports.buffer = (stream, options) => getStream(stream, {...options, encoding: 'buffer'});
-module.exports.array = (stream, options) => getStream(stream, {...options, array: true});
-module.exports.MaxBufferError = MaxBufferError;
-
+module.exports = require("tls");
 
 /***/ }),
 
@@ -10271,7 +10210,7 @@ module.exports = options => {
 const EventEmitter = __webpack_require__(614);
 const urlLib = __webpack_require__(835);
 const normalizeUrl = __webpack_require__(53);
-const getStream = __webpack_require__(16);
+const getStream = __webpack_require__(997);
 const CachePolicy = __webpack_require__(154);
 const Response = __webpack_require__(93);
 const lowercaseKeys = __webpack_require__(474);
@@ -11288,7 +11227,7 @@ module.exports = url => {
 
 "use strict";
 
-const tls = __webpack_require__(818);
+const tls = __webpack_require__(16);
 
 module.exports = (options = {}) => new Promise((resolve, reject) => {
 	const socket = tls.connect(options, () => {
@@ -12954,14 +12893,12 @@ exports.default = async (body, headers) => {
 /***/ }),
 
 /***/ 790:
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-function isTLSSocket(socket) {
-    return socket.encrypted;
-}
+const tls_1 = __webpack_require__(16);
 const deferToConnect = (socket, fn) => {
     let listeners;
     if (typeof fn === 'function') {
@@ -12978,7 +12915,7 @@ const deferToConnect = (socket, fn) => {
         if (hasConnectListener) {
             listeners.connect();
         }
-        if (isTLSSocket(socket) && hasSecureConnectListener) {
+        if (socket instanceof tls_1.TLSSocket && hasSecureConnectListener) {
             if (socket.authorized) {
                 listeners.secureConnect();
             }
@@ -13137,13 +13074,6 @@ exports.default = (request, delays, options) => {
 
 /***/ }),
 
-/***/ 818:
-/***/ (function(module) {
-
-module.exports = require("tls");
-
-/***/ }),
-
 /***/ 835:
 /***/ (function(module) {
 
@@ -13240,7 +13170,7 @@ module.exports = require("dns");
 "use strict";
 
 const EventEmitter = __webpack_require__(614);
-const tls = __webpack_require__(818);
+const tls = __webpack_require__(16);
 const http2 = __webpack_require__(565);
 const QuickLRU = __webpack_require__(904);
 
@@ -14224,12 +14154,8 @@ async function exportSecrets() {
         const { value, request, cachedResponse } = result;
         if (cachedResponse) {
             core.debug('ℹ using cached response');
-        }
-        for (const line of value.split('\n')) {
-            if (line.length > 0) {
-                command.issue('add-mask', line);
-            }
-        }
+        }        
+        command.issue('add-mask', value);
         if (exportEnv) {
             core.exportVariable(request.envVarName, `${value}`);
         }
@@ -14391,7 +14317,7 @@ const is_response_ok_1 = __webpack_require__(422);
 const deprecation_warning_1 = __webpack_require__(189);
 const normalize_arguments_1 = __webpack_require__(992);
 const calculate_retry_delay_1 = __webpack_require__(594);
-let globalDnsCache;
+const globalDnsCache = new cacheable_lookup_1.default();
 const kRequest = Symbol('request');
 const kResponse = Symbol('response');
 const kResponseSize = Symbol('responseSize');
@@ -14948,9 +14874,6 @@ class Request extends stream_1.Duplex {
         options.cacheOptions = { ...options.cacheOptions };
         // `options.dnsCache`
         if (options.dnsCache === true) {
-            if (!globalDnsCache) {
-                globalDnsCache = new cacheable_lookup_1.default();
-            }
             options.dnsCache = globalDnsCache;
         }
         else if (!is_1.default.undefined(options.dnsCache) && !options.dnsCache.lookup) {
@@ -16094,6 +16017,74 @@ const normalizeArguments = (options, defaults) => {
     return options;
 };
 exports.default = normalizeArguments;
+
+
+/***/ }),
+
+/***/ 997:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const {constants: BufferConstants} = __webpack_require__(293);
+const pump = __webpack_require__(453);
+const bufferStream = __webpack_require__(375);
+
+class MaxBufferError extends Error {
+	constructor() {
+		super('maxBuffer exceeded');
+		this.name = 'MaxBufferError';
+	}
+}
+
+async function getStream(inputStream, options) {
+	if (!inputStream) {
+		return Promise.reject(new Error('Expected a stream'));
+	}
+
+	options = {
+		maxBuffer: Infinity,
+		...options
+	};
+
+	const {maxBuffer} = options;
+
+	let stream;
+	await new Promise((resolve, reject) => {
+		const rejectPromise = error => {
+			// Don't retrieve an oversized buffer.
+			if (error && stream.getBufferedLength() <= BufferConstants.MAX_LENGTH) {
+				error.bufferedData = stream.getBufferedValue();
+			}
+
+			reject(error);
+		};
+
+		stream = pump(inputStream, bufferStream(options), error => {
+			if (error) {
+				rejectPromise(error);
+				return;
+			}
+
+			resolve();
+		});
+
+		stream.on('data', () => {
+			if (stream.getBufferedLength() > maxBuffer) {
+				rejectPromise(new MaxBufferError());
+			}
+		});
+	});
+
+	return stream.getBufferedValue();
+}
+
+module.exports = getStream;
+// TODO: Remove this for the next major release
+module.exports.default = getStream;
+module.exports.buffer = (stream, options) => getStream(stream, {...options, encoding: 'buffer'});
+module.exports.array = (stream, options) => getStream(stream, {...options, array: true});
+module.exports.MaxBufferError = MaxBufferError;
 
 
 /***/ })
