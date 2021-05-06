@@ -1,7 +1,10 @@
 ## Unreleased
 
+## 2.2.0 (May 6th, 2021)
+
 Security:
-* multi-line secrets are now properly masked in logs [GH-208](https://github.com/hashicorp/vault-action/pull/208): CVE allocation pending
+* multi-line secrets are now properly masked in logs [GH-208](https://github.com/hashicorp/vault-action/pull/208)
+  [CVE-2021-32074](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-32074)
 
 Features:
 * JWT auth method is now supported [GH-188](https://github.com/hashicorp/vault-action/pull/188)
