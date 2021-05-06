@@ -1,7 +1,7 @@
 ## Unreleased
 
 Security:
-* multi-line secrets are now properly masked in logs [GH-208](https://github.com/hashicorp/vault-action/pull/208)
+* multi-line secrets are now properly masked in logs [GH-208](https://github.com/hashicorp/vault-action/pull/208): CVE allocation pending
 
 Features:
 * JWT auth method is now supported [GH-188](https://github.com/hashicorp/vault-action/pull/188)
