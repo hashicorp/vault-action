@@ -271,7 +271,7 @@ Here are all the inputs available through `with`:
 | `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
 | `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
 | `role`              | Vault role for specified auth method                                                                                                                 |         |          |
-| `path`              | Custom vault path, if the auth method was enabled at a different path Vault                                                                                                |         |          |
+| `path`              | Custom vault path, if the auth method was enabled at a different path                                                                                                |         |          |
 | `token`             | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
 | `roleId`            | The Role Id for App Role authentication                                                                                                              |         |          |
 | `secretId`          | The Secret Id for App Role authentication                                                                                                            |         |          |
