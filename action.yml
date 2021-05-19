@@ -18,7 +18,7 @@ inputs:
     description: 'Vault role for specified auth method'
     required: false
   path:
-    description: 'Custom vault path, if the auth method was enabled at a different path'
+    description: 'Custom Vault path, if the auth method was mounted at a different path'
     required: false
   token:
     description: 'The Vault Token to be used to authenticate with Vault'
@@ -33,7 +33,7 @@ inputs:
     description: 'The Github Token to be used to authenticate with Vault'
     required: false
   kubernetesTokenPath:
-    description: 'The path to the kubernetes service account secret'
+    description: 'The path to the Kubernetes service account secret'
     required: false
     default: '/var/run/secrets/kubernetes.io/serviceaccount/token'
   authPayload:
