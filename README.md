@@ -10,20 +10,20 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
 
 <!-- TOC -->
 
-- [Example Usage](#example-usage)
-- [Authentication method](#authentication-method)
-- [Key Syntax](#key-syntax)
+- [Vault GitHub Action](#vault-github-action)
+  - [Example Usage](#example-usage)
+  - [Authentication method](#authentication-method)
+  - [Key Syntax](#key-syntax)
     - [Simple Key](#simple-key)
     - [Set Output Variable Name](#set-output-variable-name)
     - [Multiple Secrets](#multiple-secrets)
-    - [Nested Secrets](#nested-secrets)
-- [Other Secret Engines](#other-secret-engines)
-- [Adding Extra Headers](#adding-extra-headers)
-- [Vault Enterprise Features](#vault-enterprise-features)
+  - [Other Secret Engines](#other-secret-engines)
+  - [Adding Extra Headers](#adding-extra-headers)
+  - [Vault Enterprise Features](#vault-enterprise-features)
     - [Namespace](#namespace)
-- [Reference](#reference)
-- [Masking - Hiding Secrets from Logs](#masking---hiding-secrets-from-logs)
-- [Normalization](#normalization)
+  - [Reference](#reference)
+  - [Masking - Hiding Secrets from Logs](#masking---hiding-secrets-from-logs)
+  - [Normalization](#normalization)
 
 <!-- /TOC -->
 
@@ -96,6 +96,15 @@ with:
   jwtPrivateKey: ${{ secrets.JWT_PRIVATE_KEY }}
   jwtKeyPassword: ${{ secrets.JWT_KEY_PASS }}
   jwtTtl: 3600 # 1 hour, default value
+```
+
+- **kubernetes**: you must provide the `role` paramaters. You can optionally override the `kubernetesTokenPath` paramater for custom mounted serviceAccounts. Consider [kubernetes auth](https://www.vaultproject.io/docs/auth/kubernetes) when using self-hosted runners on Kubernetes:
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: kubernetes
+  role: ${{ secrets.KUBE_ROLE }}
 ```
 
 If any other method is specified and you provide an `authPayload`, the action will attempt to `POST` to `auth/${method}/login` with the provided payload and parse out the client token.
@@ -261,14 +270,16 @@ Here are all the inputs available through `with`:
 | `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔        |
 | `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
 | `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
+| `role`              | Vault role for specified auth method                                                                                                                 |         |          |
+| `path`              | Custom vault path, if the auth method was enabled at a different path                                                                                                |         |          |
 | `token`             | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
 | `roleId`            | The Role Id for App Role authentication                                                                                                              |         |          |
 | `secretId`          | The Secret Id for App Role authentication                                                                                                            |         |          |
 | `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
-| `role`              | Vault role for specified auth method                                                                                                                 |         |          |
 | `jwtPrivateKey`     | Base64 encoded Private key to sign JWT                                                                                                               |         |          |
 | `jwtKeyPassword`    | Password for key stored in jwtPrivateKey (if needed)                                                                                                 |         |          |
 | `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
+| `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
 | `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |

@@ -5,7 +5,7 @@ const got = require('got').default;
 const jsonata = require('jsonata');
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
-const AUTH_METHODS = ['approle', 'token', 'github', 'jwt'];
+const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
