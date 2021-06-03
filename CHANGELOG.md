@@ -1,5 +1,9 @@
 ## Unreleased
 
+Features:
+* K8s auth method is now supported [GH-218](https://github.com/hashicorp/vault-action/pull/218)
+* Custom auth method mount points is configurable [GH-218](https://github.com/hashicorp/vault-action/pull/218)
+
 ## 2.2.0 (May 6th, 2021)
 
 Security:
