@@ -976,22 +976,26 @@ exports.default = parseBody;
 // @ts-check
 const core = __webpack_require__(470);
 const rsasign = __webpack_require__(758);
+const fs = __webpack_require__(747);
 
+const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 /***
  * Authenticate with Vault and retrieve a Vault token that can be used for requests.
  * @param {string} method
  * @param {import('got').Got} client
  */
 async function retrieveToken(method, client) {
+    const path = core.getInput('path', { required: false }) || method;
+
     switch (method) {
         case 'approle': {
             const vaultRoleId = core.getInput('roleId', { required: true });
             const vaultSecretId = core.getInput('secretId', { required: true });
-            return await getClientToken(client, method, { role_id: vaultRoleId, secret_id: vaultSecretId });
+            return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
         }
         case 'github': {
             const githubToken = core.getInput('githubToken', { required: true });
-            return await getClientToken(client, method, { token: githubToken });
+            return await getClientToken(client, method, path, { token: githubToken });
         }
         case 'jwt': {
             const role = core.getInput('role', { required: true });
@@ -1000,8 +1004,18 @@ async function retrieveToken(method, client) {
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
             const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
             const jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
-            return await getClientToken(client, method, { jwt: jwt, role: role });
+            return await getClientToken(client, method, path, { jwt: jwt, role: role });
         }
+        case 'kubernetes': {
+            const role = core.getInput('role', { required: true })
+            const tokenPath = core.getInput('kubernetesTokenPath', { required: false }) || defaultKubernetesTokenPath
+            const data = fs.readFileSync(tokenPath, 'utf8')
+            if (!(role && data) && data != "") {
+                throw new Error("Role Name must be set and a kubernetes token must set")
+            }
+            return await getClientToken(client, method, path, { jwt: data, role: role })
+        }
+
         default: {
             if (!method || method === 'token') {
                 return core.getInput('token', { required: true });
@@ -1011,7 +1025,7 @@ async function retrieveToken(method, client) {
                 if (!payload) {
                     throw Error('When using a custom authentication method, you must provide the payload');
                 }
-                return await getClientToken(client, method, JSON.parse(payload.trim()));
+                return await getClientToken(client, method, path, JSON.parse(payload.trim()));
             }
         }
     }
@@ -1047,9 +1061,10 @@ function generateJwt(privateKey, keyPassword, ttl) {
  * Call the appropriate login endpoint and parse out the token in the response.
  * @param {import('got').Got} client
  * @param {string} method
+ * @param {string} path
  * @param {any} payload
  */
-async function getClientToken(client, method, payload) {
+async function getClientToken(client, method, path, payload) {
     /** @type {'json'} */
     const responseType = 'json';
     var options = {
@@ -1057,10 +1072,10 @@ async function getClientToken(client, method, payload) {
         responseType,
     };
 
-    core.debug(`Retrieving Vault Token from v1/auth/${method}/login endpoint`);
+    core.debug(`Retrieving Vault Token from v1/auth/${path}/login endpoint`);
 
     /** @type {import('got').Response<VaultLoginResponse>} */
-    const response = await client.post(`v1/auth/${method}/login`, options);
+    const response = await client.post(`v1/auth/${path}/login`, options);
     if (response && response.body && response.body.auth && response.body.auth.client_token) {
         core.debug('✔ Vault Token successfully retrieved');
 
@@ -14577,7 +14592,7 @@ const got = __webpack_require__(77).default;
 const jsonata = __webpack_require__(350);
 const { auth: { retrieveToken }, secrets: { getSecrets } } = __webpack_require__(676);
 
-const AUTH_METHODS = ['approle', 'token', 'github', 'jwt'];
+const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
