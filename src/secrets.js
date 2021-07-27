@@ -1,6 +1,5 @@
 const jsonata = require("jsonata");
-
-
+const { normalizeOutputKey, wildcard} = require('./action');
 /**
  * @typedef {Object} SecretRequest
  * @property {string} path
@@ -24,6 +23,7 @@ const jsonata = require("jsonata");
 async function getSecrets(secretRequests, client) {
     const responseCache = new Map();
     const results = [];
+
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
 
@@ -38,24 +38,68 @@ async function getSecrets(secretRequests, client) {
             body = result.body;
             responseCache.set(requestPath, body);
         }
-        if (!selector.match(/.*[\.].*/)) {
-            selector = '"' + selector + '"'
-        }
-        selector = "data." + selector
-        body = JSON.parse(body)
-        if (body.data["data"] != undefined) {
-            selector = "data." + selector
-        }
 
-        const value = selectData(body, selector);
-        results.push({
-            request: secretRequest,
-            value,
-            cachedResponse
-        });
+        if (selector == wildcard) {                     
+            body = JSON.parse(body);
+            const keys = body.data;
+            for (let key in keys) {
+                let newRequest = Object.assign({},secretRequest);
+                newRequest.selector = key;                  
+                if (secretRequest.selector === secretRequest.outputVarName) {
+                    newRequest.outputVarName = key;
+                    newRequest.envVarName = key;        		
+                }
+                else {
+                    newRequest.outputVarName = secretRequest.outputVarName+key;
+                    newRequest.envVarName = secretRequest.envVarName+key;        		
+                }
+                newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
+
+                selector = key;
+
+                //This code (with exception of parsing body again and using newRequest instead of secretRequest) should match the else code for a single key
+                if (!selector.match(/.*[\.].*/)) {
+                    selector = '"' + selector + '"'
+                }
+                selector = "data." + selector
+                //body = JSON.parse(body)
+                if (body.data["data"] != undefined) {
+                    selector = "data." + selector
+                }
+                const value = selectData(body, selector);
+                results.push({
+                    request: newRequest,
+                    value,
+                    cachedResponse
+                });
+
+                // used cachedResponse for first entry in wildcard list and set to true for the rest
+                cachedResponse = true;
+            }
+
+        }
+        else {
+            if (!selector.match(/.*[\.].*/)) {
+                selector = '"' + selector + '"'
+            }
+            selector = "data." + selector
+            body = JSON.parse(body)
+            if (body.data["data"] != undefined) {
+                selector = "data." + selector
+            }
+
+            const value = selectData(body, selector);
+            results.push({
+                request: secretRequest,
+                value,
+                cachedResponse
+            });
+        }   
     }
     return results;
 }
+
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result

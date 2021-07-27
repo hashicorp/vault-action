@@ -162,6 +162,26 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
     });
 
+    it('get wildcard secrets', async () => {
+        mockInput(`secret/data/test * ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+    });
+
+    it('get wildcard secrets with name prefix', async () => {
+        mockInput(`secret/data/test * | GROUP_ ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'SUPERSECRET');
+    });
+
     it('leading slash kvv2', async () => {
         mockInput('/secret/data/foobar fookv2');
 
@@ -184,6 +204,26 @@ describe('integration', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERCUSTOMSECRET');
+    });
+
+    it('get K/V v1 wildcard secrets', async () => {
+        mockInput(`secret-kv1/test * ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET');
+    });
+
+    it('get K/V v1 wildcard secrets with name prefix', async () => {
+        mockInput(`secret-kv1/test * | GROUP_ ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'CUSTOMSECRET');
     });
 
     it('leading slash kvv1', async () => {

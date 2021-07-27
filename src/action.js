@@ -3,6 +3,25 @@ const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got').default;
 const jsonata = require('jsonata');
+module.exports = {};
+const wildcard = '*';
+module.exports.wildcard = wildcard;
+
+/**
+ * Replaces any dot chars to __ and removes non-ascii charts
+ * @param {string} dataKey
+ * @param {boolean=} isEnvVar
+ */
+function normalizeOutputKey(dataKey, isEnvVar = false) {
+    let outputKey = dataKey
+        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
+    if (isEnvVar) {
+        outputKey = outputKey.toUpperCase();
+    }
+    return outputKey;
+}
+module.exports.normalizeOutputKey = normalizeOutputKey;
+
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
@@ -90,6 +109,7 @@ async function exportSecrets() {
         core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
     }
 };
+module.exports.exportSecrets = exportSecrets;
 
 /** @typedef {Object} SecretRequest 
  * @property {string} path
@@ -140,7 +160,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== wildcard && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -159,20 +179,7 @@ function parseSecretsInput(secretsInput) {
     }
     return output;
 }
-
-/**
- * Replaces any dot chars to __ and removes non-ascii charts
- * @param {string} dataKey
- * @param {boolean=} isEnvVar
- */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
-    let outputKey = dataKey
-        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
-    if (isEnvVar) {
-        outputKey = outputKey.toUpperCase();
-    }
-    return outputKey;
-}
+module.exports.parseSecretsInput = parseSecretsInput;
 
 /**
  * @param {string} inputKey
@@ -198,10 +205,14 @@ function parseHeadersInput(inputKey, inputOptions) {
             return map;
         }, new Map());
 }
-
+module.exports.parseHeadersInput = parseHeadersInput;
+// restructured module.exports to avoid circular dependency when secrets imports this.
+/*
 module.exports = {
     exportSecrets,
     parseSecretsInput,
     normalizeOutputKey,
-    parseHeadersInput
+    parseHeadersInput,
+    wildcard
 };
+*/

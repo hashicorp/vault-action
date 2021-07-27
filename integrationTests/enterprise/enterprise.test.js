@@ -71,6 +71,22 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUPERSECRET_IN_NAMESPACE');
     });
 
+    it('get wildcard secrets', async () => {
+        mockInput('secret/data/test *');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET_IN_NAMESPACE');
+    });
+
+    it('get wildcard secrets with name prefix', async () => {
+        mockInput('secret/data/test * | GROUP_');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'SUPERSECRET_IN_NAMESPACE');
+    });
+
     it('get nested secret', async () => {
         mockInput('secret/data/nested/test otherSecret');
 
@@ -100,6 +116,22 @@ describe('integration', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET_IN_NAMESPACE');
+    });
+
+    it('get wildcard secrets from K/V v1', async () => {
+        mockInput('my-secret/test *');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET_IN_NAMESPACE');
+    });
+
+    it('get wildcard secrets from K/V v1 with name prefix', async () => {
+        mockInput('my-secret/test * | GROUP_');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'CUSTOMSECRET_IN_NAMESPACE');
     });
 
     it('get nested secret from K/V v1', async () => {
