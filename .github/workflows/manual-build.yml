@@ -4,6 +4,7 @@ on:
       - master
   pull_request_target:
     types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 jobs:
   build:
