@@ -41,7 +41,11 @@ async function getSecrets(secretRequests, client) {
 
         if (selector == wildcard) {                     
             body = JSON.parse(body);
-            const keys = body.data;
+            let keys = body.data;
+            if (body.data["data"] != undefined) {
+                keys = keys.data;
+            }
+
             for (let key in keys) {
                 let newRequest = Object.assign({},secretRequest);
                 newRequest.selector = key;                  
@@ -73,6 +77,9 @@ async function getSecrets(secretRequests, client) {
                     value,
                     cachedResponse
                 });
+
+                //DEBUG
+                //console.log("After", newRequest, value);
 
                 // used cachedResponse for first entry in wildcard list and set to true for the rest
                 cachedResponse = true;

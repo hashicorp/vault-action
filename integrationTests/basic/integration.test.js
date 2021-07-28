@@ -226,6 +226,14 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'CUSTOMSECRET');
     });
 
+    it('get wildcard nested secret from K/V v1', async () => {
+        mockInput('secret-kv1/nested/test *');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERCUSTOMSECRET');
+    });
+
     it('leading slash kvv1', async () => {
         mockInput('/secret-kv1/foobar fookv1');
 
@@ -256,6 +264,17 @@ describe('integration', () => {
             expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
         });
 
+        it('wildcard supports cubbyhole', async () => {            
+            mockInput('/cubbyhole/test *');
+
+            await exportSecrets();
+            
+            expect(core.exportVariable).toBeCalledTimes(2);
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
+            expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+        });
+        
         it('caches responses', async () => {            
             mockInput(`
             /cubbyhole/test foo ;
