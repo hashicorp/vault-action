@@ -74,6 +74,8 @@ jobs:
 
     - name: Run docker-compose
       run: docker-compose up -d vault-enterprise
+      env:
+        VAULT_LICENSE_CI: ${{ secrets.VAULT_LICENSE_CI }}
 
     - uses: actions/setup-node@v1
       with:
@@ -93,7 +95,7 @@ jobs:
     - name: NPM Build
       run: npm run build
 
-    - name: NPM Run test:intergration:enterprise
+    - name: NPM Run test:integration:enterprise
       run: npm run test:integration:enterprise
       env:
         VAULT_HOST: localhost
