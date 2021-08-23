@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 2.3.1 (August 18th, 2021)
+
+Improvements:
+* bump normalize-url from 4.5.0 to 4.5.1 [GH-227](https://github.com/hashicorp/vault-action/pull/227)
+* bump path-parse from 1.0.6 to 1.0.7 [GH-239](https://github.com/hashicorp/vault-action/pull/239)
+
 ## 2.3.0 (June 23rd, 2021)
 
 Features:
