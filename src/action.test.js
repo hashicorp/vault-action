@@ -27,12 +27,11 @@ describe('parseSecretsInput', () => {
 
     it('parses all secrets', () => {
         const output = parseSecretsInput('test *');
-        console.log(output);
         expect(output).toContainEqual({
             path: 'test',
             selector: '*',
             outputVarName: '',
-            envVarName: ''
+            envVarName: '*'
         });
     });
 

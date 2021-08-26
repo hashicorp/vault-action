@@ -10895,7 +10895,9 @@ async function getSecrets(secretRequests, client) {
         }
 
         let value;
-        if(selector !== "*"){
+        if(selector === "*"){
+            value = body.data["data"];
+        } else {
             if (!selector.match(/.*[\.].*/)) {
                 selector = '"' + selector + '"'
             }
@@ -10905,8 +10907,6 @@ async function getSecrets(secretRequests, client) {
                 selector = "data." + selector
             }
             value = selectData(body, selector);
-        } else {
-            value = body.data["data"];
         }
 
         results.push({
@@ -14690,8 +14690,8 @@ async function exportSecrets() {
             addMask(value)
             core.exportVariable(request.envVarName, value);
         }
-        //core.setOutput(request.outputVarName, `${value}`);
-        //core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
+        core.setOutput(request.outputVarName, typeof value === "object" ? value : `${value}`);
+        core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
     }
 };
 
@@ -14743,7 +14743,7 @@ function parseSecretsInput(secretsInput) {
         if (selectorQuoted === "*") {
             output.push({
                 path,
-                envVarName: "",
+                envVarName: "*",
                 outputVarName: "",
                 selector: "*"
             });
