@@ -38,16 +38,22 @@ async function getSecrets(secretRequests, client) {
             body = result.body;
             responseCache.set(requestPath, body);
         }
-        if (!selector.match(/.*[\.].*/)) {
-            selector = '"' + selector + '"'
-        }
-        selector = "data." + selector
-        body = JSON.parse(body)
-        if (body.data["data"] != undefined) {
+
+        let value;
+        if(selector !== "*"){
+            if (!selector.match(/.*[\.].*/)) {
+                selector = '"' + selector + '"'
+            }
             selector = "data." + selector
+            body = JSON.parse(body)
+            if (body.data["data"] != undefined) {
+                selector = "data." + selector
+            }
+            value = selectData(body, selector);
+        } else {
+            value = body.data["data"];
         }
 
-        const value = selectData(body, selector);
         results.push({
             request: secretRequest,
             value,

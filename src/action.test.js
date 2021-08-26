@@ -25,6 +25,17 @@ describe('parseSecretsInput', () => {
         });
     });
 
+    it('parses all secrets', () => {
+        const output = parseSecretsInput('test *');
+        console.log(output);
+        expect(output).toContainEqual({
+            path: 'test',
+            selector: '*',
+            outputVarName: '',
+            envVarName: ''
+        });
+    });
+
     it('parses mapped secret', () => {
         const output = parseSecretsInput('test key|testName');
         expect(output).toHaveLength(1);

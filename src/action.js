@@ -7,6 +7,14 @@ const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
 
+function addMask(value) {
+    for (const line of value.replace(/\r/g, '').split('\n')) {
+        if (line.length > 0) {
+            command.issue('add-mask', line);
+        }
+    }
+}
+
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
@@ -78,16 +86,19 @@ async function exportSecrets() {
         if (cachedResponse) {
             core.debug('ℹ using cached response');
         }
-        for (const line of value.replace(/\r/g, '').split('\n')) {
-            if (line.length > 0) {
-                command.issue('add-mask', line);
-            }
+
+
+        if (exportEnv && typeof value === "object") {
+            Object.entries(value).forEach(([envKey, envValue]) => {
+                addMask(envValue);
+                core.exportVariable(envKey, envValue);
+            });
+        } else if (exportEnv) {
+            addMask(value)
+            core.exportVariable(request.envVarName, value);
         }
-        if (exportEnv) {
-            core.exportVariable(request.envVarName, `${value}`);
-        }
-        core.setOutput(request.outputVarName, `${value}`);
-        core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
+        //core.setOutput(request.outputVarName, `${value}`);
+        //core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
     }
 };
 
@@ -136,26 +147,36 @@ function parseSecretsInput(secretsInput) {
 
         const [path, selectorQuoted] = pathParts;
 
-        /** @type {any} */
-        const selectorAst = jsonata(selectorQuoted).ast();
-        const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
+        if (selectorQuoted === "*") {
+            output.push({
+                path,
+                envVarName: "",
+                outputVarName: "",
+                selector: "*"
+            });
+        } else {
+            /** @type {any} */
+            const selectorAst = jsonata(selectorQuoted).ast();
+            const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
-            throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+            if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "wildcard" && selectorAst.type !== "string" && !outputVarName) {
+                throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+            }
+
+            let envVarName = outputVarName;
+            if (!outputVarName) {
+                outputVarName = normalizeOutputKey(selector);
+                envVarName = normalizeOutputKey(selector, true);
+            }
+
+            output.push({
+                path,
+                envVarName,
+                outputVarName,
+                selector
+            });
+
         }
-
-        let envVarName = outputVarName;
-        if (!outputVarName) {
-            outputVarName = normalizeOutputKey(selector);
-            envVarName = normalizeOutputKey(selector, true);
-        }
-
-        output.push({
-            path,
-            envVarName,
-            outputVarName,
-            selector
-        });
     }
     return output;
 }
