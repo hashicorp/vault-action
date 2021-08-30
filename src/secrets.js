@@ -41,7 +41,7 @@ async function getSecrets(secretRequests, client) {
 
         let value;
         if(selector === "*"){
-            value = body.data["data"];
+            value = body.data["data"] != undefined ? body.data["data"] : body.data;
         } else {
             if (!selector.match(/.*[\.].*/)) {
                 selector = '"' + selector + '"'
