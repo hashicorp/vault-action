@@ -2,6 +2,7 @@
 const core = require('@actions/core');
 const rsasign = require('jsrsasign');
 const fs = require('fs');
+const got = require('got').default;
 
 const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 /***
@@ -24,11 +25,21 @@ async function retrieveToken(method, client) {
         }
         case 'jwt': {
             const role = core.getInput('role', { required: true });
-            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: true });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
             const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
-            const jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            /** @type {string} */
+            let jwt;
+            const actionsIDTokenRequestToken = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
+            const actionsIDTokenRequestURL = process.env['ACTIONS_ID_TOKEN_REQUEST_URL'];
+
+            if (!privateKeyRaw && actionsIDTokenRequestToken && actionsIDTokenRequestURL) {
+                jwt = await getJwt(actionsIDTokenRequestToken, `${actionsIDTokenRequestURL}&audience=sigstore`);
+            } else {
+                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            }
+
             return await getClientToken(client, method, path, { jwt: jwt, role: role });
         }
         case 'kubernetes': {
@@ -83,6 +94,34 @@ function generateJwt(privateKey, keyPassword, ttl) {
 }
 
 /***
+ * Call the appropriate endpoint and retrieves job's JWT
+ * @param {string} actionsIDTokenRequestToken
+ * @param {string} actionsIDTokenRequestURL
+ */
+async function getJwt(actionsIDTokenRequestToken, actionsIDTokenRequestURL) {
+    /** @type {'json'} */
+    const responseType = 'json';
+    const options = {
+        headers: {
+            Authorization: `Bearer ${actionsIDTokenRequestToken}`,
+        },
+        responseType,
+    };
+    const client = got.extend(options)
+
+    core.debug(`Retrieving Vault JWT from ${actionsIDTokenRequestURL} endpoint`);
+    /** @type {import('got').Response<GithubActionsIdTokenResponse>} */
+    const response = await client.get(actionsIDTokenRequestURL, options);
+
+    if (response && response.body && response.body.value) {
+        core.debug('✔ Github Actions ID Token successfully retrieved');
+        return response.body.value;
+    } else {
+        throw Error(`Unable to retrieve token from ${actionsIDTokenRequestURL}'s endpoint.`);
+    }
+}
+
+/***
  * Call the appropriate login endpoint and parse out the token in the response.
  * @param {import('got').Got} client
  * @param {string} method
@@ -125,6 +164,12 @@ async function getClientToken(client, method, path, payload) {
  *  lease_duration: number;
  *  renewable: boolean;
  * }} auth
+ */
+
+/***
+ * @typedef {Object} GithubActionsIdTokenResponse
+ * @property {string} value
+ * @property {string} count
  */
 
 module.exports = {

@@ -86,7 +86,8 @@ with:
   githubToken: ${{ secrets.MY_GITHUB_TOKEN }}
   caCertificate: ${{ secrets.VAULTCA }}
 ```
-- **jwt**: you must provide a `role` & `jwtPrivateKey` parameters, additionally you can pass `jwtKeyPassword` & `jwtTtl` parameters
+- **jwt**: you must provide a `role` parameter, additionally you can pass `jwtPrivateKey`, `jwtKeyPassword` & `jwtTtl` parameters. 
+  Github provided JWT will be used if `jwtPrivateKey` was not specified
 ```yaml
 ...
 with:
@@ -96,6 +97,15 @@ with:
   jwtPrivateKey: ${{ secrets.JWT_PRIVATE_KEY }}
   jwtKeyPassword: ${{ secrets.JWT_KEY_PASS }}
   jwtTtl: 3600 # 1 hour, default value
+```
+
+**Notice:** In order for Github provided JWT to work workflow should have `id-token: write` specified in the `permissions` section  of a workflow
+
+```yaml
+...
+permissions:
+  id-token: write
+...
 ```
 
 - **kubernetes**: you must provide the `role` paramaters. You can optionally override the `kubernetesTokenPath` paramater for custom mounted serviceAccounts. Consider [kubernetes auth](https://www.vaultproject.io/docs/auth/kubernetes) when using self-hosted runners on Kubernetes:
