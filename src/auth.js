@@ -24,15 +24,16 @@ async function retrieveToken(method, client) {
             return await getClientToken(client, method, path, { token: githubToken });
         }
         case 'jwt': {
-            const role = core.getInput('role', { required: true });
-            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
-            const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
-            const keyPassword = core.getInput('jwtKeyPassword', { required: false });
-            const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
             /** @type {string} */
             let jwt;
             const actionsIDTokenRequestToken = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
             const actionsIDTokenRequestURL = process.env['ACTIONS_ID_TOKEN_REQUEST_URL'];
+
+            const role = core.getInput('role', { required: true });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: (!(actionsIDTokenRequestToken && actionsIDTokenRequestURL)) });
+            const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
+            const keyPassword = core.getInput('jwtKeyPassword', { required: false });
+            const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
 
             if (!privateKeyRaw && actionsIDTokenRequestToken && actionsIDTokenRequestURL) {
                 jwt = await getJwt(actionsIDTokenRequestToken, `${actionsIDTokenRequestURL}&audience=sigstore`);
