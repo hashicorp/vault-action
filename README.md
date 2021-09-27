@@ -99,12 +99,13 @@ with:
   jwtTtl: 3600 # 1 hour, default value
 ```
 
-**Notice:** In order for Github provided JWT to work workflow should have `id-token: write` specified in the `permissions` section  of a workflow
+**Notice:** In order for Github provided JWT to work workflow should have `id-token: write` & `contents: read` specified in the `permissions` section  of a workflow
 
 ```yaml
 ...
 permissions:
   id-token: write
+  contents: read
 ...
 ```
 
