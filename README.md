@@ -86,8 +86,28 @@ with:
   githubToken: ${{ secrets.MY_GITHUB_TOKEN }}
   caCertificate: ${{ secrets.VAULTCA }}
 ```
-- **jwt**: you must provide a `role` parameter, additionally you can pass `jwtPrivateKey`, `jwtKeyPassword` & `jwtTtl` parameters. 
-  Github provided JWT will be used if `jwtPrivateKey` was not specified
+- **jwt**: (Github OIDC) you must provide a `role` parameter, additionally you can pass `jwtGithubAudience` parameter.
+
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: jwt
+  role: github-action
+```
+
+**Notice:** For Github provided OIDC token to work workflow should have `id-token: write` & `contents: read` specified in the `permissions` section  of a workflow
+
+```yaml
+...
+permissions:
+  id-token: write
+  contents: read
+...
+```
+
+- **jwt**: you must provide a `role` parameter, additionally you can pass `jwtPrivateKey`, `jwtKeyPassword`, & `jwtTtl` parameters.
+
 ```yaml
 ...
 with:
@@ -97,16 +117,6 @@ with:
   jwtPrivateKey: ${{ secrets.JWT_PRIVATE_KEY }}
   jwtKeyPassword: ${{ secrets.JWT_KEY_PASS }}
   jwtTtl: 3600 # 1 hour, default value
-```
-
-**Notice:** In order for Github provided JWT to work workflow should have `id-token: write` & `contents: read` specified in the `permissions` section  of a workflow
-
-```yaml
-...
-permissions:
-  id-token: write
-  contents: read
-...
 ```
 
 - **kubernetes**: you must provide the `role` paramaters. You can optionally override the `kubernetesTokenPath` paramater for custom mounted serviceAccounts. Consider [kubernetes auth](https://www.vaultproject.io/docs/auth/kubernetes) when using self-hosted runners on Kubernetes:
@@ -289,6 +299,7 @@ Here are all the inputs available through `with`:
 | `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
 | `jwtPrivateKey`     | Base64 encoded Private key to sign JWT                                                                                                               |         |          |
 | `jwtKeyPassword`    | Password for key stored in jwtPrivateKey (if needed)                                                                                                 |         |          |
+| `jwtGithubAudience` | Audience (`aud`) for Github OIDC token                                                                                                               | sigstore|          |
 | `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
 | `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
