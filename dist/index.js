@@ -1253,7 +1253,7 @@ async function retrieveToken(method, client) {
             const githubAudience = core.getInput('jwtGithubAudience', { required: false });
 
             if (!privateKey) {
-                jwt = await core.getIDToken(githubAudience || 'sigstore')
+                jwt = await core.getIDToken(githubAudience)
             } else {
                 jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
             }
