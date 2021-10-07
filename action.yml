@@ -72,7 +72,6 @@ inputs:
   jwtGithubAudience:
     description: 'Identifies the recipient ("aud" claim) that the JWT is intended for'
     required: false
-    default: 'sigstore'
   jwtTtl:
     description: 'Time in seconds, after which token expires'
     required: false
