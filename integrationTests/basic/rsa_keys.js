@@ -72,6 +72,7 @@ f52E9W2iFNt3sxB0KFtOkbkCAwEAAQ==
 `;
 
 module.exports = {
+    privateRsaKey,
     privateRsaKeyBase64,
     publicRsaKey
 };
