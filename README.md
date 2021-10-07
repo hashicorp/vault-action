@@ -96,7 +96,7 @@ with:
   role: github-action
 ```
 
-**Notice:** For Github provided OIDC token to work workflow should have `id-token: write` & `contents: read` specified in the `permissions` section  of a workflow
+**Notice:** For Github provided OIDC token to work, the workflow should have `id-token: write` & `contents: read` specified in the `permissions` section of the workflow
 
 ```yaml
 ...
@@ -106,7 +106,7 @@ permissions:
 ...
 ```
 
-- **jwt**: you must provide a `role` parameter, additionally you can pass `jwtPrivateKey`, `jwtKeyPassword`, & `jwtTtl` parameters.
+- **jwt**: you must provide a `role` & `jwtPrivateKey` parameters, additionally you can pass `jwtKeyPassword` & `jwtTtl` parameters
 
 ```yaml
 ...
