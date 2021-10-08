@@ -23,12 +23,21 @@ async function retrieveToken(method, client) {
             return await getClientToken(client, method, path, { token: githubToken });
         }
         case 'jwt': {
+            /** @type {string} */
+            let jwt;
             const role = core.getInput('role', { required: true });
-            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: true });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
             const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
-            const jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            const githubAudience = core.getInput('jwtGithubAudience', { required: false });
+
+            if (!privateKey) {
+                jwt = await core.getIDToken(githubAudience)
+            } else {
+                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            }
+
             return await getClientToken(client, method, path, { jwt: jwt, role: role });
         }
         case 'kubernetes': {

@@ -69,6 +69,9 @@ inputs:
   jwtKeyPassword:
     description: 'Password for key stored in jwtPrivateKey (if needed)'
     required: false
+  jwtGithubAudience:
+    description: 'Identifies the recipient ("aud" claim) that the JWT is intended for'
+    required: false
   jwtTtl:
     description: 'Time in seconds, after which token expires'
     required: false

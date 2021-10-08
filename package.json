@@ -52,7 +52,7 @@
         "@actions/core": ">=1 <2"
     },
     "devDependencies": {
-        "@actions/core": "^1.2.3",
+        "@actions/core": "^1.6.0",
         "@types/got": "^9.6.11",
         "@types/jest": "^26.0.13",
         "@zeit/ncc": "^0.22.3",
