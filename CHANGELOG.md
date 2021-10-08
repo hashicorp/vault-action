@@ -1,5 +1,8 @@
 ## Unreleased
 
+Features:
+* GitHub provided JWT auth is now supported [GH-257](https://github.com/hashicorp/vault-action/pull/257)
+
 ## 2.3.1 (August 23rd, 2021)
 
 Improvements:
