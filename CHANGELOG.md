@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.4.0 (October 21st, 2021)
+
 Features:
 * GitHub provided JWT auth is now supported [GH-257](https://github.com/hashicorp/vault-action/pull/257)
 
