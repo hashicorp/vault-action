@@ -86,7 +86,28 @@ with:
   githubToken: ${{ secrets.MY_GITHUB_TOKEN }}
   caCertificate: ${{ secrets.VAULTCA }}
 ```
+- **jwt**: (Github OIDC) you must provide a `role` parameter, additionally you can pass `jwtGithubAudience` parameter.
+
+```yaml
+...
+with:
+  url: https://vault.mycompany.com:8200
+  method: jwt
+  role: github-action
+```
+
+**Notice:** For Github provided OIDC token to work, the workflow should have `id-token: write` & `contents: read` specified in the `permissions` section of the workflow
+
+```yaml
+...
+permissions:
+  id-token: write
+  contents: read
+...
+```
+
 - **jwt**: you must provide a `role` & `jwtPrivateKey` parameters, additionally you can pass `jwtKeyPassword` & `jwtTtl` parameters
+
 ```yaml
 ...
 with:
@@ -278,6 +299,7 @@ Here are all the inputs available through `with`:
 | `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
 | `jwtPrivateKey`     | Base64 encoded Private key to sign JWT                                                                                                               |         |          |
 | `jwtKeyPassword`    | Password for key stored in jwtPrivateKey (if needed)                                                                                                 |         |          |
+| `jwtGithubAudience` | Identifies the recipient ("aud" claim) that the JWT is intended for                                                                                   |`sigstore`|          |
 | `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
 | `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
