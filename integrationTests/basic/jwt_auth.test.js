@@ -233,6 +233,15 @@ describe('jwt auth', () => {
             expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
         })
 
+        it('successfully authenticates as default role without specifying it', async () => {
+            when(core.getInput)
+                .calledWith('role')
+                .mockReturnValueOnce(null);
+
+            await exportSecrets();
+            expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+        })
+
     });
 
 });
