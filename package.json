@@ -54,7 +54,7 @@
     "devDependencies": {
         "@actions/core": "^1.6.0",
         "@types/got": "^9.6.11",
-        "@types/jest": "^26.0.13",
+        "@types/jest": "^27.4.1",
         "@zeit/ncc": "^0.22.3",
         "jest": "^26.4.2",
         "jest-when": "^2.7.2",
