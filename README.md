@@ -60,20 +60,6 @@ jobs:
 Consider using a [Vault authentication method](https://www.vaultproject.io/docs/auth) such as the JWT auth method with
 [GitHub OIDC tokens](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) or the AppRole auth method. You can configure which by using the `method` parameter.
 
-### Token
-
-For the default method of authenticating to Vault,
-use a [Vault token](https://www.vaultproject.io/docs/concepts/tokens).
-Set the Vault token as a GitHub secret and pass
-it to the `token` parameter.
-
-```yaml
-with:
-  url: https://vault.mycompany.com:8200
-  caCertificate: ${{ secrets.VAULT_CA_CERT }}
-  token: ${{ secrets.VAULT_TOKEN }}
-```
-
 ### JWT with GitHub OIDC Tokens
 
 You can configure trust between a GitHub Actions workflow
@@ -98,7 +84,10 @@ Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) f
 
 - `role_type`: `jwt`
 
-- `user_claim`: Set this to a claim name (e.g., `run_id`) in the
+- `bound_audiences`: `["sigstore"]`. Update this parameter if you change
+  the `aud` claim in the GitHub OIDC token.
+
+- `user_claim`: Set this to a claim name (e.g., `repository`) in the
   [GitHub OIDC token](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#understanding-the-oidc-token).
 
 - `bound_claims` OR `bound_subject`: match on [GitHub subject claims](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#example-subject-claims).
@@ -146,7 +135,7 @@ with:
   caCertificate: ${{ secrets.VAULT_CA_CERT }}
   role: <Vault JWT Auth Role Name>
   method: jwt
-  jwtGithubAudience: sigstore # default aud claim
+  jwtGithubAudience: sigstore # set the GitHub token's aud claim
 ```
 
 ### AppRole
@@ -163,6 +152,20 @@ with:
   method: approle
   roleId: ${{ secrets.VAULT_ROLE_ID }}
   secretId: ${{ secrets.VAULT_SECRET_ID }}
+```
+
+### Token
+
+For the default method of authenticating to Vault,
+use a [Vault token](https://www.vaultproject.io/docs/concepts/tokens).
+Set the Vault token as a GitHub secret and pass
+it to the `token` parameter.
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  token: ${{ secrets.VAULT_TOKEN }}
 ```
 
 ### GitHub
