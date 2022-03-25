@@ -84,8 +84,9 @@ Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) f
 
 - `role_type`: `jwt`
 
-- `bound_audiences`: `["sigstore"]`. Update this parameter if you change
-  the `aud` claim in the GitHub OIDC token.
+- `bound_audiences`: `"http//github.com/<org>"`. Update this parameter if
+  you change the `aud` claim in the GitHub OIDC token via the
+  `jwtGithubAudience` parameter in the action config.
 
 - `user_claim`: Set this to a claim name (e.g., `repository`) in the
   [GitHub OIDC token](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect#understanding-the-oidc-token).
