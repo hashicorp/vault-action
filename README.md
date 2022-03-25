@@ -126,8 +126,8 @@ jobs:
 ```
 
 In the action, provide the name of the Vault role you created to the `role` parameter.
-You can optionally set the `jwtGithubAudience` parameter if you overwrote the
-default `aud` claim.
+You can optionally set the `jwtGithubAudience` parameter to change the `aud`
+claim from its default.
 
 ```yaml
 with:
