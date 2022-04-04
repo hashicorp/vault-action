@@ -84,7 +84,7 @@ Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) f
 
 - `role_type`: `jwt`
 
-- `bound_audiences`: `"http//github.com/<org>"`. Update this parameter if
+- `bound_audiences`: `"https://github.com/<org>"`. Update this parameter if
   you change the `aud` claim in the GitHub OIDC token via the
   `jwtGithubAudience` parameter in the action config.
 
