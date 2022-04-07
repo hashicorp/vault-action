@@ -51,6 +51,9 @@ function mockGithubOIDCResponse(aud= "https://github.com/hashicorp/vault-action"
     return rsasign.KJUR.jws.JWS.sign(alg, JSON.stringify(header), JSON.stringify(payload), decryptedKey);
 }
 
+// The sign call inside this function takes a while to run, so cache the default JWT in a constant.
+const defaultGithubJwt = mockGithubOIDCResponse();
+
 describe('jwt auth', () => {
     beforeAll(async () => {
         // Verify Connection
@@ -99,7 +102,8 @@ describe('jwt auth', () => {
                 'X-Vault-Token': 'testtoken',
             },
             json: {
-                jwt_validation_pubkeys: publicRsaKey
+                jwt_validation_pubkeys: publicRsaKey,
+                default_role: "default"
             }
         });
 
@@ -199,19 +203,19 @@ describe('jwt auth', () => {
                 .mockReturnValueOnce('');
 
             when(core.getInput)
-                .calledWith('role')
-                .mockReturnValueOnce('default');
-
-            when(core.getInput)
                 .calledWith('secrets')
                 .mockReturnValueOnce('secret/data/test secret');
-
-            when(core.getIDToken)
-                .calledWith()
-                .mockReturnValueOnce(mockGithubOIDCResponse());
         });
 
         it('successfully authenticates', async () => {
+            when(core.getInput)
+                .calledWith('role')
+                .mockReturnValueOnce('default');
+
+            when(core.getIDToken)
+                .calledWith()
+                .mockReturnValueOnce(defaultGithubJwt);
+
             await exportSecrets();
             expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
         });
@@ -228,6 +232,19 @@ describe('jwt auth', () => {
             when(core.getIDToken)
                 .calledWith()
                 .mockReturnValueOnce(mockGithubOIDCResponse('sigstore'));
+
+            await exportSecrets();
+            expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+        })
+
+        it('successfully authenticates as default role without specifying it', async () => {
+            when(core.getInput)
+                .calledWith('role')
+                .mockReturnValueOnce(null);
+
+            when(core.getIDToken)
+                .calledWith()
+                .mockReturnValueOnce(defaultGithubJwt);
 
             await exportSecrets();
             expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');

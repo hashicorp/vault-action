@@ -25,7 +25,7 @@ async function retrieveToken(method, client) {
         case 'jwt': {
             /** @type {string} */
             let jwt;
-            const role = core.getInput('role', { required: true });
+            const role = core.getInput('role', { required: false });
             const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
