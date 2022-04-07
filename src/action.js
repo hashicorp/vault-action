@@ -14,7 +14,7 @@ async function exportSecrets() {
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
-    const secretsInput = core.getInput('secrets', { required: true });
+    const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
@@ -103,6 +103,10 @@ async function exportSecrets() {
  * @param {string} secretsInput
  */
 function parseSecretsInput(secretsInput) {
+    if (!secretsInput) {
+      return []
+    }
+
     const secrets = secretsInput
         .split(';')
         .filter(key => !!key)

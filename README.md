@@ -388,7 +388,7 @@ Here are all the inputs available through `with`:
 | Input               | Description                                                                                                                                          | Default | Required |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
 | `url`               | The URL for the vault endpoint                                                                                                                       |         | ✔        |
-| `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         | ✔        |
+| `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         |          |
 | `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
 | `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
 | `role`              | Vault role for specified auth method                                                                                                                 |         |          |

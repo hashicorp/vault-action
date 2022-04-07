@@ -331,4 +331,13 @@ with blank lines
         expect(command.issue).toBeCalledWith('add-mask', 'with blank lines');
         expect(core.setOutput).toBeCalledWith('key', multiLineString);
     })
+
+  it('export only Vault token, no secrets', async () => {
+    mockExportToken("true")
+
+    await exportSecrets();
+
+    expect(core.exportVariable).toBeCalledTimes(1);
+    expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
+  })
 });
