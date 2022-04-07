@@ -2,6 +2,7 @@
 
 Improvements:
 * Make secrets parameter optional [GH-299](https://github.com/hashicorp/vault-action/pull/299)
+* auth/jwt: make "role" input optional [GH-291](https://github.com/hashicorp/vault-action/pull/291)
 
 ## 2.4.0 (October 21st, 2021)
 
