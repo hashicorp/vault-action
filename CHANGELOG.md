@@ -1,5 +1,8 @@
 ## Unreleased
 
+Improvements:
+* Make secrets parameter optional [GH-299](https://github.com/hashicorp/vault-action/pull/299)
+
 ## 2.4.0 (October 21st, 2021)
 
 Features:
