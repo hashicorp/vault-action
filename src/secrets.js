@@ -41,7 +41,7 @@ async function getSecrets(secretRequests, client) {
             } catch (error) {
                 const {response} = error;
                 if (response.statusCode === 404) {
-                    throw Error(`Unable to retrieve result for "${path}". Double check your Key.`)
+                    throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
                 }
                 throw error
             }

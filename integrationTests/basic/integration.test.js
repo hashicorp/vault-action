@@ -128,7 +128,7 @@ describe('integration', () => {
         secret/data/test secret | NAMED_SECRET ;
         secret/data/notFound kehe | NO_SIR ;`);
 
-        expect(exportSecrets()).rejects.toEqual(Error(`Unable to retrieve result for "secret/data/notFound". Double check your Key.`));
+        expect(exportSecrets()).rejects.toEqual(Error(`Unable to retrieve result for "secret/data/notFound" because it was not found: {"errors":[]}`));
     })
 
     it('get simple secret', async () => {
