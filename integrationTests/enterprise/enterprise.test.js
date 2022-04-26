@@ -289,15 +289,3 @@ function mockInput(secrets) {
         .calledWith('secrets', expect.anything())
         .mockReturnValueOnce(secrets);
 }
-
-function mockEngineName(name) {
-    when(core.getInput)
-        .calledWith('path', expect.anything())
-        .mockReturnValueOnce(name);
-}
-
-function mockVersion(version) {
-    when(core.getInput)
-        .calledWith('kv-version', expect.anything())
-        .mockReturnValueOnce(version);
-}
