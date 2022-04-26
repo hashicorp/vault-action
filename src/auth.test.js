@@ -16,7 +16,7 @@ const {
 
 function mockInput(name, key) {
     when(core.getInput)
-        .calledWith(name)
+        .calledWith(name, expect.anything())
         .mockReturnValueOnce(key);
 }
 
