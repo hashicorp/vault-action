@@ -1245,7 +1245,7 @@ async function retrieveToken(method, client) {
         case 'jwt': {
             /** @type {string} */
             let jwt;
-            const role = core.getInput('role', { required: true });
+            const role = core.getInput('role', { required: false });
             const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
@@ -3744,7 +3744,7 @@ const dateTime = (function () {
                             def.integerFormat.mandatoryDigits = def.width.min;
                         }
                     }
-                    if (def.component === 'Y') {
+                    if ('YMD'.indexOf(def.component) !== -1) {
                         // §9.8.4.4
                         def.n = -1;
                         if (def.width && def.width.max !== undefined) {
@@ -4115,6 +4115,7 @@ const dateTime = (function () {
                         return offsetHours * 60 + offsetMinutes;
                     };
                 } else if (part.integerFormat) {
+                    part.integerFormat.n = part.n;
                     res = generateRegex(part.integerFormat);
                 } else {
                     // must be a month or day name
@@ -4159,6 +4160,17 @@ const dateTime = (function () {
         } else { // type === 'integer'
             matcher.type = 'integer';
             const isUpper = formatSpec.case === tcase.UPPER;
+            let occurrences;
+            if(formatSpec.n && formatSpec.n > 0){
+                if(formatSpec.optionalDigits === 0){
+                    occurrences = `{${formatSpec.n}}`;
+                } else {
+                    occurrences = `{${formatSpec.n - formatSpec.optionalDigits},${formatSpec.n}}`;
+                }
+            } else {
+                occurrences = '+';
+            }
+
             switch (formatSpec.primary) {
                 case formats.LETTERS:
                     matcher.regex = isUpper ? '[A-Z]+' : '[a-z]+';
@@ -4179,7 +4191,7 @@ const dateTime = (function () {
                     };
                     break;
                 case formats.DECIMAL:
-                    matcher.regex = '[0-9]+';
+                    matcher.regex = `[0-9]${occurrences}`;
                     if (formatSpec.ordinal) {
                         // ordinals
                         matcher.regex += '(?:th|st|nd|rd)';
@@ -5054,7 +5066,7 @@ const functions = (() => {
                 // Simply doing `new Buffer` at this point causes Browserify to pull
                 // in the entire Buffer browser library, which is large and unnecessary.
                 // Using `global.Buffer` defeats this.
-                return new global.Buffer(str, 'base64').toString('binary');
+                return new global.Buffer.from(str, 'base64').toString('binary'); // eslint-disable-line new-cap
             };
         return atob(str);
     }
@@ -6763,7 +6775,8 @@ var jsonata = (function() {
         }
 
         if(expr.keepSingletonArray) {
-            if(!isSequence(resultSequence)) {
+            // if the array is explicitly constructed in the expression and marked to promote singleton sequences to array
+            if(Array.isArray(resultSequence) && resultSequence.cons && !resultSequence.sequence) {
                 resultSequence = createSequence(resultSequence);
             }
             resultSequence.keepSingleton = true;
@@ -7001,9 +7014,21 @@ var jsonata = (function() {
     function * evaluateBinary(expr, input, environment) {
         var result;
         var lhs = yield * evaluate(expr.lhs, input, environment);
-        var rhs = yield * evaluate(expr.rhs, input, environment);
         var op = expr.value;
 
+        //defer evaluation of RHS to allow short-circuiting
+        var evalrhs = function*(){return yield * evaluate(expr.rhs, input, environment);};
+        if (op === "and" || op === "or") {
+            try {
+                return yield * evaluateBooleanExpression(lhs, evalrhs, op);
+            } catch(err) {
+                err.position = expr.position;
+                err.token = op;
+                throw err;
+            }
+        }
+
+        var rhs = yield * evalrhs();
         try {
             switch (op) {
                 case '+':
@@ -7025,10 +7050,6 @@ var jsonata = (function() {
                     break;
                 case '&':
                     result = evaluateStringConcat(lhs, rhs);
-                    break;
-                case 'and':
-                case 'or':
-                    result = evaluateBooleanExpression(lhs, rhs, op);
                     break;
                 case '..':
                     result = evaluateRangeExpression(lhs, rhs);
@@ -7132,6 +7153,9 @@ var jsonata = (function() {
      */
     function evaluateWildcard(expr, input) {
         var results = createSequence();
+        if (Array.isArray(input) && input.outerWrapper && input.length > 0) {
+            input = input[0];
+        }
         if (input !== null && typeof input === 'object') {
             Object.keys(input).forEach(function (key) {
                 var value = input[key];
@@ -7380,33 +7404,29 @@ var jsonata = (function() {
     /**
      * Evaluate boolean expression against input data
      * @param {Object} lhs - LHS value
-     * @param {Object} rhs - RHS value
+     * @param {Function} evalrhs - function to evaluate RHS value
      * @param {Object} op - opcode
      * @returns {*} Result
      */
-    function evaluateBooleanExpression(lhs, rhs, op) {
+    function * evaluateBooleanExpression(lhs, evalrhs, op) {
         var result;
 
-        var lBool = fn.boolean(lhs);
-        var rBool = fn.boolean(rhs);
-
-        if (typeof  lBool === 'undefined') {
-            lBool = false;
-        }
-
-        if (typeof  rBool === 'undefined') {
-            rBool = false;
-        }
+        var lBool = boolize(lhs);
 
         switch (op) {
             case 'and':
-                result = lBool && rBool;
+                result = lBool && boolize(yield * evalrhs());
                 break;
             case 'or':
-                result = lBool || rBool;
+                result = lBool || boolize(yield * evalrhs());
                 break;
         }
         return result;
+    }
+
+    function boolize(value) {
+        var booledValue = fn.boolean(value);
+        return typeof booledValue === 'undefined' ? false : booledValue;
     }
 
     /**
@@ -7446,6 +7466,10 @@ var jsonata = (function() {
         if (!Array.isArray(input)) {
             input = createSequence(input);
         }
+        // if the array is empty, add an undefined entry to enable literal JSON object to be generated
+        if (input.length === 0) {
+            input.push(undefined);
+        }
 
         for(var itemIndex = 0; itemIndex < input.length; itemIndex++) {
             var item = input[itemIndex];
@@ -7454,7 +7478,7 @@ var jsonata = (function() {
                 var pair = expr.lhs[pairIndex];
                 var key = yield * evaluate(pair[0], reduce ? item['@'] : item, env);
                 // key has to be a string
-                if (typeof  key !== 'string') {
+                if (typeof  key !== 'string' && key !== undefined) {
                     throw {
                         code: "T1003",
                         stack: (new Error()).stack,
@@ -7462,24 +7486,27 @@ var jsonata = (function() {
                         value: key
                     };
                 }
-                var entry = {data: item, exprIndex: pairIndex};
-                if (groups.hasOwnProperty(key)) {
-                    // a value already exists in this slot
-                    if(groups[key].exprIndex !== pairIndex) {
-                        // this key has been generated by another expression in this group
-                        // when multiple key expressions evaluate to the same key, then error D1009 must be thrown
-                        throw {
-                            code: "D1009",
-                            stack: (new Error()).stack,
-                            position: expr.position,
-                            value: key
-                        };
-                    }
 
-                    // append it as an array
-                    groups[key].data = fn.append(groups[key].data, item);
-                } else {
-                    groups[key] = entry;
+                if (key !== undefined) {
+                    var entry = {data: item, exprIndex: pairIndex};
+                    if (groups.hasOwnProperty(key)) {
+                        // a value already exists in this slot
+                        if(groups[key].exprIndex !== pairIndex) {
+                            // this key has been generated by another expression in this group
+                            // when multiple key expressions evaluate to the same key, then error D1009 must be thrown
+                            throw {
+                                code: "D1009",
+                                stack: (new Error()).stack,
+                                position: expr.position,
+                                value: key
+                            };
+                        }
+
+                        // append it as an array
+                        groups[key].data = fn.append(groups[key].data, item);
+                    } else {
+                        groups[key] = entry;
+                    }
                 }
             }
         }
@@ -7632,7 +7659,7 @@ var jsonata = (function() {
      * @returns {Function} Higher order function representing prepared regex
      */
     function evaluateRegex(expr) {
-        var re = new RegExp(expr.value);
+        var re = new jsonata.RegexEngine(expr.value);
         var closure = function(str, fromIndex) {
             var result;
             re.lastIndex = fromIndex || 0;
@@ -8585,7 +8612,9 @@ var jsonata = (function() {
     /**
      * JSONata
      * @param {Object} expr - JSONata expression
-     * @param {boolean} options - recover: attempt to recover on parse error
+     * @param {Object} options
+     * @param {boolean} options.recover: attempt to recover on parse error
+     * @param {Function} options.RegexEngine: RegEx class constructor to use
      * @returns {{evaluate: evaluate, assign: assign}} Evaluated expression
      */
     function jsonata(expr, options) {
@@ -8609,6 +8638,12 @@ var jsonata = (function() {
         environment.bind('millis', defineFunction(function() {
             return timestamp.getTime();
         }, '<:n>'));
+
+        if(options && options.RegexEngine) {
+            jsonata.RegexEngine = options.RegexEngine;
+        } else {
+            jsonata.RegexEngine = RegExp;
+        }
 
         return {
             evaluate: function (input, bindings, callback) {
@@ -11230,9 +11265,17 @@ async function getSecrets(secretRequests, client) {
             body = responseCache.get(requestPath);
             cachedResponse = true;
         } else {
-            const result = await client.get(requestPath);
-            body = result.body;
-            responseCache.set(requestPath, body);
+            try {
+                const result = await client.get(requestPath);
+                body = result.body;
+                responseCache.set(requestPath, body);
+            } catch (error) {
+                const {response} = error;
+                if (response.statusCode === 404) {
+                    throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
+                }
+                throw error
+            }
         }
         if (!selector.match(/.*[\.].*/)) {
             selector = '"' + selector + '"'
@@ -15644,7 +15687,7 @@ async function exportSecrets() {
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
-    const secretsInput = core.getInput('secrets', { required: true });
+    const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
@@ -15733,6 +15776,10 @@ async function exportSecrets() {
  * @param {string} secretsInput
  */
 function parseSecretsInput(secretsInput) {
+    if (!secretsInput) {
+      return []
+    }
+
     const secrets = secretsInput
         .split(';')
         .filter(key => !!key)
