@@ -4,6 +4,12 @@ Improvements:
 * Make secrets parameter optional [GH-299](https://github.com/hashicorp/vault-action/pull/299)
 * auth/jwt: make "role" input optional [GH-291](https://github.com/hashicorp/vault-action/pull/291)
 * Write a better error message when secret not found [GH-306](https://github.com/hashicorp/vault-action/pull/306)
+* bump jest-when from 2.7.2 to 3.5.1 [GH-294](https://github.com/hashicorp/vault-action/pull/294)  
+* bump node-fetch from 2.6.1 to 2.6.7 [GH-308](https://github.com/hashicorp/vault-action/pull/308)  
+* bump @types/jest from 26.0.23 to 27.4.1 [GH-297](https://github.com/hashicorp/vault-action/pull/297)  
+* bump trim-off-newlines from 1.0.1 to 1.0.3 [GH-309](https://github.com/hashicorp/vault-action/pull/309)  
+* bump moment from 2.28.0 to 2.29.2 [GH-304](https://github.com/hashicorp/vault-action/pull/304)  
+* bump @types/got from 9.6.11 to 9.6.12 [GH-266](https://github.com/hashicorp/vault-action/pull/266)
 
 ## 2.4.0 (October 21st, 2021)
 
