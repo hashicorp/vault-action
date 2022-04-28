@@ -45,7 +45,7 @@
     "homepage": "https://github.com/hashicorp/vault-action#readme",
     "dependencies": {
         "got": "^11.5.1",
-        "jsonata": "^1.8.2",
+        "jsonata": "^1.8.6",
         "jsrsasign": "^10.1.10"
     },
     "peerDependencies": {
