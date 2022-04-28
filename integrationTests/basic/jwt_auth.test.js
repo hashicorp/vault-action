@@ -26,9 +26,9 @@ function mockGithubOIDCResponse(aud= "https://github.com/hashicorp/vault-action"
     const now = rsasign.KJUR.jws.IntDate.getNow();
     const payload = {
         jti: "unique-id",
-        sub: "repo:hashicorp/vault-action:ref:refs/heads/master",
+        sub: "repo:hashicorp/vault-action:ref:refs/heads/main",
         aud,
-        ref: "refs/heads/master",
+        ref: "refs/heads/main",
         sha: "commit-sha",
         repository: "hashicorp/vault-action",
         repository_owner: "hashicorp",
@@ -41,7 +41,7 @@ function mockGithubOIDCResponse(aud= "https://github.com/hashicorp/vault-action"
         base_ref: "",
         event_name: "push",
         ref_type: "branch",
-        job_workflow_ref: "hashicorp/vault-action/.github/workflows/workflow.yml@refs/heads/master",
+        job_workflow_ref: "hashicorp/vault-action/.github/workflows/workflow.yml@refs/heads/main",
         iss: 'vault-action',
         iat: now,
         nbf: now,
