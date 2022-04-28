@@ -43,15 +43,15 @@ describe('integration', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce(`${vaultUrl}`);
 
         when(core.getInput)
-            .calledWith('token')
+            .calledWith('token', expect.anything())
             .mockReturnValueOnce('testtoken');
 
         when(core.getInput)
-            .calledWith('namespace')
+            .calledWith('namespace', expect.anything())
             .mockReturnValueOnce('ns1');
     });
 
@@ -211,16 +211,16 @@ describe('authenticate with approle', () => {
             .calledWith('method', expect.anything())
             .mockReturnValueOnce('approle');
         when(core.getInput)
-            .calledWith('roleId')
+            .calledWith('roleId', expect.anything())
             .mockReturnValueOnce(roleId);
         when(core.getInput)
-            .calledWith('secretId')
+            .calledWith('secretId', expect.anything())
             .mockReturnValueOnce(secretId);
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce(`${vaultUrl}`);
         when(core.getInput)
-            .calledWith('namespace')
+            .calledWith('namespace', expect.anything())
             .mockReturnValueOnce('ns2');
     });
 
@@ -286,18 +286,6 @@ async function writeSecret(engine, path, namespace, version, data) {
 
 function mockInput(secrets) {
     when(core.getInput)
-        .calledWith('secrets')
+        .calledWith('secrets', expect.anything())
         .mockReturnValueOnce(secrets);
-}
-
-function mockEngineName(name) {
-    when(core.getInput)
-        .calledWith('path')
-        .mockReturnValueOnce(name);
-}
-
-function mockVersion(version) {
-    when(core.getInput)
-        .calledWith('kv-version')
-        .mockReturnValueOnce(version);
 }

@@ -141,23 +141,23 @@ describe('jwt auth', () => {
             jest.resetAllMocks();
 
             when(core.getInput)
-                .calledWith('url')
+                .calledWith('url', expect.anything())
                 .mockReturnValueOnce(`${vaultUrl}`);
 
             when(core.getInput)
-                .calledWith('method')
+                .calledWith('method', expect.anything())
                 .mockReturnValueOnce('jwt');
 
             when(core.getInput)
-                .calledWith('jwtPrivateKey')
+                .calledWith('jwtPrivateKey', expect.anything())
                 .mockReturnValueOnce(privateRsaKeyBase64);
 
             when(core.getInput)
-                .calledWith('role')
+                .calledWith('role', expect.anything())
                 .mockReturnValueOnce('default');
 
             when(core.getInput)
-                .calledWith('secrets')
+                .calledWith('secrets', expect.anything())
                 .mockReturnValueOnce('secret/data/test secret');
         });
 
@@ -191,29 +191,29 @@ describe('jwt auth', () => {
             jest.resetAllMocks();
 
             when(core.getInput)
-                .calledWith('url')
+                .calledWith('url', expect.anything())
                 .mockReturnValueOnce(`${vaultUrl}`);
 
             when(core.getInput)
-                .calledWith('method')
+                .calledWith('method', expect.anything())
                 .mockReturnValueOnce('jwt');
 
             when(core.getInput)
-                .calledWith('jwtPrivateKey')
+                .calledWith('jwtPrivateKey', expect.anything())
                 .mockReturnValueOnce('');
 
             when(core.getInput)
-                .calledWith('secrets')
+                .calledWith('secrets', expect.anything())
                 .mockReturnValueOnce('secret/data/test secret');
         });
 
         it('successfully authenticates', async () => {
             when(core.getInput)
-                .calledWith('role')
+                .calledWith('role', expect.anything())
                 .mockReturnValueOnce('default');
 
             when(core.getIDToken)
-                .calledWith()
+                .calledWith(undefined)
                 .mockReturnValueOnce(defaultGithubJwt);
 
             await exportSecrets();
@@ -222,15 +222,15 @@ describe('jwt auth', () => {
 
         it('successfully authenticates with `jwtGithubAudience` set to `sigstore`', async () => {
             when(core.getInput)
-                .calledWith('role')
+                .calledWith('role', expect.anything())
                 .mockReturnValueOnce('default-sigstore');
 
             when(core.getInput)
-                .calledWith('jwtGithubAudience')
+                .calledWith('jwtGithubAudience', expect.anything())
                 .mockReturnValueOnce('sigstore');
 
             when(core.getIDToken)
-                .calledWith()
+                .calledWith(expect.anything())
                 .mockReturnValueOnce(mockGithubOIDCResponse('sigstore'));
 
             await exportSecrets();
@@ -239,11 +239,11 @@ describe('jwt auth', () => {
 
         it('successfully authenticates as default role without specifying it', async () => {
             when(core.getInput)
-                .calledWith('role')
+                .calledWith('role', expect.anything())
                 .mockReturnValueOnce(null);
 
             when(core.getIDToken)
-                .calledWith()
+                .calledWith(undefined)
                 .mockReturnValueOnce(defaultGithubJwt);
 
             await exportSecrets();
