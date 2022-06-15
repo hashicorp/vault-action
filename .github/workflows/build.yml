@@ -12,9 +12,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: ''
+        node-version: '16.14.0'
 
     - name: Setup NPM Cache
       uses: actions/cache@v1
@@ -42,9 +42,9 @@ jobs:
     - name: Run docker-compose
       run: docker-compose up -d vault
 
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: ''
+        node-version: '16.14.0'
 
     - name: Setup NPM Cache
       uses: actions/cache@v1
@@ -78,9 +78,9 @@ jobs:
       env:
         VAULT_LICENSE_CI: ${{ secrets.VAULT_LICENSE_CI }}
 
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: ''
+        node-version: '16.14.0'
 
     - name: Setup NPM Cache
       uses: actions/cache@v1
@@ -112,9 +112,9 @@ jobs:
     - name: Run docker-compose
       run: docker-compose up -d vault
 
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: ''
+        node-version: '16.14.0'
 
     - name: Setup NPM Cache
       uses: actions/cache@v1
@@ -180,9 +180,9 @@ jobs:
     - name: Run docker-compose
       run: docker-compose up -d vault-tls
 
-    - uses: actions/setup-node@v1
+    - uses: actions/setup-node@v3
       with:
-        node-version: ''
+        node-version: '16.14.0'
 
     - name: Setup NPM Cache
       uses: actions/cache@v1
@@ -269,9 +269,9 @@ jobs:
 #    needs: [build, integration, e2e]
 #    steps:
 #    - uses: actions/checkout@v1
-#    - uses: actions/setup-node@v1
+#    - uses: actions/setup-node@v3
 #      with:
-#        node-version: ''
+#        node-version: '16.14.0'
 #    - name: setup npm cache
 #      uses: actions/cache@v1
 #      with:
@@ -287,4 +287,3 @@ jobs:
 #      env:
 #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
