@@ -26,7 +26,15 @@ async function exportSecrets() {
     const defaultOptions = {
         prefixUrl: vaultUrl,
         headers: {},
-        https: {}
+        https: {},
+        retry: {
+            statusCodes: [
+                ...got.defaults.options.retry.statusCodes,
+                // Vault returns 412 when the token in use hasn't yet been replicated
+                // to the performance replica queried. See issue #332.
+                412,
+            ]
+        }
     }
 
     const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
