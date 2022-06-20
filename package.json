@@ -44,6 +44,7 @@
     },
     "homepage": "https://github.com/hashicorp/vault-action#readme",
     "dependencies": {
+        "async-retry": "^1.3.3",
         "got": "^11.5.1",
         "jsonata": "^1.8.6",
         "jsrsasign": "^10.5.24"

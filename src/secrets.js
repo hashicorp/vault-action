@@ -1,4 +1,5 @@
 const jsonata = require("jsonata");
+const asyncRetry = require('async-retry');
 
 
 /**
@@ -21,7 +22,7 @@ const jsonata = require("jsonata");
   * @param {import('got').Got} client
   * @return {Promise<SecretResponse<TRequest>[]>}
   */
-async function getSecrets(secretRequests, client) {
+async function getSecrets(secretRequests, client, { retries }) {
     const responseCache = new Map();
     const results = [];
     for (const secretRequest of secretRequests) {
@@ -35,7 +36,9 @@ async function getSecrets(secretRequests, client) {
             cachedResponse = true;
         } else {
             try {
-                const result = await client.get(requestPath);
+                const result = await asyncRetry(() => client.get(requestPath), {
+                    retries
+                });
                 body = result.body;
                 responseCache.set(requestPath, body);
             } catch (error) {

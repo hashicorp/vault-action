@@ -71,7 +71,9 @@ async function exportSecrets() {
         return request;
     });
 
-    const results = await getSecrets(requests, client);
+    const results = await getSecrets(requests, client, {
+        retries: core.getInput('retries') || 1
+    });
 
     for (const result of results) {
         const { value, request, cachedResponse } = result;
