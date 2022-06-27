@@ -8,7 +8,6 @@ const got = require('got');
 const {
     exportSecrets,
     parseSecretsInput,
-    parseResponse,
     parseHeadersInput
 } = require('./action');
 
