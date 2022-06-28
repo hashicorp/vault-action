@@ -1,6 +1,5 @@
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
-jest.setTimeout(30000);
 const core = require('@actions/core');
 const rsasign = require('jsrsasign');
 const {
