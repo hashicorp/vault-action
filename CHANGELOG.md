@@ -4,6 +4,9 @@ Bugs:
 
 * Errors due to replication delay for tokens will now be retried [GH-333](https://github.com/hashicorp/vault-action/pull/333)
 
+Improvements:
+* bump got from 11.5.1 to 11.8.5 [GH-344](https://github.com/hashicorp/vault-action/pull/344)  
+
 ## 2.4.1 (April 28th, 2022)
 
 Improvements:
