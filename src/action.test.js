@@ -194,6 +194,11 @@ describe('exportSecrets', () => {
             .calledWith('secretEncodingType', expect.anything())
             .mockReturnValueOnce(doEncode);
     }
+    function mockOutputToken(doOutput) {
+      when(core.getInput)
+          .calledWith('outputToken', expect.anything())
+          .mockReturnValueOnce(doOutput);
+  }
 
     it('simple secret retrieval', async () => {
         mockInput('test key');
@@ -205,7 +210,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('encoded secret retrieval', async () => {
@@ -231,7 +235,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('测试', '1');
         expect(core.setOutput).toBeCalledWith('测试', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('mapped secret retrieval', async () => {
@@ -244,7 +247,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('TEST_NAME', '1');
         expect(core.setOutput).toBeCalledWith('TEST_NAME', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('simple secret retrieval from K/V v1', async () => {
@@ -262,7 +264,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('simple secret retrieval with extra headers', async () => {
@@ -278,7 +279,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('nested secret retrieval', async () => {
@@ -291,7 +291,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY__VALUE', '1');
         expect(core.setOutput).toBeCalledWith('key__value', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('export Vault token', async () => {
@@ -308,7 +307,6 @@ describe('exportSecrets', () => {
         expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('not export Vault token', async () => {
@@ -324,7 +322,6 @@ describe('exportSecrets', () => {
 
         expect(core.exportVariable).toBeCalledWith('KEY', '1');
         expect(core.setOutput).toBeCalledWith('key', '1');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     });
 
     it('single-line secret gets masked', async () => {
@@ -340,7 +337,6 @@ describe('exportSecrets', () => {
 
         expect(command.issue).toBeCalledWith('add-mask', 'secret');
         expect(core.setOutput).toBeCalledWith('key', 'secret');
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     })
 
     it('multi-line secret gets masked for each line', async () => {
@@ -362,7 +358,6 @@ with blank lines
         expect(command.issue).toBeCalledWith('add-mask', 'a multi-line string');
         expect(command.issue).toBeCalledWith('add-mask', 'with blank lines');
         expect(core.setOutput).toBeCalledWith('key', multiLineString);
-        expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
     })
 
   it('export only Vault token, no secrets', async () => {
@@ -372,6 +367,14 @@ with blank lines
 
     expect(core.exportVariable).toBeCalledTimes(1);
     expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
+  })
+
+  it('output only Vault token, no secrets', async () => {
+    mockOutputToken("true")
+
+    await exportSecrets();
+
+    expect(core.setOutput).toBeCalledTimes(1);
     expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
   })
 

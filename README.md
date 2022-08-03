@@ -447,12 +447,6 @@ Here are all the inputs available through `with`:
 | `clientKey`         | Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.                                                           |         |          |
 | `tlsSkipVerify`     | When set to true, disables verification of server certificates when testing the action.                                                              | `false` |          |
 
-Here are outputs that are always available:
-
-| Output              | Description                                                                                                                                          |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `vault_token`       | The Vault either used for authentication, or obtained via an auth method.                                                                            |
-
 ## Masking - Hiding Secrets from Logs
 
 This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
