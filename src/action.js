@@ -69,8 +69,9 @@ async function exportSecrets() {
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
+    command.issue('add-mask', vaultToken);
+    core.setOutput('vault_token', `${vaultToken}`);
     if (exportToken === true) {
-        command.issue('add-mask', vaultToken);
         core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
     }
 
