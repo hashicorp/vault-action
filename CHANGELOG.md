@@ -1,5 +1,7 @@
 ## Unreleased
 
+## 2.4.2 (Aug 15, 2022)
+
 Bugs:
 
 * Errors due to replication delay for tokens will now be retried [GH-333](https://github.com/hashicorp/vault-action/pull/333)
