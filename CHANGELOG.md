@@ -1,4 +1,4 @@
-## Unreleased
+## 2.4.2 (Aug 15, 2022)
 
 Bugs:
 
