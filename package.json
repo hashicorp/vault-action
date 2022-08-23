@@ -59,6 +59,6 @@
         "jest": "^28.1.1",
         "jest-when": "^3.5.1",
         "mock-http-server": "^1.4.5",
-        "semantic-release": "^19.0.3"
+        "semantic-release": "^19.0.5"
     }
 }
