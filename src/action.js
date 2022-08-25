@@ -2,6 +2,7 @@
 const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got').default;
+const { HttpProxyAgent, HttpsProxyAgent } = require('hpagent');
 const jsonata = require('jsonata');
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
@@ -27,6 +28,7 @@ async function exportSecrets() {
         prefixUrl: vaultUrl,
         headers: {},
         https: {},
+        agent: {},
         retry: {
             statusCodes: [
                 ...got.defaults.options.retry.statusCodes,
@@ -35,6 +37,26 @@ async function exportSecrets() {
                 412,
             ]
         }
+    }
+
+    if (process.env['http_proxy'] || process.env['HTTP_PROXY']) {
+        defaultOptions.agent.http = new HttpProxyAgent({
+            keepAlive: true,
+            keepAliveMsecs: 1000,
+            maxSockets: 256,
+            maxFreeSockets: 256,
+            proxy: process.env['http_proxy'] || process.env['HTTP_PROXY']
+        })
+    }
+
+    if (process.env['https_proxy'] || process.env['HTTPS_PROXY']) {
+        defaultOptions.agent.https = new HttpsProxyAgent({
+            keepAlive: true,
+            keepAliveMsecs: 1000,
+            maxSockets: 256,
+            maxFreeSockets: 256,
+            proxy: process.env['https_proxy'] || process.env['HTTPS_PROXY']
+        })
     }
 
     const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
