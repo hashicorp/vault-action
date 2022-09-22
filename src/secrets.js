@@ -22,6 +22,11 @@ const jsonata = require("jsonata");
   * @return {Promise<SecretResponse<TRequest>[]>}
   */
 async function getSecrets(secretRequests, client) {
+    getSecrets(secretRequests, client, undefined);
+}
+  
+
+async function getSecrets(secretRequests, client, body) {
     const responseCache = new Map();
     const results = [];
     for (const secretRequest of secretRequests) {
@@ -35,7 +40,12 @@ async function getSecrets(secretRequests, client) {
             cachedResponse = true;
         } else {
             try {
-                const result = await client.get(requestPath);
+                let result;
+                if (bodyReq) {
+                  result = await client.post(requestPath, bodyReq);
+                } else {
+                  result = await client.get(requestPath);
+                }
                 body = result.body;
                 responseCache.set(requestPath, body);
             } catch (error) {
