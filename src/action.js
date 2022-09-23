@@ -19,6 +19,8 @@ async function exportSecrets() {
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
     const authPayload = core.getInput('authPayload', { required: false });
+    const postPayload = core.getInput('postPayload', { required: false });
+    
     if (!AUTH_METHODS.includes(vaultMethod) && !authPayload) {
         throw Error(`Sorry, the provided authentication method ${vaultMethod} is not currently supported and no custom authPayload was provided.`);
     }
@@ -79,7 +81,7 @@ async function exportSecrets() {
         return request;
     });
 
-    const results = await getSecrets(requests, client);
+    const results = await getSecrets(requests, client, postPayload);
 
     for (const result of results) {
         const { value, request, cachedResponse } = result;
@@ -99,7 +101,7 @@ async function exportSecrets() {
     }
 };
 
-/** @typedef {Object} SecretRequest 
+/** @typedef {Object} SecretRequest
  * @property {string} path
  * @property {string} envVarName
  * @property {string} outputVarName

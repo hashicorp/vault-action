@@ -21,11 +21,6 @@ const jsonata = require("jsonata");
   * @param {import('got').Got} client
   * @return {Promise<SecretResponse<TRequest>[]>}
   */
-async function getSecrets(secretRequests, client) {
-    getSecrets(secretRequests, client, undefined);
-}
-  
-
 async function getSecrets(secretRequests, client, body) {
     const responseCache = new Map();
     const results = [];
@@ -77,8 +72,8 @@ async function getSecrets(secretRequests, client, body) {
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data 
- * @param {string} selector 
+ * @param {object} data
+ * @param {string} selector
  */
 function selectData(data, selector) {
     const ata = jsonata(selector);

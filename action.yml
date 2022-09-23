@@ -39,6 +39,9 @@ inputs:
   authPayload:
     description: 'The JSON payload to be sent to Vault when using a custom authentication method.'
     required: false
+  postPayload:
+    description: 'The JSON payload to be sent to Vault over a POST request, enabled POST instead of GET.'
+    required: false
   extraHeaders:
     description: 'A string of newline separated extra headers to include on every request.'
     required: false
