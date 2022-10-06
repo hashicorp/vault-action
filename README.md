@@ -404,6 +404,7 @@ Here are all the inputs available through `with`:
 | `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
+| `exportConfigEnv`   | Whether or not to export the `VAULT_ADDR`, `VAULT_NAMESPACE`, and `VAULT_SKIP_VERIFY` environment variables.                                         |         |          |
 | `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
 | `exportToken`       | Whether or not export Vault token as environment variables (i.e VAULT_TOKEN).                                                                        | `false` |          |
 | `caCertificate`     | Base64 encoded CA certificate the server certificate was signed with.                                                                                |         |          |

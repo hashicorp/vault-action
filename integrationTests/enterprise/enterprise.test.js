@@ -109,6 +109,23 @@ describe('integration', () => {
 
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERCUSTOMSECRET_IN_NAMESPACE');
     });
+
+    it('export Vault config env', async () => {
+        mockExportConfigEnv("true");
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(3);
+        expect(core.exportVariable).toBeCalledWith('VAULT_ADDR', vaultUrl);
+        expect(core.exportVariable).toBeCalledWith('VAULT_SKIP_VERIFY', 'false');
+        expect(core.exportVariable).toBeCalledWith('VAULT_NAMESPACE', vaultNamespace);
+    });
+
+    it('not export Vault config env', async () => {
+        mockExportConfigEnv("false");
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(0);
+    });
 });
 
 describe('authenticate with approle', () => {
@@ -288,4 +305,10 @@ function mockInput(secrets) {
     when(core.getInput)
         .calledWith('secrets', expect.anything())
         .mockReturnValueOnce(secrets);
+}
+
+function mockExportConfigEnv(doExport) {
+    when(core.getInput)
+        .calledWith('exportConfEnv', expect.anything())
+        .mockReturnValueOnce(doExport);
 }

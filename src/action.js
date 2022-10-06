@@ -12,6 +12,7 @@ async function exportSecrets() {
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
+    const exportConfigEnv = core.getInput('exportConfigEnv', { required: false }) != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
     const secretsInput = core.getInput('secrets', { required: false });
@@ -63,6 +64,14 @@ async function exportSecrets() {
 
     if (vaultNamespace != null) {
         defaultOptions.headers["X-Vault-Namespace"] = vaultNamespace;
+        if (exportConfigEnv) {
+            core.exportVariable('VAULT_NAMESPACE', `${vaultNamespace}`)
+        }
+    }
+
+    if (exportConfigEnv) {
+        core.exportVariable('VAULT_ADDR', `${vaultUrl}`)
+        core.exportVariable('VAULT_SKIP_VERIFY', `${tlsSkipVerify}`)
     }
 
     const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));

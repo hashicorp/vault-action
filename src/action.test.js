@@ -295,6 +295,28 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
+    function mockExportConfigEnv(doExport) {
+        when(core.getInput)
+            .calledWith('exportConfEnv', expect.anything())
+            .mockReturnValueOnce(doExport);
+    }
+
+    it('export Vault config env', async () => {
+        mockExportConfigEnv("true");
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(2);
+        expect(core.exportVariable).toBeCalledWith('VAULT_ADDR', 'http://vault:8200');
+        expect(core.exportVariable).toBeCalledWith('VAULT_SKIP_VERIFY', 'false');
+    });
+
+    it('not export Vault config env', async () => {
+        mockExportConfigEnv("false");
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(0);
+    });
+
     it('single-line secret gets masked', async () => {
         mockInput('test key');
         mockVaultData({

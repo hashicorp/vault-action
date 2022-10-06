@@ -42,6 +42,10 @@ inputs:
   extraHeaders:
     description: 'A string of newline separated extra headers to include on every request.'
     required: false
+  exportConfigEnv:
+    description: 'Whether to export `VAULT_ADDR`, `VAULT_NAMESPACE`, and `VAULT_SKIP_VERIFY` based on the configuration of the action'
+    default: false
+    required: false
   exportEnv:
     description: 'Whether or not export secrets as environment variables.'
     default: 'true'
