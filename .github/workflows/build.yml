@@ -27,8 +27,19 @@ jobs:
     - name: NPM Install
       run: npm ci
 
+    - name: Get the dist folder hash
+      id: dist
+      run: |
+        echo "hash=${{ hashFiles('dist/**') }}" >> $GITHUB_OUTPUT
+
     - name: NPM Build
       run: npm run build
+
+    - name: Fail if the 'dist' folder doesn't contain the recent changes
+      if: steps.dist.outputs.hash != hashFiles('dist/**')
+      run: |
+        echo "::error::The dist folder doesn't contain the recent changes. Please run 'npm run build' and commit the 'dist' folder to the branch"
+        exit 1
 
     - name: NPM Run Test
       run: npm run test
