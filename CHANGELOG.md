@@ -1,4 +1,8 @@
 ## Unreleased
+Improvements:
+
+* bump @actions/core from 1.9.0 to 1.10.0 [GH-371](https://github.com/hashicorp/vault-action/pull/371)
+* update runtime to node16 for action [GH-375](https://github.com/hashicorp/vault-action/pull/375)
 
 ## 2.4.2 (Aug 15, 2022)
 
