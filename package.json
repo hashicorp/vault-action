@@ -46,7 +46,7 @@
     "dependencies": {
         "got": "^11.8.5",
         "jsonata": "^1.8.6",
-        "jsrsasign": "^10.5.25"
+        "jsrsasign": "^10.5.27"
     },
     "peerDependencies": {
         "@actions/core": ">=1 <2"
