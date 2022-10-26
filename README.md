@@ -43,7 +43,7 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
-              uses: hashicorp/vault-action@v2.4.0
+              uses: hashicorp/vault-action@v2
               with:
                 url: https://vault.mycompany.com:8200
                 token: ${{ secrets.VAULT_TOKEN }}
