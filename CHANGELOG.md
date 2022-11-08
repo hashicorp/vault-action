@@ -1,6 +1,12 @@
 ## Unreleased
+
+## 2.4.3 (Nov 8th, 2022)
+
 Improvements:
 
+* bump jest-when from 3.5.1 to 3.5.2 [GH-388](https://github.com/hashicorp/vault-action/pull/388)
+* bump semantic-release from 19.0.3 to 19.0.5 [GH-360](https://github.com/hashicorp/vault-action/pull/360)
+* bump jsrsasign from 10.5.25 to 10.5.27 [GH-358](https://github.com/hashicorp/vault-action/pull/358)
 * bump @actions/core from 1.9.0 to 1.10.0 [GH-371](https://github.com/hashicorp/vault-action/pull/371)
 * update runtime to node16 for action [GH-375](https://github.com/hashicorp/vault-action/pull/375)
 
