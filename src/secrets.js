@@ -46,7 +46,7 @@ async function getSecrets(secretRequests, client) {
                 throw error
             }
         }
-        if (!selector.match(/.*[\.].*/)) {
+        if (!selector.match(/.*[\.\*].*/)) {
             selector = '"' + selector + '"'
         }
         selector = "data." + selector
