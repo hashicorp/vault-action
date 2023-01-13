@@ -17129,8 +17129,6 @@ async function exportSecrets() {
     const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
 
-    const secretEncoding = core.getInput('secretEncoding', { required: false });
-
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
     const authPayload = core.getInput('authPayload', { required: false });
     if (!AUTH_METHODS.includes(vaultMethod) && !authPayload) {
@@ -17195,23 +17193,11 @@ async function exportSecrets() {
 
     const results = await getSecrets(requests, client);
 
-
     for (const result of results) {
-        // Output the result
-
-        var value = result.value;
-        const request = result.request;
-        const cachedResponse = result.cachedResponse;
-
+        const { value, request, cachedResponse } = result;
         if (cachedResponse) {
             core.debug('ℹ using cached response');
         }
-
-        // if a secret is encoded, decode it
-        if (secretEncoding) {
-            value = Buffer.from(value, secretEncoding).toString();
-        }
-
         for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
                 command.issue('add-mask', line);
@@ -17225,7 +17211,7 @@ async function exportSecrets() {
     }
 };
 
-/** @typedef {Object} SecretRequest
+/** @typedef {Object} SecretRequest 
  * @property {string} path
  * @property {string} envVarName
  * @property {string} outputVarName
