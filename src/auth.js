@@ -2,6 +2,7 @@
 const core = require('@actions/core');
 const rsasign = require('jsrsasign');
 const fs = require('fs');
+const { default: got } = require('got');
 
 const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 /***
@@ -112,9 +113,12 @@ async function getClientToken(client, method, path, payload) {
     let response;
     try {
         response = await client.post(`v1/auth/${path}/login`, options);
-    } catch (error) {
-        core.debug(JSON.stringify(error))
-        core.error(error)
+    } catch (err) {
+        if (err instanceof got.HTTPError) {
+            core.error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, ${err.response.statusMessage}`)
+        } else {
+            throw err
+        }
     }
     if (response && response.body && response.body.auth && response.body.auth.client_token) {
         core.debug('✔ Vault Token successfully retrieved');
