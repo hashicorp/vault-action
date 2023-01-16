@@ -115,6 +115,7 @@ async function getClientToken(client, method, path, payload) {
         response = await client.post(`v1/auth/${path}/login`, options);
     } catch (err) {
         if (err instanceof got.HTTPError) {
+            core.debug(JSON.stringify(err.response))
             core.error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, ${err.response.statusMessage}`)
         } else {
             throw err
