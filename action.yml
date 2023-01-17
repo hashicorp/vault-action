@@ -76,6 +76,9 @@ inputs:
     description: 'Time in seconds, after which token expires'
     required: false
     default: 3600
+  secretEncodingType:
+    description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'

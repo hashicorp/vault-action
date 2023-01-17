@@ -189,12 +189,30 @@ describe('exportSecrets', () => {
           .calledWith('outputToken', expect.anything())
           .mockReturnValueOnce(doOutput);
   }
+    function mockEncodeType(doEncode) {
+        when(core.getInput)
+            .calledWith('secretEncodingType', expect.anything())
+            .mockReturnValueOnce(doEncode);
+    }
 
     it('simple secret retrieval', async () => {
         mockInput('test key');
         mockVaultData({
             key: 1
         });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
+    });
+
+    it('encoded secret retrieval', async () => {
+        mockInput('test key');
+        mockVaultData({
+            key: 'MQ=='
+        });
+        mockEncodeType('base64');
 
         await exportSecrets();
 
