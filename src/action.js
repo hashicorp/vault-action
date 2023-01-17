@@ -6,6 +6,7 @@ const jsonata = require('jsonata');
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
+const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
@@ -17,7 +18,7 @@ async function exportSecrets() {
     const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
 
-    const secretEncoding = core.getInput('secretEncoding', { required: false });
+    const secretEncodingType = core.getInput('secretEncodingType', { required: false });
 
     const vaultMethod = (core.getInput('method', { required: false }) || 'token').toLowerCase();
     const authPayload = core.getInput('authPayload', { required: false });
@@ -96,8 +97,8 @@ async function exportSecrets() {
         }
 
         // if a secret is encoded, decode it
-        if (secretEncoding) {
-            value = Buffer.from(value, secretEncoding).toString();
+        if (ENCODING_TYPES.includes(secretEncodingType)) {
+            value = Buffer.from(value, secretEncodingType).toString();
         }
 
         for (const line of value.replace(/\r/g, '').split('\n')) {
