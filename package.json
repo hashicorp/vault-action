@@ -16,7 +16,7 @@
         "dist/**/*"
     ],
     "release": {
-        "branch": "master",
+        "branch": "main",
         "plugins": [
             "@semantic-release/commit-analyzer",
             "@semantic-release/release-notes-generator",
@@ -44,20 +44,21 @@
     },
     "homepage": "https://github.com/hashicorp/vault-action#readme",
     "dependencies": {
-        "got": "^11.5.1",
-        "jsonata": "^1.8.2",
-        "jsrsasign": "^10.1.10"
+        "got": "^11.8.5",
+        "jsonata": "^1.8.6",
+        "jsrsasign": "^10.6.1"
     },
     "peerDependencies": {
         "@actions/core": ">=1 <2"
     },
     "devDependencies": {
-        "@actions/core": "^1.6.0",
+        "@actions/core": "^1.10.0",
         "@types/got": "^9.6.11",
-        "@types/jest": "^26.0.13",
+        "@types/jest": "^29.2.2",
         "@zeit/ncc": "^0.22.3",
-        "jest": "^26.4.2",
-        "jest-when": "^2.7.2",
-        "semantic-release": "^17.1.1"
+        "jest": "^29.3.1",
+        "jest-when": "^3.5.2",
+        "mock-http-server": "^1.4.5",
+        "semantic-release": "^19.0.5"
     }
 }

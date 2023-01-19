@@ -8,7 +8,6 @@ const got = require('got');
 const {
     exportSecrets,
     parseSecretsInput,
-    parseResponse,
     parseHeadersInput
 } = require('./action');
 
@@ -104,7 +103,7 @@ describe('parseSecretsInput', () => {
 describe('parseHeaders', () => {
     it('parses simple header', () => {
         when(core.getInput)
-            .calledWith('extraHeaders')
+            .calledWith('extraHeaders', undefined)
             .mockReturnValueOnce('TEST: 1');
         const result = parseHeadersInput('extraHeaders');
         expect(Array.from(result)).toContainEqual(['test', '1']);
@@ -112,7 +111,7 @@ describe('parseHeaders', () => {
 
     it('parses simple header with whitespace', () => {
         when(core.getInput)
-            .calledWith('extraHeaders')
+            .calledWith('extraHeaders', undefined)
             .mockReturnValueOnce(`
             TEST: 1
             `);
@@ -122,7 +121,7 @@ describe('parseHeaders', () => {
 
     it('parses multiple headers', () => {
         when(core.getInput)
-            .calledWith('extraHeaders')
+            .calledWith('extraHeaders', undefined)
             .mockReturnValueOnce(`
             TEST: 1
             FOO: bAr
@@ -134,7 +133,7 @@ describe('parseHeaders', () => {
 
     it('parses null response', () => {
         when(core.getInput)
-            .calledWith('extraHeaders')
+            .calledWith('extraHeaders', undefined)
             .mockReturnValueOnce(null);
         const result = parseHeadersInput('extraHeaders');
         expect(Array.from(result)).toHaveLength(0);
@@ -146,29 +145,29 @@ describe('exportSecrets', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce('http://vault:8200');
 
         when(core.getInput)
-            .calledWith('token')
+            .calledWith('token', expect.anything())
             .mockReturnValueOnce('EXAMPLE');
     });
 
     function mockInput(key) {
         when(core.getInput)
-            .calledWith('secrets')
+            .calledWith('secrets', expect.anything())
             .mockReturnValueOnce(key);
     }
 
     function mockVersion(version) {
         when(core.getInput)
-            .calledWith('kv-version')
+            .calledWith('kv-version', expect.anything())
             .mockReturnValueOnce(version);
     }
 
     function mockExtraHeaders(headerString) {
         when(core.getInput)
-            .calledWith('extraHeaders')
+            .calledWith('extraHeaders', expect.anything())
             .mockReturnValueOnce(headerString);
     }
 
@@ -191,8 +190,14 @@ describe('exportSecrets', () => {
 
     function mockExportToken(doExport) {
         when(core.getInput)
-            .calledWith('exportToken')
+            .calledWith('exportToken', expect.anything())
             .mockReturnValueOnce(doExport);
+    }
+
+    function mockEncodeType(doEncode) {
+        when(core.getInput)
+            .calledWith('secretEncodingType', expect.anything())
+            .mockReturnValueOnce(doEncode);
     }
 
     it('simple secret retrieval', async () => {
@@ -200,6 +205,19 @@ describe('exportSecrets', () => {
         mockVaultData({
             key: 1
         });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', '1');
+        expect(core.setOutput).toBeCalledWith('key', '1');
+    });
+
+    it('encoded secret retrieval', async () => {
+        mockInput('test key');
+        mockVaultData({
+            key: 'MQ=='
+        });
+        mockEncodeType('base64');
 
         await exportSecrets();
 
@@ -341,4 +359,13 @@ with blank lines
         expect(command.issue).toBeCalledWith('add-mask', 'with blank lines');
         expect(core.setOutput).toBeCalledWith('key', multiLineString);
     })
+
+  it('export only Vault token, no secrets', async () => {
+    mockExportToken("true")
+
+    await exportSecrets();
+
+    expect(core.exportVariable).toBeCalledTimes(1);
+    expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
+  })
 });

@@ -109,19 +109,27 @@ describe('integration', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce(`${vaultUrl}`);
 
         when(core.getInput)
-            .calledWith('token')
+            .calledWith('token', expect.anything())
             .mockReturnValueOnce('testtoken');
     });
 
     function mockInput(secrets) {
         when(core.getInput)
-            .calledWith('secrets')
+            .calledWith('secrets', expect.anything())
             .mockReturnValueOnce(secrets);
     }
+
+    it('prints a nice error message when secret not found', async () => {
+        mockInput(`secret/data/test secret ;
+        secret/data/test secret | NAMED_SECRET ;
+        secret/data/notFound kehe | NO_SIR ;`);
+
+        expect(exportSecrets()).rejects.toEqual(Error(`Unable to retrieve result for "secret/data/notFound" because it was not found: {"errors":[]}`));
+    })
 
     it('get simple secret', async () => {
         mockInput('secret/data/test secret');
