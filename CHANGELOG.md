@@ -1,5 +1,20 @@
 ## Unreleased
 
+## 2.5.0 (Jan 26th, 2023)
+
+Features:
+
+* Adds ability to automatically decode secrets from base64, hex, and utf8 encodings. [GH-408](https://github.com/hashicorp/vault-action/pull/408)
+
+Improvements:
+
+* Improves error messages for Vault authentication failures [GH-409](https://github.com/hashicorp/vault-action/pull/409)
+* bump jest from 28.1.1 to 29.3.1 [GH-397](https://github.com/hashicorp/vault-action/pull/397)
+* bump @types/jest from 28.1.3 to 29.2.6 [GH-397](https://github.com/hashicorp/vault-action/pull/397), [GH-413](https://github.com/hashicorp/vault-action/pull/413)
+* bump jsrsasign from 10.5.27 to 10.6.1 [GH-401](https://github.com/hashicorp/vault-action/pull/401)
+* bump json5 from 2.2.1 to 2.2.3 [GH-404](https://github.com/hashicorp/vault-action/pull/404)
+* bump minimatch from 3.0.4 to 3.1.2 [GH-410](https://github.com/hashicorp/vault-action/pull/410)
+
 ## 2.4.3 (Nov 8th, 2022)
 
 Improvements:
