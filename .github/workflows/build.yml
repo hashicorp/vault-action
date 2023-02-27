@@ -38,6 +38,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
 
     - name: Run docker-compose
       run: docker-compose up -d vault
