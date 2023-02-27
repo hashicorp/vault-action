@@ -19180,7 +19180,7 @@ const { exportSecrets } = __nccwpck_require__(3348);
 
 (async () => {
     try {
-        await core.group('Get Vault Secrets', exportSecrets);
+        await core.group('MCOULOMBE TEST', exportSecrets);
     } catch (error) {
         core.setFailed(error.message);
     }
