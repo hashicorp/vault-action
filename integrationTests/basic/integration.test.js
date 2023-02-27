@@ -8,20 +8,21 @@ const { when } = require('jest-when');
 const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
+const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
 
 describe('integration', () => {
     beforeAll(async () => {
         // Verify Connection
         await got(`${vaultUrl}/v1/secret/config`, {
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
         });
 
         await got(`${vaultUrl}/v1/secret/data/test`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 data: {
@@ -33,7 +34,7 @@ describe('integration', () => {
         await got(`${vaultUrl}/v1/secret/data/nested/test`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 data: {
@@ -45,7 +46,7 @@ describe('integration', () => {
         await got(`${vaultUrl}/v1/secret/data/foobar`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 data: {
@@ -59,7 +60,7 @@ describe('integration', () => {
             await got(`${vaultUrl}/v1/sys/mounts/secret-kv1`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
                 json: {
                     type: 'kv'
@@ -77,7 +78,7 @@ describe('integration', () => {
         await got(`${vaultUrl}/v1/secret-kv1/test`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 secret: 'CUSTOMSECRET',
@@ -87,7 +88,7 @@ describe('integration', () => {
         await got(`${vaultUrl}/v1/secret-kv1/foobar`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 fookv1: 'bar',
@@ -97,7 +98,7 @@ describe('integration', () => {
         await got(`${vaultUrl}/v1/secret-kv1/nested/test`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 "other-Secret-dash": 'OTHERCUSTOMSECRET',
@@ -114,7 +115,7 @@ describe('integration', () => {
 
         when(core.getInput)
             .calledWith('token', expect.anything())
-            .mockReturnValueOnce('testtoken');
+            .mockReturnValueOnce(vaultToken);
     });
 
     function mockInput(secrets) {
@@ -207,7 +208,7 @@ describe('integration', () => {
             await got(`${vaultUrl}/v1/cubbyhole/test`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
                 json: {
                     foo: "bar",
