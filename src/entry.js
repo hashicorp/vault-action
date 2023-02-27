@@ -3,7 +3,7 @@ const { exportSecrets } = require('./action');
 
 (async () => {
     try {
-        await core.group('Get Vault Secrets', exportSecrets);
+        await core.group('MCOULOMBE TEST', exportSecrets);
     } catch (error) {
         core.setFailed(error.message);
     }
