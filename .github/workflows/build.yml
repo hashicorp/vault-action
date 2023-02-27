@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
     - uses: actions/setup-node@v3
       with:
@@ -38,6 +40,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault
@@ -72,6 +76,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault-enterprise
@@ -108,6 +114,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault
@@ -176,6 +184,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault-tls
