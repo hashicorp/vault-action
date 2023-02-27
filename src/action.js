@@ -9,6 +9,8 @@ const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
 
 async function exportSecrets() {
+    throw Error(`OH NO`);
+
     const vaultUrl = core.getInput('url', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
