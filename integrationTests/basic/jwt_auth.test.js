@@ -14,6 +14,7 @@ const { when } = require('jest-when');
 const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
+const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
 
 /**
  * Returns Github OIDC response mock
@@ -59,7 +60,7 @@ describe('jwt auth', () => {
         // Verify Connection
         await got(`${vaultUrl}/v1/secret/config`, {
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
         });
 
@@ -67,7 +68,7 @@ describe('jwt auth', () => {
             await got(`${vaultUrl}/v1/sys/auth/jwt`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
                 json: {
                     type: 'jwt'
@@ -85,7 +86,7 @@ describe('jwt auth', () => {
         await got(`${vaultUrl}/v1/sys/policy/reader`, {
             method: 'PUT',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 policy: `
@@ -99,7 +100,7 @@ describe('jwt auth', () => {
         await got(`${vaultUrl}/v1/auth/jwt/config`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 jwt_validation_pubkeys: publicRsaKey,
@@ -110,7 +111,7 @@ describe('jwt auth', () => {
         await got(`${vaultUrl}/v1/auth/jwt/role/default`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 role_type: 'jwt',
@@ -126,7 +127,7 @@ describe('jwt auth', () => {
         await got(`${vaultUrl}/v1/secret/data/test`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             },
             json: {
                 data: {
@@ -172,7 +173,7 @@ describe('jwt auth', () => {
             await got(`${vaultUrl}/v1/auth/jwt/role/default-sigstore`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
                 json: {
                     role_type: 'jwt',
