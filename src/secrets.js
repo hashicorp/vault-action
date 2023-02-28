@@ -55,7 +55,7 @@ async function getSecrets(secretRequests, client) {
             selector = "data." + selector
         }
 
-        const value = selectData(body, selector);
+        const value = await selectData(body, selector);
         results.push({
             request: secretRequest,
             value,
@@ -70,12 +70,12 @@ async function getSecrets(secretRequests, client) {
  * @param {object} data 
  * @param {string} selector 
  */
-function selectData(data, selector) {
+async function selectData(data, selector) {
     const ata = jsonata(selector);
-    let result = JSON.stringify(ata.evaluate(data));
+    let result = JSON.stringify(await ata.evaluate(data));
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
-        result = JSON.stringify(jsonata(`data.${selector}`).evaluate(data));
+        result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
     } else if (!result) {
         throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
     }
