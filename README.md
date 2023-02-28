@@ -31,6 +31,7 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
   - [Reference](#reference)
   - [Masking - Hiding Secrets from Logs](#masking---hiding-secrets-from-logs)
   - [Normalization](#normalization)
+  - [Contributing](#contributing)
 
 <!-- /TOC -->
 
@@ -419,3 +420,70 @@ This action uses GitHub Action's built-in masking, so all variables will automat
 ## Normalization
 
 To make it simpler to consume certain secrets as env vars, if no Env/Output Var Name is specified `vault-action` will replace and `.` chars with `__`, remove any other non-letter or number characters. If you're concerned about the result, it's recommended to provide an explicit Output Var Key.
+
+## Contributing
+
+If you wish to contribute to this project, the following dependencies are recommended for local development:
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) to install dependencies, build project and run tests
+- [docker](https://docs.docker.com/get-docker/) to run the pre-configured vault containers for acceptance tests
+- [docker-compose](https://docs.docker.com/compose/) to spin up the pre-configured vault containers for acceptance tests
+- [act](https://github.com/nektos/act) to run the vault-action locally
+
+### Build
+
+Use npm to install dependencies and build the project:
+
+```sh
+$ npm install && npm run build
+```
+
+### Vault test instance
+
+The Github Action needs access to a working Vault instance to function. 
+Multiple docker configurations are available via the docker-compose.yml file to run containers compatible with the various acceptance test suites.
+
+```sh
+$ docker-compose up -d vault # Choose one of: vault, vault-enterprise, vault-tls depending on which tests you would like to run
+```
+
+Instead of using one of the dockerized instance, you can also use your own local or remote Vault instance by exporting these environment variables:
+
+```sh
+$ export VAULT_HOST=<YOUR VAULT CLUSTER LOCATION> # localhost if undefined
+$ export VAULT_PORT=<YOUR VAULT PORT> # 8200 if undefined
+$ export VAULT_TOKEN=<YOUR VAULT TOKEN> # testtoken if undefined
+```
+
+### Running unit tests
+
+Unit tests can be executed at any time with no dependencies or prior setup.
+
+```sh
+$ npm test
+```
+
+### Running acceptance tests
+
+With a succesful build to take your local changes into account and a working Vault instance configured, you can now run acceptance tests to validate if any regressions were introduced.
+
+```sh
+$ npm run test:integration:basic # Choose one of: basic, enterprise, e2e, e2e-tls
+```
+
+### Running the action locally
+
+You can use the [act](https://github.com/nektos/act) command to test your changes locally if desired. Unfortunately it is not currently possible to use uncommitted local changes for a shared workfow. You will still need to push
+the changes you would like to validate beforehand. Even if a commit is necessary, this is still a more detailed and faster feedback loop than waiting for the action to be executed by Github in a different repository.
+
+Push your changes into a feature branch.
+```sh
+$ git checkout -b my-feature-branch
+$ git commit -m "testing new changes"
+$ git push
+```
+
+Edit the ./.github/workflows/local-test.yaml file to use your new feature branch. You may have to additionally edit the vault url, token and secret path if you are not using one of the provided containerized instance.
+Run your feature branch locally.
+```sh
+$ act local-test
+```

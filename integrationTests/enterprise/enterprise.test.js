@@ -8,6 +8,7 @@ const { when } = require('jest-when');
 const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
+const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
 
 describe('integration', () => {
     beforeAll(async () => {
@@ -15,7 +16,7 @@ describe('integration', () => {
             // Verify Connection
             await got(`${vaultUrl}/v1/secret/config`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
             });
 
@@ -48,7 +49,7 @@ describe('integration', () => {
 
         when(core.getInput)
             .calledWith('token', expect.anything())
-            .mockReturnValueOnce('testtoken');
+            .mockReturnValueOnce(vaultToken);
 
         when(core.getInput)
             .calledWith('namespace', expect.anything())
@@ -119,7 +120,7 @@ describe('authenticate with approle', () => {
             // Verify Connection
             await got(`${vaultUrl}/v1/secret/config`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
             });
 
@@ -137,7 +138,7 @@ describe('authenticate with approle', () => {
                 await got(`${vaultUrl}/v1/sys/auth/approle`, {
                     method: 'POST',
                     headers: {
-                        'X-Vault-Token': 'testtoken',
+                        'X-Vault-Token': vaultToken,
                         'X-Vault-Namespace': 'ns2',
                     },
                     json: {
@@ -157,7 +158,7 @@ describe('authenticate with approle', () => {
             await got(`${vaultUrl}/v1/sys/policies/acl/test`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 json: {
@@ -170,7 +171,7 @@ describe('authenticate with approle', () => {
             await got(`${vaultUrl}/v1/auth/approle/role/my-role`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 json: {
@@ -181,7 +182,7 @@ describe('authenticate with approle', () => {
             // Get role-id
             const roldIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/role-id`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 responseType: 'json',
@@ -192,7 +193,7 @@ describe('authenticate with approle', () => {
             const secretIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/secret-id`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 responseType: 'json',
@@ -238,7 +239,7 @@ async function enableNamespace(name) {
         await got(`${vaultUrl}/v1/sys/namespaces/${name}`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             }
         });
     } catch (error) {
@@ -256,7 +257,7 @@ async function enableEngine(path, namespace, version) {
         await got(`${vaultUrl}/v1/sys/mounts/${path}`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
                 'X-Vault-Namespace': namespace,
             },
             json: { type: 'kv', config: {}, options: { version }, generate_signing_key: true },
@@ -277,7 +278,7 @@ async function writeSecret(engine, path, namespace, version, data) {
     await got(`${vaultUrl}/v1/${secretPath}`, {
         method: 'POST',
         headers: {
-            'X-Vault-Token': 'testtoken',
+            'X-Vault-Token': vaultToken,
             'X-Vault-Namespace': namespace,
         },
         json: secretPayload
