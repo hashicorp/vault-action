@@ -1,0 +1,24 @@
+# This is a sample workflow to help test contributions
+# Change the branch name, url and token to fit with your own environment
+
+# Use 'on: push' instead of 'on: local-test' if you wish to run the test on github
+# If running locally with act, run the workflow with 'act local-test'
+
+# Don't forget to revert the file changes and invalidate any tokens that were committed before opening a pull-request
+on: local-test
+
+name: local-test
+
+jobs:
+  build:
+    name: local-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import Secrets
+        uses: hashicorp/vault-action@YOUR_BRANCH_NAME
+        with:
+          url: http://localhost:8200
+          method: token
+          token: testtoken
+          secrets: |
+            secret/data/test secret | SAMPLE_SECRET;

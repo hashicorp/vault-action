@@ -6,7 +6,7 @@ inputs:
     required: true
   secrets:
     description: 'A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details'
-    required: true
+    required: false
   namespace:
     description: 'The Vault namespace from which to query secrets. Vault Enterprise only, unset by default'
     required: false
@@ -69,12 +69,18 @@ inputs:
   jwtKeyPassword:
     description: 'Password for key stored in jwtPrivateKey (if needed)'
     required: false
+  jwtGithubAudience:
+    description: 'Identifies the recipient ("aud" claim) that the JWT is intended for'
+    required: false
   jwtTtl:
     description: 'Time in seconds, after which token expires'
     required: false
     default: 3600
+  secretEncodingType:
+    description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
+    required: false
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'unlock'

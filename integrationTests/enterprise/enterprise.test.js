@@ -8,6 +8,7 @@ const { when } = require('jest-when');
 const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
+const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
 
 describe('integration', () => {
     beforeAll(async () => {
@@ -15,7 +16,7 @@ describe('integration', () => {
             // Verify Connection
             await got(`${vaultUrl}/v1/secret/config`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
             });
 
@@ -43,15 +44,15 @@ describe('integration', () => {
         jest.resetAllMocks();
 
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce(`${vaultUrl}`);
 
         when(core.getInput)
-            .calledWith('token')
-            .mockReturnValueOnce('testtoken');
+            .calledWith('token', expect.anything())
+            .mockReturnValueOnce(vaultToken);
 
         when(core.getInput)
-            .calledWith('namespace')
+            .calledWith('namespace', expect.anything())
             .mockReturnValueOnce('ns1');
     });
 
@@ -151,7 +152,7 @@ describe('authenticate with approle', () => {
             // Verify Connection
             await got(`${vaultUrl}/v1/secret/config`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                 },
             });
 
@@ -169,7 +170,7 @@ describe('authenticate with approle', () => {
                 await got(`${vaultUrl}/v1/sys/auth/approle`, {
                     method: 'POST',
                     headers: {
-                        'X-Vault-Token': 'testtoken',
+                        'X-Vault-Token': vaultToken,
                         'X-Vault-Namespace': 'ns2',
                     },
                     json: {
@@ -189,7 +190,7 @@ describe('authenticate with approle', () => {
             await got(`${vaultUrl}/v1/sys/policies/acl/test`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 json: {
@@ -202,7 +203,7 @@ describe('authenticate with approle', () => {
             await got(`${vaultUrl}/v1/auth/approle/role/my-role`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 json: {
@@ -213,7 +214,7 @@ describe('authenticate with approle', () => {
             // Get role-id
             const roldIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/role-id`, {
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 responseType: 'json',
@@ -224,7 +225,7 @@ describe('authenticate with approle', () => {
             const secretIdResponse = await got(`${vaultUrl}/v1/auth/approle/role/my-role/secret-id`, {
                 method: 'POST',
                 headers: {
-                    'X-Vault-Token': 'testtoken',
+                    'X-Vault-Token': vaultToken,
                     'X-Vault-Namespace': 'ns2',
                 },
                 responseType: 'json',
@@ -243,16 +244,16 @@ describe('authenticate with approle', () => {
             .calledWith('method', expect.anything())
             .mockReturnValueOnce('approle');
         when(core.getInput)
-            .calledWith('roleId')
+            .calledWith('roleId', expect.anything())
             .mockReturnValueOnce(roleId);
         when(core.getInput)
-            .calledWith('secretId')
+            .calledWith('secretId', expect.anything())
             .mockReturnValueOnce(secretId);
         when(core.getInput)
-            .calledWith('url')
+            .calledWith('url', expect.anything())
             .mockReturnValueOnce(`${vaultUrl}`);
         when(core.getInput)
-            .calledWith('namespace')
+            .calledWith('namespace', expect.anything())
             .mockReturnValueOnce('ns2');
     });
 
@@ -270,7 +271,7 @@ async function enableNamespace(name) {
         await got(`${vaultUrl}/v1/sys/namespaces/${name}`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
             }
         });
     } catch (error) {
@@ -288,7 +289,7 @@ async function enableEngine(path, namespace, version) {
         await got(`${vaultUrl}/v1/sys/mounts/${path}`, {
             method: 'POST',
             headers: {
-                'X-Vault-Token': 'testtoken',
+                'X-Vault-Token': vaultToken,
                 'X-Vault-Namespace': namespace,
             },
             json: { type: 'kv', config: {}, options: { version }, generate_signing_key: true },
@@ -309,7 +310,7 @@ async function writeSecret(engine, path, namespace, version, data) {
     await got(`${vaultUrl}/v1/${secretPath}`, {
         method: 'POST',
         headers: {
-            'X-Vault-Token': 'testtoken',
+            'X-Vault-Token': vaultToken,
             'X-Vault-Namespace': namespace,
         },
         json: secretPayload
@@ -318,18 +319,6 @@ async function writeSecret(engine, path, namespace, version, data) {
 
 function mockInput(secrets) {
     when(core.getInput)
-        .calledWith('secrets')
+        .calledWith('secrets', expect.anything())
         .mockReturnValueOnce(secrets);
-}
-
-function mockEngineName(name) {
-    when(core.getInput)
-        .calledWith('path')
-        .mockReturnValueOnce(name);
-}
-
-function mockVersion(version) {
-    when(core.getInput)
-        .calledWith('kv-version')
-        .mockReturnValueOnce(version);
 }

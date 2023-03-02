@@ -1,7 +1,12 @@
 jest.mock('got');
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
-jest.mock("fs")
+jest.mock('fs', () => ({
+    stat: jest.fn().mockResolvedValue(null),
+    promises: {
+        access: jest.fn().mockResolvedValue(null),
+    }
+}));
 
 const core = require('@actions/core');
 const got = require('got');
@@ -16,7 +21,7 @@ const {
 
 function mockInput(name, key) {
     when(core.getInput)
-        .calledWith(name)
+        .calledWith(name, expect.anything())
         .mockReturnValueOnce(key);
 }
 

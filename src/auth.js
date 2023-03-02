@@ -2,6 +2,7 @@
 const core = require('@actions/core');
 const rsasign = require('jsrsasign');
 const fs = require('fs');
+const { default: got } = require('got');
 
 const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 /***
@@ -23,12 +24,21 @@ async function retrieveToken(method, client) {
             return await getClientToken(client, method, path, { token: githubToken });
         }
         case 'jwt': {
-            const role = core.getInput('role', { required: true });
-            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: true });
+            /** @type {string} */
+            let jwt;
+            const role = core.getInput('role', { required: false });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
             const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
-            const jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            const githubAudience = core.getInput('jwtGithubAudience', { required: false });
+
+            if (!privateKey) {
+                jwt = await core.getIDToken(githubAudience)
+            } else {
+                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            }
+
             return await getClientToken(client, method, path, { jwt: jwt, role: role });
         }
         case 'kubernetes': {
@@ -100,7 +110,16 @@ async function getClientToken(client, method, path, payload) {
     core.debug(`Retrieving Vault Token from v1/auth/${path}/login endpoint`);
 
     /** @type {import('got').Response<VaultLoginResponse>} */
-    const response = await client.post(`v1/auth/${path}/login`, options);
+    let response;
+    try {
+        response = await client.post(`v1/auth/${path}/login`, options);
+    } catch (err) {
+        if (err instanceof got.HTTPError) {
+            throw Error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, vaultResponse: ${JSON.stringify(err.response.body)}`)
+        } else {
+            throw err
+        }
+    }
     if (response && response.body && response.body.auth && response.body.auth.client_token) {
         core.debug('✔ Vault Token successfully retrieved');
 

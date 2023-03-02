@@ -1,5 +1,63 @@
 ## Unreleased
 
+## 2.5.0 (Jan 26th, 2023)
+
+Features:
+
+* Adds ability to automatically decode secrets from base64, hex, and utf8 encodings. [GH-408](https://github.com/hashicorp/vault-action/pull/408)
+
+Improvements:
+
+* Improves error messages for Vault authentication failures [GH-409](https://github.com/hashicorp/vault-action/pull/409)
+* bump jest from 28.1.1 to 29.3.1 [GH-397](https://github.com/hashicorp/vault-action/pull/397)
+* bump @types/jest from 28.1.3 to 29.2.6 [GH-397](https://github.com/hashicorp/vault-action/pull/397), [GH-413](https://github.com/hashicorp/vault-action/pull/413)
+* bump jsrsasign from 10.5.27 to 10.6.1 [GH-401](https://github.com/hashicorp/vault-action/pull/401)
+* bump json5 from 2.2.1 to 2.2.3 [GH-404](https://github.com/hashicorp/vault-action/pull/404)
+* bump minimatch from 3.0.4 to 3.1.2 [GH-410](https://github.com/hashicorp/vault-action/pull/410)
+
+## 2.4.3 (Nov 8th, 2022)
+
+Improvements:
+
+* bump jest-when from 3.5.1 to 3.5.2 [GH-388](https://github.com/hashicorp/vault-action/pull/388)
+* bump semantic-release from 19.0.3 to 19.0.5 [GH-360](https://github.com/hashicorp/vault-action/pull/360)
+* bump jsrsasign from 10.5.25 to 10.5.27 [GH-358](https://github.com/hashicorp/vault-action/pull/358)
+* bump @actions/core from 1.9.0 to 1.10.0 [GH-371](https://github.com/hashicorp/vault-action/pull/371)
+* update runtime to node16 for action [GH-375](https://github.com/hashicorp/vault-action/pull/375)
+
+## 2.4.2 (Aug 15, 2022)
+
+Bugs:
+
+* Errors due to replication delay for tokens will now be retried [GH-333](https://github.com/hashicorp/vault-action/pull/333)
+
+Improvements:
+* bump got from 11.5.1 to 11.8.5 [GH-344](https://github.com/hashicorp/vault-action/pull/344)  
+
+## 2.4.1 (April 28th, 2022)
+
+Improvements:
+* Make secrets parameter optional [GH-299](https://github.com/hashicorp/vault-action/pull/299)
+* auth/jwt: make "role" input optional [GH-291](https://github.com/hashicorp/vault-action/pull/291)
+* Write a better error message when secret not found [GH-306](https://github.com/hashicorp/vault-action/pull/306)
+* bump jest-when from 2.7.2 to 3.5.1 [GH-294](https://github.com/hashicorp/vault-action/pull/294)  
+* bump node-fetch from 2.6.1 to 2.6.7 [GH-308](https://github.com/hashicorp/vault-action/pull/308)  
+* bump @types/jest from 26.0.23 to 27.4.1 [GH-297](https://github.com/hashicorp/vault-action/pull/297)  
+* bump trim-off-newlines from 1.0.1 to 1.0.3 [GH-309](https://github.com/hashicorp/vault-action/pull/309)  
+* bump moment from 2.28.0 to 2.29.2 [GH-304](https://github.com/hashicorp/vault-action/pull/304)  
+* bump @types/got from 9.6.11 to 9.6.12 [GH-266](https://github.com/hashicorp/vault-action/pull/266)
+
+## 2.4.0 (October 21st, 2021)
+
+Features:
+* GitHub provided JWT auth is now supported [GH-257](https://github.com/hashicorp/vault-action/pull/257)
+
+## 2.3.1 (August 23rd, 2021)
+
+Improvements:
+* bump normalize-url from 4.5.0 to 4.5.1 [GH-227](https://github.com/hashicorp/vault-action/pull/227)
+* bump path-parse from 1.0.6 to 1.0.7 [GH-239](https://github.com/hashicorp/vault-action/pull/239)
+
 ## 2.3.0 (June 23rd, 2021)
 
 Features:
