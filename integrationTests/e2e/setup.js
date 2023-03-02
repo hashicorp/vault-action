@@ -1,7 +1,7 @@
 const got = require('got');
 
 const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
-const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
+const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.VAULT_TOKEN}` : "testtoken";
 
 (async () => {
     try {

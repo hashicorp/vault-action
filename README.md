@@ -44,6 +44,7 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
+              id: import-secrets
               uses: hashicorp/vault-action@v2
               with:
                 url: https://vault.mycompany.com:8200
@@ -55,6 +56,39 @@ jobs:
                     secret/data/ci npm_token
             # ...
 ```
+
+Retrieved secrets are available as environment variables or outputs for subsequent steps:
+```yaml
+#...
+            - name: Step following 'Import Secrets'
+              run: |
+                ACCESS_KEY_ID = "${{ env.AWS_ACCESS_KEY_ID }}"
+                SECRET_ACCESS_KEY = "${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}"
+            # ...
+```
+
+If your project needs a format other than env vars and step outputs, you can use additional steps to transform them into the desired format. 
+For example, a common pattern is to save all the secrets in a JSON file:
+```yaml
+#...
+            - name: Step following 'Import Secrets'
+              run: |
+                touch secrets.json
+                echo "${{ toJson(steps.import-secrets.outputs) }}" >> secrets.json
+            # ...
+```
+
+Which with our example would yield a file containing:
+```json
+{
+  "ACCESS_KEY_ID": "MY_KEY_ID",
+  "SECRET_ACCESS_KEY": "MY_SECRET_KEY",
+  "NPM_TOKEN": "MY_NPM_TOKEN"
+}
+```
+
+Note that all secrets are masked so programs need to read the file themselves otherwise all values will be replaced with a `***` placeholder.
+
 
 ## Authentication Methods
 
