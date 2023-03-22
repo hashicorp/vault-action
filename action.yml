@@ -79,6 +79,9 @@ inputs:
   secretEncodingType:
     description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
     required: false
+  retryVaultTokenRetrieval:
+    description: 'Enable retrying retrieval of Vault server tokens. If not specified the token request to the Vault server will only be tried once.'
+    required: false
 runs:
   using: 'node16'
   main: 'dist/index.js'
