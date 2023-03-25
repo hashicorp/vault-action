@@ -372,13 +372,4 @@ with blank lines
     expect(core.setOutput).toBeCalledTimes(1);
     expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
   })
-
-  it('output only Vault token, no secrets', async () => {
-    mockOutputToken("true")
-
-    await exportSecrets();
-
-    expect(core.setOutput).toBeCalledTimes(1);
-    expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
-  })
 });
