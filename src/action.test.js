@@ -333,9 +333,9 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(command.issue).toBeCalledTimes(2);
+        expect(core.setSecret).toBeCalledTimes(2);
 
-        expect(command.issue).toBeCalledWith('add-mask', 'secret');
+        expect(core.setSecret).toBeCalledWith('secret');
         expect(core.setOutput).toBeCalledWith('key', 'secret');
     })
 
@@ -353,10 +353,10 @@ with blank lines
 
         await exportSecrets();
 
-        expect(command.issue).toBeCalledTimes(3); // 1 for each non-empty line.
+        expect(core.setSecret).toBeCalledTimes(3); // 1 for each non-empty line.
 
-        expect(command.issue).toBeCalledWith('add-mask', 'a multi-line string');
-        expect(command.issue).toBeCalledWith('add-mask', 'with blank lines');
+        expect(core.setSecret).toBeCalledWith('a multi-line string');
+        expect(core.setSecret).toBeCalledWith('with blank lines');
         expect(core.setOutput).toBeCalledWith('key', multiLineString);
     })
 
