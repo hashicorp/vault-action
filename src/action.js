@@ -70,10 +70,10 @@ async function exportSecrets() {
     }
 
     const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
+    core.setSecret(vaultToken)
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
-    core.setSecret(vaultToken)
     if (outputToken === true) {
       core.setOutput('vault_token', `${vaultToken}`);
     }
