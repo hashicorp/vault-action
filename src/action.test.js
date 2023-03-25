@@ -194,11 +194,6 @@ describe('exportSecrets', () => {
             .calledWith('secretEncodingType', expect.anything())
             .mockReturnValueOnce(doEncode);
     }
-    function mockOutputToken(doOutput) {
-      when(core.getInput)
-          .calledWith('outputToken', expect.anything())
-          .mockReturnValueOnce(doOutput);
-  }
 
     it('simple secret retrieval', async () => {
         mockInput('test key');
