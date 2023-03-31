@@ -34,7 +34,7 @@ describe('authenticate with userpass', () => {
                 },
             });
 
-            // Enable approle
+            // Enable userpass
             try {
                 await got(`${vaultUrl}/v1/sys/auth/userpass`, {
                     method: 'POST',
