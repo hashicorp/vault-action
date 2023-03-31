@@ -5,7 +5,7 @@ const got = require('got').default;
 const jsonata = require('jsonata');
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
-const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
+const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
 
 async function exportSecrets() {

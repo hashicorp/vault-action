@@ -1,5 +1,9 @@
 ## Unreleased
 
+Features:
+
+* Added support for userpass and ldap authentication methods [GH-440](https://github.com/hashicorp/vault-action/pull/440)
+
 ## 2.5.0 (Jan 26th, 2023)
 
 Features:
