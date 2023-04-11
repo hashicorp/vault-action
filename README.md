@@ -19,6 +19,8 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
     - [GitHub](#github)
     - [JWT with OIDC Provider](#jwt-with-oidc-provider)
     - [Kubernetes](#kubernetes)
+    - [Userpass](#userpass)
+    - [Ldap](#ldap)
     - [Other Auth Methods](#other-auth-methods)
   - [Key Syntax](#key-syntax)
     - [Simple Key](#simple-key)
@@ -256,6 +258,40 @@ with:
   kubernetesTokenPath: /var/run/secrets/kubernetes.io/serviceaccount/token # default token path
 ```
 
+### Userpass
+
+The [Userpass auth method](https://developer.hashicorp.com/vault/docs/auth/userpass) allows
+your GitHub Actions workflow to authenticate to Vault with a username and password.
+Set the username and password as GitHub secrets and pass them to the
+`username` and `password` parameters.
+
+This is not the same as ldap or okta auth methods.
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  method: userpass
+  username: ${{ secrets.VAULT_USERNAME }}
+  password: ${{ secrets.VAULT_PASSWORD }}
+```
+
+### Ldap
+
+The [LDAP auth method](https://developer.hashicorp.com/vault/docs/auth/ldap) allows
+your GitHub Actions workflow to authenticate to Vault with a username and password inturn verfied with ldap servers.
+Set the username and password as GitHub secrets and pass them to the
+`username` and `password` parameters.
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  method: ldap
+  username: ${{ secrets.VAULT_USERNAME }}
+  password: ${{ secrets.VAULT_PASSWORD }}
+```
+
 ### Other Auth Methods
 
 If any other method is specified and you provide an `authPayload`, the action will
@@ -437,6 +473,8 @@ Here are all the inputs available through `with`:
 | `jwtGithubAudience` | Identifies the recipient ("aud" claim) that the JWT is intended for                                                                                   |`sigstore`|          |
 | `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
 | `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
+| `username`          | The username of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
+| `password`          | The password of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
 | `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
