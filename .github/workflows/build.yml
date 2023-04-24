@@ -174,6 +174,17 @@ jobs:
           /cubbyhole/test foo ;
           /cubbyhole/test zip | NAMED_CUBBYSECRET ;
 
+    - name: Test Vault Action Overwrites Env Vars In Nested Action (part 1/2)
+      uses: ./
+      with:
+        url: http://localhost:8200
+        token: testtoken
+        secrets: |
+          secret/data/test secret | NESTED_VAULT_ACTION_SECRET;
+
+    - name: Test Vault Action Overwrites Env Vars In Nested Action (part 2/2)
+      uses: ./.github/actions/nested-vault-action 
+
     - name: Verify Vault Action Outputs
       run: npm run test:e2e
       env:
