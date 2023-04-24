@@ -76,6 +76,18 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
                 zip: 'zap',
             },
         });
+
+        await got(`http://${vaultUrl}/v1/secret/data/nested-vault-action`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': vaultToken,
+            },
+            json: {
+                data: {
+                    secret: 'NESTED_VAULT_ACTION_SECRET',
+                },
+            },
+        });
     } catch (error) {
         console.log(error);
         process.exit(1);
