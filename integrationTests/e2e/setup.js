@@ -77,14 +77,14 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
             },
         });
 
-        await got(`http://${vaultUrl}/v1/secret/data/nested-vault-action`, {
+        await got(`http://${vaultUrl}/v1/secret/data/subsequent-test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': vaultToken,
             },
             json: {
                 data: {
-                    secret: 'NESTED_VAULT_ACTION_SECRET',
+                    secret: 'SUBSEQUENT_TEST_SECRET',
                 },
             },
         });

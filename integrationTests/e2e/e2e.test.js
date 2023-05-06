@@ -9,6 +9,6 @@ describe('e2e', () => {
         expect(process.env.OTHERALTSECRET).toBe("OTHERCUSTOMSECRET");
         expect(process.env.FOO).toBe("bar");
         expect(process.env.NAMED_CUBBYSECRET).toBe("zap");
-        expect(process.env.NESTED_VAULT_ACTION_SECRET).toBe("NESTED_VAULT_ACTION_SECRET");
+        expect(process.env.SUBSEQUENT_TEST_SECRET).toBe("SUBSEQUENT_TEST_SECRET");
     });
 });
