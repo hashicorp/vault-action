@@ -177,6 +177,11 @@ jobs:
         secrets: |
           secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
 
+    - name: Verify Vault Action Outputs
+      run: npm run test:e2e
+      env:
+        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
+
   e2e-tls:
     runs-on: ubuntu-latest
 
