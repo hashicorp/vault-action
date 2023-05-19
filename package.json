@@ -8,8 +8,8 @@
         "test": "jest",
         "test:integration:basic": "jest -c integrationTests/basic/jest.config.js",
         "test:integration:enterprise": "jest -c integrationTests/enterprise/jest.config.js",
-        "test:e2e": "jest -c integrationTests/e2e/jest.config.js",
-        "test:e2e-tls": "jest -c integrationTests/e2e-tls/jest.config.js"
+        "test:integration:e2e": "jest -c integrationTests/e2e/jest.config.js",
+        "test:integration:e2e-tls": "jest -c integrationTests/e2e-tls/jest.config.js"
     },
     "files": [
         "src/**/*",
