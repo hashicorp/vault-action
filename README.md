@@ -301,7 +301,8 @@ attempt to `POST` to `auth/${method}/login` with the provided payload and parse 
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
 
-Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
+Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name. 
+Note that the selector is using [JSONata](https://docs.jsonata.org/overview.html) and certain characters in keys may need to be escaped.
 
 ```raw
 {{ Secret Path }} {{ Secret Key or Selector }} | {{ Env/Output Variable Name }}
