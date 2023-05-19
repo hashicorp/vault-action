@@ -184,6 +184,11 @@ describe('exportSecrets', () => {
             .mockReturnValueOnce(doExport);
     }
 
+    function mockOutputToken(doOutput) {
+      when(core.getInput)
+          .calledWith('outputToken', expect.anything())
+          .mockReturnValueOnce(doOutput);
+  }
     function mockEncodeType(doEncode) {
         when(core.getInput)
             .calledWith('secretEncodingType', expect.anything())
@@ -323,9 +328,9 @@ describe('exportSecrets', () => {
 
         await exportSecrets();
 
-        expect(command.issue).toBeCalledTimes(1);
+        expect(core.setSecret).toBeCalledTimes(2);
 
-        expect(command.issue).toBeCalledWith('add-mask', 'secret');
+        expect(core.setSecret).toBeCalledWith('secret');
         expect(core.setOutput).toBeCalledWith('key', 'secret');
     })
 
@@ -343,10 +348,10 @@ with blank lines
 
         await exportSecrets();
 
-        expect(command.issue).toBeCalledTimes(2); // 1 for each non-empty line.
+        expect(core.setSecret).toBeCalledTimes(3); // 1 for each non-empty line.
 
-        expect(command.issue).toBeCalledWith('add-mask', 'a multi-line string');
-        expect(command.issue).toBeCalledWith('add-mask', 'with blank lines');
+        expect(core.setSecret).toBeCalledWith('a multi-line string');
+        expect(core.setSecret).toBeCalledWith('with blank lines');
         expect(core.setOutput).toBeCalledWith('key', multiLineString);
     })
 
@@ -357,5 +362,14 @@ with blank lines
 
     expect(core.exportVariable).toBeCalledTimes(1);
     expect(core.exportVariable).toBeCalledWith('VAULT_TOKEN', 'EXAMPLE');
+  })
+
+  it('output only Vault token, no secrets', async () => {
+    mockOutputToken("true")
+
+    await exportSecrets();
+
+    expect(core.setOutput).toBeCalledTimes(1);
+    expect(core.setOutput).toBeCalledWith('vault_token', 'EXAMPLE');
   })
 });

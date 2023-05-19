@@ -13,6 +13,7 @@ async function exportSecrets() {
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
+    const outputToken = (core.getInput('outputToken', { required: false }) || 'false').toLowerCase() != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
     const secretsInput = core.getInput('secrets', { required: false });
@@ -69,11 +70,14 @@ async function exportSecrets() {
     }
 
     const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
+    core.setSecret(vaultToken)
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
+    if (outputToken === true) {
+      core.setOutput('vault_token', `${vaultToken}`);
+    }
     if (exportToken === true) {
-        command.issue('add-mask', vaultToken);
         core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
     }
 
@@ -103,7 +107,7 @@ async function exportSecrets() {
 
         for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
-                command.issue('add-mask', line);
+                core.setSecret(line);
             }
         }
         if (exportEnv) {
