@@ -175,7 +175,7 @@ jobs:
           /cubbyhole/test zip | NAMED_CUBBYSECRET ;
 
     - name: Verify Vault Action Outputs
-      run: npm run test:e2e
+      run: npm run test:integration:e2e
       env:
         OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
@@ -268,7 +268,7 @@ jobs:
         clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
 
     - name: Verify Vault Action Outputs
-      run: npm run test:e2e-tls
+      run: npm run test:integration:e2e-tls
       env:
         OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
