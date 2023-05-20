@@ -76,6 +76,18 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
                 zip: 'zap',
             },
         });
+
+        await got(`http://${vaultUrl}/v1/secret/data/subsequent-test`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': vaultToken,
+            },
+            json: {
+                data: {
+                    secret: 'SUBSEQUENT_TEST_SECRET',
+                },
+            },
+        });
     } catch (error) {
         console.log(error);
         process.exit(1);
