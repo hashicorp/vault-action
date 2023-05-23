@@ -13,8 +13,8 @@ jobs:
     # assuming you use Vault to get secrets
     # if you use GitHub secrets, use secrets.XYZ instead of steps.secrets.outputs.XYZ
     secrets:
-      JIRA_SYNC_BASE_URL: ${{ steps.secrets.outputs.JIRA_SYNC_BASE_URL }}
-      JIRA_SYNC_USER_EMAIL: ${{ steps.secrets.outputs.JIRA_SYNC_USER_EMAIL }}
-      JIRA_SYNC_API_TOKEN: ${{ steps.secrets.outputs.JIRA_SYNC_API_TOKEN }}
+      JIRA_SYNC_BASE_URL: ${{ secrets.JIRA_SYNC_BASE_URL }}
+      JIRA_SYNC_USER_EMAIL: ${{ secrets.JIRA_SYNC_USER_EMAIL }}
+      JIRA_SYNC_API_TOKEN: ${{ secrets.JIRA_SYNC_API_TOKEN }}
     with:
       teams-array: '["applications-eco"]'
