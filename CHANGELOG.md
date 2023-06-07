@@ -1,9 +1,16 @@
 ## Unreleased
 
+## 2.6.0 (June 7, 2023)
+
 Features:
 
-* Added support for userpass and ldap authentication methods [GH-440](https://github.com/hashicorp/vault-action/pull/440)
+* Add ability to set the `vault_token` output to contain the Vault token after authentication [GH-441](https://github.com/hashicorp/vault-action/pull/441)
+* Add support for userpass and ldap authentication methods [GH-440](https://github.com/hashicorp/vault-action/pull/440)
 * Define an output, `errorMessage`, for vault-action's error messages so subsequent steps can read the errors [GH-446](https://github.com/hashicorp/vault-action/pull/446)
+
+Bugs:
+
+* Handle undefined response in getSecrets error handler [GH-431](https://github.com/hashicorp/vault-action/pull/431)
 
 ## 2.5.0 (Jan 26th, 2023)
 
