@@ -153,7 +153,7 @@ jobs:
           my-secret/test altSecret | NAMED_ALTSECRET ;
           my-secret/nested/test otherAltSecret ;
 
-    - name: Test Vault Action (default KV V2)
+    - name: Test Vault Action (special chars)
       uses: ./
       id: kv-secrets
       with:
