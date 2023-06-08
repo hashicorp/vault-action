@@ -262,7 +262,7 @@ jobs:
         clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
         clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
 
-    - name: Verify Vault Action Outputs
+    - name: Verify Vault Action Outputs (TLS)
       run: npm run test:integration:e2e-tls
       env:
         OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecret }}
