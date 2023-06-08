@@ -153,6 +153,16 @@ jobs:
           my-secret/test altSecret | NAMED_ALTSECRET ;
           my-secret/nested/test otherAltSecret ;
 
+    - name: Test Vault Action (default KV V2)
+      uses: ./
+      id: kv-secrets
+      with:
+        url: http://localhost:8200
+        token: testtoken
+        secrets: |
+          secret/data/specialchars secret ;
+          secret/data/specialchars secret | SPECIAL_CHARS_SECRET ;
+
     - name: Test Vault Action (cubbyhole)
       uses: ./
       with:

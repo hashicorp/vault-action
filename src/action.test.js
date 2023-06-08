@@ -207,6 +207,19 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
+    it('special chars secret retrieval', async () => {
+        const secret = 'abc$xyz';
+        mockInput('test key');
+        mockVaultData({
+            key: secret
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', secret);
+        expect(core.setOutput).toBeCalledWith('key', secret);
+    });
+
     it('encoded secret retrieval', async () => {
         mockInput('test key');
         mockVaultData({

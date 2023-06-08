@@ -1,6 +1,7 @@
 describe('e2e', () => {
     it('verify', () => {
         expect(process.env.SECRET).toBe("SUPERSECRET");
+        expect(process.env.SPECIAL_CHARS_SECRET).toBe("abc$xyz");
         expect(process.env.NAMED_SECRET).toBe("SUPERSECRET");
         expect(process.env.OTHERSECRET).toBe("OTHERSUPERSECRET");
         expect(process.env.OTHER_SECRET_OUTPUT).toBe("OTHERSUPERSECRET");
