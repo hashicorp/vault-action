@@ -56,6 +56,10 @@ inputs:
     description: 'Whether or not export Vault token as environment variables.'
     default: 'false'
     required: false
+  outputToken:
+    description: 'Whether or not to set the `vault_token` output to contain the Vault token after authentication.'
+    default: 'false'
+    required: false
   caCertificate:
     description: 'Base64 encoded CA certificate to verify the Vault server certificate.'
     required: false
