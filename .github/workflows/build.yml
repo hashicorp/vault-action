@@ -1,9 +1,5 @@
 on:
   push:
-    branches:
-      - main
-  pull_request_target:
-    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
@@ -11,8 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
 
     - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
       with:
@@ -40,8 +34,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault
@@ -76,8 +68,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault-enterprise
@@ -114,8 +104,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault
@@ -199,8 +187,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
 
     - name: Run docker-compose
       run: docker-compose up -d vault-tls
@@ -234,7 +220,7 @@ jobs:
 
     - name: Test Vault Action (default KV V2)
       uses: ./
-      id: kv-secrets
+      id: kv-secrets-tls
       with:
         url: https://localhost:8200
         token: ${{ env.VAULT_TOKEN }}
@@ -285,30 +271,4 @@ jobs:
     - name: Verify Vault Action Outputs
       run: npm run test:integration:e2e-tls
       env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
-
-# Removing publish step for now.
-#  publish:
-#    if: github.event_name	== 'push' && contains(github.ref, 'main')
-#    runs-on: ubuntu-latest
-#    needs: [build, integration, e2e]
-#    steps:
-#    - uses: actions/checkout@v1
-#    - uses: actions/setup-node@v3
-#      with:
-#        node-version: '16.14.0'
-#    - name: setup npm cache
-#      uses: actions/cache@v1
-#      with:
-#        path: ~/.npm
-#        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-#        restore-keys: |
-#          ${{ runner.os }}-node-
-#    - name: npm install
-#      run: npm ci
-#    - name: release
-#      if: success() && endsWith(github.ref, 'main')
-#      run: npx semantic-release
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecret }}
