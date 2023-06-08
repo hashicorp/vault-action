@@ -31,7 +31,7 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
             },
             json: {
                 data: {
-                    secret: 'abc$xyz',
+                    specialsecret: 'abc$xyz',
                 },
             },
         });

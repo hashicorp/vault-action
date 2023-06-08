@@ -159,8 +159,8 @@ jobs:
         url: http://localhost:8200
         token: testtoken
         secrets: |
-          secret/data/specialchars secret ;
-          secret/data/specialchars secret | SPECIAL_CHARS_SECRET ;
+          secret/data/specialchars specialsecret ;
+          secret/data/specialchars specialsecret | SPECIAL_CHARS_SECRET ;
 
     - name: Test Vault Action (cubbyhole)
       uses: ./
