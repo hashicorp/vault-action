@@ -155,7 +155,6 @@ jobs:
 
     - name: Test Vault Action (special chars)
       uses: ./
-      id: kv-secrets
       with:
         url: http://localhost:8200
         token: testtoken
