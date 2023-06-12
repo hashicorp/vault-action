@@ -91,3 +91,7 @@ runs:
 branding:
   icon: 'unlock'
   color: 'gray-dark'
+# Don't enforce strict typing for outputs (defined in this repo's action.yml)
+# because vault-action's outputs are dynamic. This is useful for repo's that
+# make use of https://github.com/rhysd/actionlint
+skip_outputs: true

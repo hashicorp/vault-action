@@ -134,9 +134,6 @@ jobs:
 
     - name: Test Vault Action (default KV V2)
       uses: ./
-      # Don't enforce strict typing for outputs (defined in this repo's
-      # action.yml) because vault-action's outputs are dynamic
-      skip_outputs: true
       id: kv-secrets
       with:
         url: http://localhost:8200
@@ -208,9 +205,6 @@ jobs:
 
     - name: Test Vault Action (default KV V2)
       uses: ./
-      # Don't enforce strict typing for outputs (defined in this repo's
-      # action.yml) because vault-action's outputs are dynamic
-      skip_outputs: true
       id: kv-secrets-tls
       with:
         url: https://localhost:8200
