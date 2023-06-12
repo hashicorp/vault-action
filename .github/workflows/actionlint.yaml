@@ -5,5 +5,8 @@ on:
     - '.github/workflows/**'
 jobs:
   actionlint:
+    # don't enforce strict typing for outputs (defined in this repo's
+    # action.yml) because vault-action's outputs are dynamic
+    skip_outputs: true
     # using `main` as the ref will keep your workflow up-to-date
     uses: hashicorp/vault-workflows-common/.github/workflows/actionlint.yaml@main
