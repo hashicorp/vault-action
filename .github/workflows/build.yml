@@ -101,9 +101,6 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    outputs:
-      otherSecret: ${{ steps.kv-secrets.outputs.otherSecret }}
-      otherSecretTLS: ${{ steps.kv-secrets-tls.outputs.otherSecretTLS }}
 
     steps:
     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
@@ -137,6 +134,9 @@ jobs:
 
     - name: Test Vault Action (default KV V2)
       uses: ./
+      outputs:
+        otherSecret: ${{ steps.kv-secrets.outputs.otherSecret }}
+        otherSecretTLS: ${{ steps.kv-secrets-tls.outputs.otherSecretTLS }}
       id: kv-secrets
       with:
         url: http://localhost:8200
