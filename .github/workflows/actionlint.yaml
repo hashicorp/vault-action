@@ -12,4 +12,4 @@ jobs:
       - name: "Lint workflow files"
         uses: docker://docker.mirror.hashicorp.services/rhysd/actionlint:latest
         with:
-          args: -ignore 'property "othersecret" is not defined in object type'
+          args: '-ignore "property \"othersecret\" is not defined in object type"'
