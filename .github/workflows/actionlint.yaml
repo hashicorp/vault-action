@@ -3,7 +3,13 @@ on:
   push:
     paths:
     - '.github/workflows/**'
+
 jobs:
   actionlint:
-    # using `main` as the ref will keep your workflow up-to-date
-    uses: hashicorp/vault-workflows-common/.github/workflows/actionlint.yaml@main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - name: "Lint workflow files"
+        uses: docker://docker.mirror.hashicorp.services/rhysd/actionlint:latest
+        with:
+          args: -ignore 'property "othersecret" is not defined in object type {}'

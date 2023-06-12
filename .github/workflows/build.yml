@@ -134,9 +134,6 @@ jobs:
 
     - name: Test Vault Action (default KV V2)
       uses: ./
-      outputs:
-        otherSecret: ${{ steps.kv-secrets.outputs.otherSecret }}
-        otherSecretTLS: ${{ steps.kv-secrets-tls.outputs.otherSecretTLS }}
       id: kv-secrets
       with:
         url: http://localhost:8200
@@ -259,4 +256,4 @@ jobs:
     - name: Verify Vault Action Outputs
       run: npm run test:integration:e2e-tls
       env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecretTLS }}
+        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecret }}
