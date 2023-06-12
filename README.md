@@ -546,8 +546,12 @@ $ npm run test:integration:basic # Choose one of: basic, enterprise, e2e, e2e-tl
 
 ### Running the action locally
 
-You can use the [act](https://github.com/nektos/act) command to test your changes locally if desired. Unfortunately it is not currently possible to use uncommitted local changes for a shared workfow. You will still need to push
-the changes you would like to validate beforehand. Even if a commit is necessary, this is still a more detailed and faster feedback loop than waiting for the action to be executed by Github in a different repository.
+You can use the [act](https://github.com/nektos/act) command to test your
+changes locally if desired. Unfortunately it is not currently possible to use
+uncommitted local changes for a shared workfow. You will still need to push the
+changes you would like to validate beforehand. Even if a commit is necessary,
+this is still a more detailed and faster feedback loop than waiting for the
+action to be executed by Github in a different repository.
 
 Push your changes into a feature branch.
 ```sh
@@ -556,8 +560,11 @@ $ git commit -m "testing new changes"
 $ git push
 ```
 
-Edit the ./.github/workflows/local-test.yaml file to use your new feature branch. You may have to additionally edit the vault url, token and secret path if you are not using one of the provided containerized instance.
-Run your feature branch locally.
+Edit the ./.github/workflows/local-test.yaml file to use your new feature
+branch. You may have to additionally edit the vault url, token and secret path
+if you are not using one of the provided containerized instance.  Run your
+feature branch locally.
+
 ```sh
-$ act local-test
+$ act workflow_dispatch -j local-test
 ```
