@@ -12,4 +12,8 @@ jobs:
       - name: "Lint workflow files"
         uses: docker://docker.mirror.hashicorp.services/rhysd/actionlint:latest
         with:
+          # Ignore actionlint errors from strict typing for outputs that we use
+          # in our e2e tests.
+          # This error occurs because vault-action's outputs are dynamic but
+          # actionlint expects action.yml to define them.
           args: '-ignore "property \"othersecret\" is not defined in object type"'
