@@ -162,6 +162,8 @@ jobs:
           /cubbyhole/test foo ;
           /cubbyhole/test zip | NAMED_CUBBYSECRET ;
 
+    # The ordering of these two Test Vault Action Overwrites Env Vars In Subsequent Action steps matters
+    # They should come before the Verify Vault Action Outputs step
     - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
       uses: ./
       with:
