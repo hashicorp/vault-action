@@ -162,6 +162,24 @@ jobs:
           /cubbyhole/test foo ;
           /cubbyhole/test zip | NAMED_CUBBYSECRET ;
 
+    # The ordering of these two Test Vault Action Overwrites Env Vars In Subsequent Action steps matters
+    # They should come before the Verify Vault Action Outputs step
+    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
+      uses: ./
+      with:
+        url: http://localhost:8200/
+        token: testtoken
+        secrets: |
+          secret/data/test secret | SUBSEQUENT_TEST_SECRET;
+
+    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
+      uses: ./
+      with:
+        url: http://localhost:8200/
+        token: testtoken
+        secrets: |
+          secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
+
     - name: Verify Vault Action Outputs
       run: npm run test:integration:e2e
       env:
