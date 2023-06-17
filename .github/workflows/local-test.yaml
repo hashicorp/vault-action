@@ -56,4 +56,4 @@ jobs:
       run: |
         echo
         cat secrets.json
-        cat secrets.json | jq -c
+        jq -c . < secrets.json

@@ -168,7 +168,7 @@ jobs:
         echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
         cat secrets.json
         # we should be able to parse the output as JSON
-        cat secrets.json | jq -c
+        jq -c . < secrets.json
 
     - name: Test Vault Action (cubbyhole)
       uses: ./
