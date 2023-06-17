@@ -3,6 +3,7 @@ const got = require('got');
 const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
 const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.VAULT_TOKEN}` : "testtoken";
 
+
 (async () => {
     try {
         // Verify Connection
@@ -34,6 +35,18 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
                     otherSecret: 'OTHERSUPERSECRET',
                 },
             }
+        });
+
+        await got(`http://${vaultUrl}/v1/secret/data/test-json-string`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': vaultToken,
+            },
+            json: {
+                data: {
+                    jsonString: '{"x":1,"y":"qux"}',
+                },
+            },
         });
 
         await got(`http://${vaultUrl}/v1/sys/mounts/my-secret`, {

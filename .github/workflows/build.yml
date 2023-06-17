@@ -153,6 +153,23 @@ jobs:
           my-secret/test altSecret | NAMED_ALTSECRET ;
           my-secret/nested/test otherAltSecret ;
 
+    - name: Test Vault Action (JSON string format)
+      id: import-secrets
+      uses: ./
+      with:
+        url: http://localhost:8200
+        token: testtoken
+        secrets: |
+          secret/data/test-json-string jsonString ;
+          secret/data/test-json-string jsonString | JSON_STRING ;
+
+    - name: Test Vault Action (verify JSON string format)
+      run: |
+        echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
+        cat secrets.json
+        # we should be able to parse the output as JSON
+        cat secrets.json | jq -c
+
     - name: Test Vault Action (cubbyhole)
       uses: ./
       with:
