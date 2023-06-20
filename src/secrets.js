@@ -75,7 +75,7 @@ async function selectData(data, selector) {
     if (isJSON(d)) {
         // If we already have JSON we will not "stringify" it yet so that we
         // don't end up calling JSON.parse. This would break the secrets that
-        // are stored as json. See: https://github.com/hashicorp/vault-action/issues/194
+        // are stored as JSON. See: https://github.com/hashicorp/vault-action/issues/194
         result = d;
     } else {
         result = JSON.stringify(d);
@@ -106,6 +106,10 @@ async function selectData(data, selector) {
     return result;
 }
 
+/**
+ * isJSON returns true if str parses as valid JSON
+ * @param {string} str
+ */
 function isJSON(str) {
     if (typeof str !== "string"){
         return false;

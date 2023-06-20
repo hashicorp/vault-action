@@ -38,7 +38,9 @@ jobs:
 
     - name: Import Secrets
       id: import-secrets
+      # use the local changes
       uses: ./
+      # run against a specific version of vault-action
       # uses: hashicorp/vault-action@v2.1.2
       with:
         url: http://localhost:8200
@@ -52,7 +54,7 @@ jobs:
         touch secrets.json
         echo "${{ steps.import-secrets.outputs.jsonString }}" >> secrets.json
 
-    - name: Check json file
+    - name: Check json file format
       run: |
         echo
         cat secrets.json

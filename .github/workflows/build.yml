@@ -160,12 +160,9 @@ jobs:
         url: http://localhost:8200
         token: testtoken
         secrets: |
-          secret/data/test-json-string jsonString ;
           secret/data/test-json-string jsonString | JSON_STRING ;
-
-    - name: Test Vault Action (verify JSON string format)
       run: |
-        echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
+        echo "${{ env.JSON_STRING }}" > secrets.json
         cat secrets.json
         # we should be able to parse the output as JSON
         jq -c . < secrets.json
