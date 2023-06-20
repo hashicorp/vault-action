@@ -12,9 +12,10 @@ describe('e2e', () => {
         expect(process.env.SUBSEQUENT_TEST_SECRET).toBe("SUBSEQUENT_TEST_SECRET");
 
         const jsonString = '{"x":1,"y":"qux"}';
-        expect(process.env.JSON_DATA).toBe(jsonString);
-
         let jsonResult = JSON.stringify(jsonString);
+
+        expect(process.env.JSON_DATA).toBe(jsonResult);
+
         jsonResult = jsonResult.substring(1, jsonResult.length - 1);
         expect(process.env.JSON_STRING).toBe(jsonResult);
     });
