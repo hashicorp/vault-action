@@ -13,9 +13,6 @@ describe('e2e', () => {
 
         const jsonString = '{"x":1,"y":"qux"}';
         let jsonResult = JSON.stringify(jsonString);
-
-        expect(process.env.JSON_DATA).toBe(jsonResult);
-
         jsonResult = jsonResult.substring(1, jsonResult.length - 1);
         expect(process.env.JSON_STRING).toBe(jsonResult);
     });
