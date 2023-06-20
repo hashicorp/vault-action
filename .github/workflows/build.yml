@@ -153,7 +153,8 @@ jobs:
           my-secret/test altSecret | NAMED_ALTSECRET ;
           my-secret/nested/test otherAltSecret ;
 
-    - name: Test Vault Action (JSON string format)
+    # The ordering of these two Test Vault Action JSON String Format steps matters
+    - name: Test Vault Action JSON String Format (part 1/2)
       id: import-secrets
       uses: ./
       with:
@@ -161,8 +162,10 @@ jobs:
         token: testtoken
         secrets: |
           secret/data/test-json-string jsonString | JSON_STRING ;
+
+    - name: Test Vault Action JSON String Format (part 2/2)
       run: |
-        echo "${{ env.JSON_STRING }}" > secrets.json
+        echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
         cat secrets.json
         # we should be able to parse the output as JSON
         jq -c . < secrets.json
