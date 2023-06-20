@@ -49,6 +49,18 @@ const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.V
             },
         });
 
+        await got(`http://${vaultUrl}/v1/secret/data/test-json-data`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': vaultToken,
+            },
+            json: {
+                data: {
+                    jsonData: {"x":1,"y":"qux"},
+                },
+            },
+        });
+
         await got(`http://${vaultUrl}/v1/sys/mounts/my-secret`, {
             method: 'POST',
             headers: {

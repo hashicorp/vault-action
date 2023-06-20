@@ -162,13 +162,17 @@ jobs:
         token: testtoken
         secrets: |
           secret/data/test-json-string jsonString | JSON_STRING ;
+          secret/data/test-json-data jsondata | JSON_DATA ;
 
     - name: Test Vault Action JSON String Format (part 2/2)
       run: |
-        echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
-        cat secrets.json
+        echo "${{ steps.import-secrets.outputs.jsonString }}" > string.json
+        echo "${{ steps.import-secrets.outputs.jsonData }}" > data.json
+        cat string.json
+        cat data.json
         # we should be able to parse the output as JSON
-        jq -c . < secrets.json
+        jq -c . < string.json
+        jq -c . < data.json
 
     - name: Test Vault Action (cubbyhole)
       uses: ./
