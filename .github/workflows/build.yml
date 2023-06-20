@@ -162,7 +162,7 @@ jobs:
         token: testtoken
         secrets: |
           secret/data/test-json-string jsonString | JSON_STRING ;
-          secret/data/test-json-data jsondata | JSON_DATA ;
+          secret/data/test-json-data jsonData | JSON_DATA ;
 
     - name: Test Vault Action JSON String Format (part 2/2)
       run: |
