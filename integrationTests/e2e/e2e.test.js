@@ -10,5 +10,10 @@ describe('e2e', () => {
         expect(process.env.FOO).toBe("bar");
         expect(process.env.NAMED_CUBBYSECRET).toBe("zap");
         expect(process.env.SUBSEQUENT_TEST_SECRET).toBe("SUBSEQUENT_TEST_SECRET");
+
+        const jsonString = '{"x":1,"y":"qux"}';
+        let jsonResult = JSON.stringify(jsonString);
+        jsonResult = jsonResult.substring(1, jsonResult.length - 1);
+        expect(process.env.JSON_STRING).toBe(jsonResult);
     });
 });

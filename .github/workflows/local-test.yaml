@@ -18,11 +18,44 @@ jobs:
     name: local-test
     runs-on: ubuntu-latest
     steps:
-      - name: Import Secrets
-        uses: hashicorp/vault-action@YOUR_BRANCH_NAME
-        with:
-          url: http://localhost:8200
-          method: token
-          token: testtoken
-          secrets: |
-            secret/data/test secret | SAMPLE_SECRET;
+    - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+
+    - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      with:
+        node-version: '16.14.0'
+
+    - name: NPM Install
+      run: npm ci
+
+    - name: NPM Build
+      run: npm run build
+
+    - name: Setup Vault
+      run: node ./integrationTests/e2e/setup.js
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: 8200
+
+    - name: Import Secrets
+      id: import-secrets
+      # use the local changes
+      uses: ./
+      # run against a specific version of vault-action
+      # uses: hashicorp/vault-action@v2.1.2
+      with:
+        url: http://localhost:8200
+        method: token
+        token: testtoken
+        secrets: |
+          secret/data/test-json-string jsonString;
+
+    - name: Check Secrets
+      run: |
+        touch secrets.json
+        echo "${{ steps.import-secrets.outputs.jsonString }}" >> secrets.json
+
+    - name: Check json file format
+      run: |
+        echo
+        cat secrets.json
+        jq -c . < secrets.json

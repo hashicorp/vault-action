@@ -1,5 +1,13 @@
 ## Unreleased
 
+Bugs:
+
+* Fix a regression that broke support for secrets in JSON format [GH-466](https://github.com/hashicorp/vault-action/pull/466)
+
+Improvements:
+
+* Fix a warning about outputToken being an unexpected input [GH-461](https://github.com/hashicorp/vault-action/pull/461)
+
 ## 2.6.0 (June 7, 2023)
 
 Features:

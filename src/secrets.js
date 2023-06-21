@@ -1,6 +1,5 @@
 const jsonata = require("jsonata");
 
-
 /**
  * @typedef {Object} SecretRequest
  * @property {string} path
@@ -67,12 +66,20 @@ async function getSecrets(secretRequests, client) {
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data 
- * @param {string} selector 
+ * @param {object} data
+ * @param {string} selector
  */
 async function selectData(data, selector) {
     const ata = jsonata(selector);
-    let result = JSON.stringify(await ata.evaluate(data));
+    let d = await ata.evaluate(data);
+    if (isJSON(d)) {
+        // If we already have JSON we will not "stringify" it yet so that we
+        // don't end up calling JSON.parse. This would break the secrets that
+        // are stored as JSON. See: https://github.com/hashicorp/vault-action/issues/194
+        result = d;
+    } else {
+        result = JSON.stringify(d);
+    }
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
         result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
@@ -81,12 +88,44 @@ async function selectData(data, selector) {
     }
 
     if (result.startsWith(`"`)) {
-        result = JSON.parse(result);
+        // we need to strip the beginning and ending quotes otherwise it will
+        // always successfully parse as JSON
+        result = result.substring(1, result.length - 1);
+        if (!isJSON(result)) {
+            // add the quotes back so we can parse it into a Javascript object
+            // to allow support for multi-line secrets. See https://github.com/hashicorp/vault-action/issues/160
+            result = `"${result}"`
+            result = JSON.parse(result);
+        }
+    } else if (isJSON(result)) {
+        // This is required to support secrets in JSON format.
+        // See https://github.com/hashicorp/vault-action/issues/194 and https://github.com/hashicorp/vault-action/pull/173
+        result = JSON.stringify(result);
+        result = result.substring(1, result.length - 1);
     }
     return result;
+}
+
+/**
+ * isJSON returns true if str parses as a valid JSON string
+ * @param {string} str
+ */
+function isJSON(str) {
+    if (typeof str !== "string"){
+        return false;
+    }
+
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+
+    return true;
 }
 
 module.exports = {
     getSecrets,
     selectData
 }
+
