@@ -107,7 +107,7 @@ async function selectData(data, selector) {
 }
 
 /**
- * isJSON returns true if str parses as valid JSON
+ * isJSON returns true if str parses as a valid JSON string
  * @param {string} str
  */
 function isJSON(str) {
@@ -121,7 +121,7 @@ function isJSON(str) {
         return false;
     }
 
-    return isNaN(str);
+    return true;
 }
 
 module.exports = {
