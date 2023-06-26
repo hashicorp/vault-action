@@ -107,8 +107,8 @@ async function exportSecrets() {
 
         for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
-                // core.setSecret(line);
-                core.setOutput(line);
+                core.setSecret(line);
+                // core.setOutput(line);
             }
         }
         if (exportEnv) {
