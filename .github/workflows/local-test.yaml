@@ -1,24 +1,89 @@
 # This is a sample workflow to help test contributions
 # Change the branch name, url and token to fit with your own environment
 
-# Use 'on: push' instead of 'on: local-test' if you wish to run the test on github
-# If running locally with act, run the workflow with 'act local-test'
+# To run this locally with act use:
+#     act workflow_dispatch -j local-test
+#
+# If you have permissions, you can run this workflow via the GitHub UI.
+# Otherwise, use 'on: push' instead of 'on: workflow_dispatch'.
 
-# Don't forget to revert the file changes and invalidate any tokens that were committed before opening a pull-request
-on: local-test
+# Don't forget to revert the file changes and invalidate any tokens that were
+# committed before opening a pull request.
+on: workflow_dispatch
 
 name: local-test
 
 jobs:
-  build:
+  local-test:
     name: local-test
     runs-on: ubuntu-latest
     steps:
-      - name: Import Secrets
-        uses: hashicorp/vault-action@YOUR_BRANCH_NAME
-        with:
-          url: http://localhost:8200
-          method: token
-          token: testtoken
-          secrets: |
-            secret/data/test secret | SAMPLE_SECRET;
+    - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+
+    - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      with:
+        node-version: '16.14.0'
+
+    - name: NPM Install
+      run: npm ci
+
+    - name: NPM Build
+      run: npm run build
+
+    - name: Setup Vault
+      run: node ./integrationTests/e2e/setup.js
+      env:
+        VAULT_HOST: localhost
+        VAULT_PORT: 8200
+
+    - name: Import Secrets
+      id: import-secrets
+      # use the local changes
+      uses: ./
+      # run against a specific version of vault-action
+      # uses: hashicorp/vault-action@v2.6.0
+      # uses: hashicorp/vault-action@v2.1.1
+      with:
+        url: http://localhost:8200
+        method: token
+        token: testtoken
+          # secret/data/test-json-string jsonString;
+          # secret/data/test-json-big jsonBig;
+          # secret/data/test-json-string-big jsonStringBig;
+        secrets: |
+          secret/data/test-json-string jsonString;
+          secret/data/test-json-data jsonData;
+          secret/data/test-json-string-multiline jsonStringMultiline;
+          secret/data/singleline singleline;
+
+    - name: Check Secrets
+        # echo "${{ steps.import-secrets.outputs.jsonBig }}" > big.json
+        # echo "${{ steps.import-secrets.outputs.jsonStringBig }}" > stringbig.json
+      run: |
+        echo "${{ steps.import-secrets.outputs.jsonString }}" > secrets.json
+        echo "${{ steps.import-secrets.outputs.jsonData }}" > data.json
+        echo "${{ steps.import-secrets.outputs.jsonStringMultiline }}" > multiline.json
+        echo "${{ steps.import-secrets.outputs.singleline }}" > singleline.json
+
+    - name: Check json file format
+      # cat ~/Desktop/sa.json | vault kv put -mount=secret cat KEY=@/Users/jmf/Desktop/sa.json
+      run: |
+        # echo "secrets:"
+        # cat secrets.json
+        # jq -c . < secrets.json || true
+
+        # echo "data:"
+        # cat data.json
+        # jq -c . < data.json || true
+
+        echo "multiline:"
+        cat multiline.json
+        jq -c . < multiline.json || true
+
+        # echo "singleline:"
+        # cat singleline.json
+        # jq -c . < singleline.json || true
+
+    # - name: test parse
+    #   run: |
+    #     node ./scripts/parse.js "${{ steps.import-secrets.outputs.jsonStringMultiline }}"

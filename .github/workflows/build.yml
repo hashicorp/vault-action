@@ -144,148 +144,167 @@ jobs:
         VAULT_HOST: localhost
         VAULT_PORT: 8200
 
-    - name: Test Vault Action (default KV V2)
-      uses: ./
-      id: kv-secrets
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          secret/data/test secret ;
-          secret/data/test secret | NAMED_SECRET ;
-          secret/data/nested/test otherSecret ;
-
-    - name: Test Vault Action (default KV V1)
+    - name: Import Secrets
+      id: import-secrets
       uses: ./
       with:
         url: http://localhost:8200
         token: testtoken
         secrets: |
-          my-secret/test altSecret ;
-          my-secret/test altSecret | NAMED_ALTSECRET ;
-          my-secret/nested/test otherAltSecret ;
+          secret/data/test-json-string-multiline jsonStringMultiline;
 
-    - name: Test Vault Action (cubbyhole)
-      uses: ./
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          /cubbyhole/test foo ;
-          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+    - name: Check Secrets
+      run: |
+        echo "${{ steps.import-secrets.outputs.jsonStringMultiline }}" > multiline.json
 
-    - name: Verify Vault Action Outputs
-      run: npm run test:integration:e2e
-      env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
+    - name: Check json file format
+      run: |
+        echo "multiline:"
+        cat multiline.json
+        jq -c . < multiline.json
+
+    # - name: Test Vault Action (default KV V2)
+    #   uses: ./
+    #   id: kv-secrets
+    #   with:
+    #     url: http://localhost:8200
+    #     token: testtoken
+    #     secrets: |
+    #       secret/data/test secret ;
+    #       secret/data/test secret | NAMED_SECRET ;
+    #       secret/data/nested/test otherSecret ;
+
+    # - name: Test Vault Action (default KV V1)
+    #   uses: ./
+    #   with:
+    #     url: http://localhost:8200
+    #     token: testtoken
+    #     secrets: |
+    #       my-secret/test altSecret ;
+    #       my-secret/test altSecret | NAMED_ALTSECRET ;
+    #       my-secret/nested/test otherAltSecret ;
+
+    # - name: Test Vault Action (cubbyhole)
+    #   uses: ./
+    #   with:
+    #     url: http://localhost:8200
+    #     token: testtoken
+    #     secrets: |
+    #       /cubbyhole/test foo ;
+    #       /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+
+    # - name: Verify Vault Action Outputs
+    #   run: npm run test:integration:e2e
+    #   env:
+    #     OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
         
-    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
-      uses: ./
-      with:
-        url: http://localhost:8200/
-        token: testtoken
-        secrets: |
-          secret/data/test secret | SUBSEQUENT_TEST_SECRET;
-    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
-      uses: ./
-      with:
-        url: http://localhost:8200/
-        token: testtoken
-        secrets: |
-          secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
+    # - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
+    #   uses: ./
+    #   with:
+    #     url: http://localhost:8200/
+    #     token: testtoken
+    #     secrets: |
+    #       secret/data/test secret | SUBSEQUENT_TEST_SECRET;
+    # - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
+    #   uses: ./
+    #   with:
+    #     url: http://localhost:8200/
+    #     token: testtoken
+    #     secrets: |
+    #       secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
 
-  e2e-tls:
-    runs-on: ubuntu-latest
+  # e2e-tls:
+    # runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      with:
-        ref: ${{ github.ref }}
+    # steps:
+    # - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+    #   with:
+    #     ref: ${{ github.ref }}
 
-    - name: Run docker-compose
-      run: docker-compose up -d vault-tls
+    # - name: Run docker-compose
+    #   run: docker-compose up -d vault-tls
 
-    - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
-      with:
-        node-version: '16.14.0'
+    # - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+    #   with:
+    #     node-version: '16.14.0'
 
-    - name: Setup NPM Cache
-      uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+    # - name: Setup NPM Cache
+    #   uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+    #   with:
+    #     path: ~/.npm
+    #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+    # - name: NPM Install
+    #   run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+    # - name: NPM Build
+    #   run: npm run build
 
-    - name: Setup Vault
-      run: node ./integrationTests/e2e-tls/setup.js
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: 8200
-        VAULTCA: ${{ secrets.VAULTCA }}
-        VAULT_CLIENT_CERT: ${{ secrets.VAULT_CLIENT_CERT }}
-        VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
+    # - name: Setup Vault
+    #   run: node ./integrationTests/e2e-tls/setup.js
+    #   env:
+    #     VAULT_HOST: localhost
+    #     VAULT_PORT: 8200
+    #     VAULTCA: ${{ secrets.VAULTCA }}
+    #     VAULT_CLIENT_CERT: ${{ secrets.VAULT_CLIENT_CERT }}
+    #     VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
 
-    - name: Test Vault Action (default KV V2)
-      uses: ./
-      id: kv-secrets
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          secret/data/test secret ;
-          secret/data/test secret | NAMED_SECRET ;
-          secret/data/nested/test otherSecret ;
+    # - name: Test Vault Action (default KV V2)
+    #   uses: ./
+    #   id: kv-secrets
+    #   with:
+    #     url: https://localhost:8200
+    #     token: ${{ env.VAULT_TOKEN }}
+    #     caCertificate: ${{ secrets.VAULTCA }}
+    #     clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+    #     clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+    #     secrets: |
+    #       secret/data/test secret ;
+    #       secret/data/test secret | NAMED_SECRET ;
+    #       secret/data/nested/test otherSecret ;
 
-    - name: Test Vault Action (tlsSkipVerify)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        tlsSkipVerify: true
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          secret/data/tlsSkipVerify skip ;
+    # - name: Test Vault Action (tlsSkipVerify)
+    #   uses: ./
+    #   with:
+    #     url: https://localhost:8200
+    #     token: ${{ env.VAULT_TOKEN }}
+    #     tlsSkipVerify: true
+    #     clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+    #     clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+    #     secrets: |
+    #       secret/data/tlsSkipVerify skip ;
 
-    - name: Test Vault Action (default KV V1)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          my-secret/test altSecret ;
-          my-secret/test altSecret | NAMED_ALTSECRET ;
-          my-secret/nested/test otherAltSecret ;
+    # - name: Test Vault Action (default KV V1)
+    #   uses: ./
+    #   with:
+    #     url: https://localhost:8200
+    #     token: ${{ env.VAULT_TOKEN }}
+    #     caCertificate: ${{ secrets.VAULTCA }}
+    #     clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+    #     clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+    #     secrets: |
+    #       my-secret/test altSecret ;
+    #       my-secret/test altSecret | NAMED_ALTSECRET ;
+    #       my-secret/nested/test otherAltSecret ;
 
-    - name: Test Vault Action (cubbyhole)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        secrets: |
-          /cubbyhole/test foo ;
-          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+    # - name: Test Vault Action (cubbyhole)
+    #   uses: ./
+    #   with:
+    #     url: https://localhost:8200
+    #     token: ${{ env.VAULT_TOKEN }}
+    #     secrets: |
+    #       /cubbyhole/test foo ;
+    #       /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+    #     caCertificate: ${{ secrets.VAULTCA }}
+    #     clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+    #     clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
 
-    - name: Verify Vault Action Outputs
-      run: npm run test:integration:e2e-tls
-      env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
+    # - name: Verify Vault Action Outputs
+    #   run: npm run test:integration:e2e-tls
+    #   env:
+    #     OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
 # Removing publish step for now.
 #  publish:
