@@ -2,6 +2,12 @@
 
 * Add changes here
 
+## 2.7.1 (July 3, 2023)
+
+Bugs:
+
+* Revert [GH-466](https://github.com/hashicorp/vault-action/pull/466) which caused a regression in secrets stored as JSON strings [GH-471](https://github.com/hashicorp/vault-action/pull/471)
+
 ## 2.7.0 (June 21, 2023)
 
 Bugs:
