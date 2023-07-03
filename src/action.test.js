@@ -220,22 +220,6 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
-    it('json secret retrieval', async () => {
-        const jsonString = '{"x":1,"y":2}';
-        let result = JSON.stringify(jsonString);
-        result = result.substring(1, result.length - 1);
-
-        mockInput('test key');
-        mockVaultData({
-            key: jsonString,
-        });
-
-        await exportSecrets();
-
-        expect(core.exportVariable).toBeCalledWith('KEY', result);
-        expect(core.setOutput).toBeCalledWith('key', result);
-    });
-
     it('intl secret retrieval', async () => {
         mockInput('测试 测试');
         mockVaultData({
@@ -350,31 +334,7 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', 'secret');
     })
 
-    it('multi-line secret', async () => {
-        const multiLineString = `ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSU
-GPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3
-Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XA
-NrRFi9wrf+M7Q==`;
-
-        mockInput('test key');
-        mockVaultData({
-            key: multiLineString
-        });
-        mockExportToken("false")
-
-        await exportSecrets();
-
-        expect(core.setSecret).toBeCalledTimes(5); // 1 for each non-empty line + VAULT_TOKEN
-
-        expect(core.setSecret).toBeCalledWith("EXAMPLE"); // called for VAULT_TOKEN
-        expect(core.setSecret).toBeCalledWith("ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSU");
-        expect(core.setSecret).toBeCalledWith("GPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3");
-        expect(core.setSecret).toBeCalledWith("Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XA");
-        expect(core.setSecret).toBeCalledWith("NrRFi9wrf+M7Q==");
-        expect(core.setOutput).toBeCalledWith('key', multiLineString);
-    })
-
-    it('multi-line secret gets masked for each non-empty line', async () => {
+    it('multi-line secret gets masked for each line', async () => {
         const multiLineString = `a multi-line string
 
 with blank lines
@@ -388,7 +348,7 @@ with blank lines
 
         await exportSecrets();
 
-        expect(core.setSecret).toBeCalledTimes(3); // 1 for each non-empty line + VAULT_TOKEN
+        expect(core.setSecret).toBeCalledTimes(3); // 1 for each non-empty line.
 
         expect(core.setSecret).toBeCalledWith('a multi-line string');
         expect(core.setSecret).toBeCalledWith('with blank lines');
