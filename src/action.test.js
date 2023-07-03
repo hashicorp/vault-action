@@ -220,6 +220,38 @@ describe('exportSecrets', () => {
         expect(core.setOutput).toBeCalledWith('key', '1');
     });
 
+    it('json secret retrieval', async () => {
+        const jsonString = '{"x":1,"y":2}';
+
+        mockInput('test key');
+        mockVaultData({
+            key: jsonString,
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', jsonString);
+        expect(core.setOutput).toBeCalledWith('key', jsonString);
+    });
+
+    it('multi-line json secret retrieval', async () => {
+        const jsonString = `
+            {
+                "x":1,
+                "y":"bar"
+            }
+        `;
+        mockInput('test key');
+        mockVaultData({
+            key: jsonString,
+        });
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('KEY', jsonString);
+        expect(core.setOutput).toBeCalledWith('key', jsonString);
+    });
+
     it('intl secret retrieval', async () => {
         mockInput('测试 测试');
         mockVaultData({
