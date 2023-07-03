@@ -2,7 +2,7 @@
 version: "3.0"
 services:
   vault:
-    image: vault:latest
+    image: hashicorp/vault:latest
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: testtoken
     ports:
@@ -17,7 +17,7 @@ services:
       - 8200:8200
     privileged: true
   vault-tls:
-    image: vault:latest
+    image: hashicorp/vault:latest
     hostname: vault-tls
     environment:
       VAULT_CAPATH: /etc/vault/ca.crt
