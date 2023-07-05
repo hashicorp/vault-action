@@ -17,16 +17,4 @@ describe('e2e', () => {
         result = result.substring(1, result.length - 1);
         expect(process.env.JSONDATA).toBe(result);
     });
-
-    it('verify jsonstring', () => {
-        expect(process.env.JSONSTRING).toBe('{"x":1,"y":"qux"}');
-    });
-    it('verify jsonstringmultiline', () => {
-        expect(process.env.JSONSTRINGMULTILINE).toBe('{"x": 1, "y": "q\\nux"}');
-    });
-    it('verify jsondata', () => {
-        let result = JSON.stringify('{"x":1,"y":"qux"}');
-        result = result.substring(1, result.length - 1);
-        expect(process.env.JSONDATA).toBe(result);
-    });
 });
