@@ -1,20 +1,12 @@
-// const core = require('@actions/core');
-
 try {
     let inputs = [
         process.env.JSONSTRING,
         process.env.JSONSTRINGMULTILINE,
-        process.env.JSONDATA,
-        process.env.SINGLELINE,
-        process.env.MULTILINE,
     ];
 
     let names = [
         "test-json-string",
         "test-json-string-multiline",
-        "test-json-data",
-        "singleline",
-        "multiline",
     ];
 
     let i = 0;
@@ -23,7 +15,7 @@ try {
         i++;
         input = (input || '').trim();
         if (!input) {
-            throw new Error(`Missing service account key JSON (got empty value)`);
+            throw new Error(`missing input`);
         }
 
         // If the string doesn't start with a JSON object character, it is probably
@@ -39,12 +31,10 @@ try {
             console.log('success!')
             return creds;
         } catch (err) {
-            console.log('error parsing')
-            console.log(err)
+            throw new Error(`error parsing: ${err}`);
         }
     })
-
 } catch (error) {
-    console.log(error)
+    throw new Error(`error in parse.js: ${err}`);
 }
 

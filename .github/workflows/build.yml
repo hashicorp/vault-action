@@ -185,6 +185,23 @@ jobs:
       env:
         OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
+    - name: Test Parsing Secrets (part 1/2)
+      # this step sets up secres to be used in Test Parsing Secrets (part 2/2)
+      uses: ./
+      with:
+        url: https://localhost:8200
+        token: ${{ env.VAULT_TOKEN }}
+        secrets: |
+          secret/data/test-json-string jsonString;
+          secret/data/test-json-multiline jsonStringMultiline;
+
+    - name: Test Parsing Secrets (part 2/2)
+      # this step will call a JS script to test that we can successfully parse
+      # JSON string data into JS objects
+      run: |
+        node ./scripts/parse.js
+
+
   e2e-tls:
     runs-on: ubuntu-latest
 
