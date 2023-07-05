@@ -189,7 +189,7 @@ jobs:
       # this step sets up secres to be used in Test Parsing Secrets (part 2/2)
       uses: ./
       with:
-        url: https://localhost:8200
+        url: http://localhost:8200
         token: testtoken
         secrets: |
           secret/data/test-json-string jsonString;
