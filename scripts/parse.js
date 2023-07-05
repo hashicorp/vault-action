@@ -1,3 +1,6 @@
+// This script is used by the e2e tests in build.yml to test that we can
+// successfully parse JSON string data into JS objects
+
 try {
     let inputs = [
         process.env.JSONSTRING,

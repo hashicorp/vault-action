@@ -190,10 +190,10 @@ jobs:
       uses: ./
       with:
         url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
+        token: testtoken
         secrets: |
           secret/data/test-json-string jsonString;
-          secret/data/test-json-multiline jsonStringMultiline;
+          secret/data/test-json-string-multiline jsonStringMultiline;
 
     - name: Test Parsing Secrets (part 2/2)
       # this step will call a JS script to test that we can successfully parse
