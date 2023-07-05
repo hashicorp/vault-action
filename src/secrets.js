@@ -67,25 +67,18 @@ async function getSecrets(secretRequests, client) {
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data 
- * @param {string} selector 
+ * @param {object} data
+ * @param {string} selector
  */
 async function selectData(data, selector) {
     const ata = jsonata(selector);
     let d = await ata.evaluate(data);
+    console.log(selector);
 
     // If we have a Javascript Object, then this data was stored in Vault as
-    // pure JSON (not a JSON string)
+    // pure JSON (not a JSON string). We will capture that before we stringify it.
     const storedAsJSONData = isObject(d);
-
-    if (isJSONString(d)) {
-        // If we already have a JSON string we will not "stringify" it yet so
-        // that we don't end up calling JSON.parse. This would break the
-        // secrets that are stored as pure JSON. See: https://github.com/hashicorp/vault-action/issues/194
-        result = d;
-    } else {
-        result = JSON.stringify(d);
-    }
+    result = JSON.stringify(d);
 
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
@@ -97,24 +90,20 @@ async function selectData(data, selector) {
     if (result.startsWith(`"`)) {
         // we need to strip the beginning and ending quotes otherwise it will
         // always successfully parse as a JSON string
+        // result = result.substring(1, result.length - 1);
+        // if (!isJSONString(result)) {
+        //     // add the quotes back so we can parse it into a Javascript object
+        //     // to allow support for multi-line secrets. See https://github.com/hashicorp/vault-action/issues/160
+        //     result = `"${result}"`
+        console.log(" =>>> PARSING")
+        result = JSON.parse(result);
+        // }
+    } else {
+        console.log('does not start with quote')
+        // Support secrets stored in Vault as pure JSON.
+        // See https://github.com/hashicorp/vault-action/issues/194 and https://github.com/hashicorp/vault-action/pull/173
+        result = JSON.stringify(result);
         result = result.substring(1, result.length - 1);
-        if (!isJSONString(result)) {
-            // add the quotes back so we can parse it into a Javascript object
-            // to allow support for multi-line secrets. See https://github.com/hashicorp/vault-action/issues/160
-            result = `"${result}"`
-            result = JSON.parse(result);
-        }
-    } else if (isJSONString(result)) {
-        if (storedAsJSONData) {
-            // Support secrets stored in Vault as pure JSON.
-            // See https://github.com/hashicorp/vault-action/issues/194 and https://github.com/hashicorp/vault-action/pull/173
-            result = JSON.stringify(result);
-            result = result.substring(1, result.length - 1);
-        } else {
-            // Support secrets stored in Vault as JSON Strings
-            result = JSON.stringify(result);
-            result = JSON.parse(result);
-        }
     }
     return result;
 }
