@@ -181,7 +181,6 @@ jobs:
           secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
 
     - name: Test JSON Secrets
-      # this step sets up secres to be used in Test Parsing Secrets (part 2/2)
       uses: ./
       with:
         url: http://localhost:8200
