@@ -74,22 +74,23 @@ async function selectData(data, selector) {
     const ata = jsonata(selector);
     let d = await ata.evaluate(data);
 
+    console.log(selector)
     // If we have a Javascript Object, then this data was stored in Vault as
     // pure JSON (not a JSON string)
     const storedAsJSONData = isObject(d);
 
-    if (isJSONString(d)) {
+    // if (isJSONString(d)) {
         // If we already have a JSON string we will not "stringify" it yet so
         // that we don't end up calling JSON.parse. This would break the
         // secrets that are stored as pure JSON. See: https://github.com/hashicorp/vault-action/issues/194
-        result = d;
-    } else {
-        result = JSON.stringify(d);
-    }
+        // result = d;
+    // } else {
+        result = jsonstringify(d, 0);
+    // }
 
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
-        result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
+        result = jsonstringify(await jsonata(`data.${selector}`).evaluate(data), 1);
     } else if (!result) {
         throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
     }
@@ -108,15 +109,21 @@ async function selectData(data, selector) {
         if (storedAsJSONData) {
             // Support secrets stored in Vault as pure JSON.
             // See https://github.com/hashicorp/vault-action/issues/194 and https://github.com/hashicorp/vault-action/pull/173
-            result = JSON.stringify(result);
+            result = jsonstringify(result, 2);
             result = result.substring(1, result.length - 1);
         } else {
             // Support secrets stored in Vault as JSON Strings
-            result = JSON.stringify(result);
+            result = jsonstringify(result, 3);
             result = JSON.parse(result);
         }
     }
+    console.log()
     return result;
+}
+
+function jsonstringify(input, call) {
+    console.log('stringify', call);
+    return JSON.stringify(input)
 }
 
 /**
@@ -124,6 +131,7 @@ async function selectData(data, selector) {
  * @param {Type} target
  */
 function isObject(target) {
+    console.log('isObject: ', typeof target === 'object' && target !== null)
     return typeof target === 'object' && target !== null;
 }
 
@@ -133,15 +141,18 @@ function isObject(target) {
  */
 function isJSONString(target) {
     if (typeof target !== "string"){
+        console.log('isJSONString: false, not string')
         return false;
     }
 
     try {
         JSON.parse(target);
     } catch (e) {
+        console.log('isJSONString: false, failed to parse')
         return false;
     }
 
+    console.log('isJSONString: true')
     return true;
 }
 
