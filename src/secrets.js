@@ -137,7 +137,7 @@ function isJSONString(target) {
     }
 
     try {
-        let o = JSON.parse(target);
+        JSON.parse(target);
     } catch (e) {
         return false;
     }
