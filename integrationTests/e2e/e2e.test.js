@@ -14,4 +14,14 @@ describe('e2e', () => {
         expect(process.env.JSONSTRINGMULTILINE).toBe('{"x":1,"y":"q\\nux"}');
         expect(process.env.JSONDATA).toBe('{"x":1,"y":"qux"}');
     });
+
+    it('verify jsonstring', () => {
+        expect(process.env.JSONSTRING).toBe('{"x":1,"y":"qux"}');
+    });
+    it('verify jsonstringmultiline', () => {
+        expect(process.env.JSONSTRINGMULTILINE).toBe('{"x":1,"y":"q\\nux"}');
+    });
+    it('verify jsondata', () => {
+        expect(process.env.JSONDATA).toBe('{"x":1,"y":"qux"}');
+    });
 });
