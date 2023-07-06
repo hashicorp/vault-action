@@ -72,13 +72,7 @@ async function getSecrets(secretRequests, client) {
  */
 async function selectData(data, selector) {
     const ata = jsonata(selector);
-    let d = await ata.evaluate(data);
-    console.log(selector);
-
-    // If we have a Javascript Object, then this data was stored in Vault as
-    // pure JSON (not a JSON string). We will capture that before we stringify it.
-    const storedAsJSONData = isObject(d);
-    result = JSON.stringify(d);
+    let result = JSON.stringify(await ata.evaluate(data));
 
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
@@ -88,50 +82,20 @@ async function selectData(data, selector) {
     }
 
     if (result.startsWith(`"`)) {
-        // we need to strip the beginning and ending quotes otherwise it will
-        // always successfully parse as a JSON string
-        // result = result.substring(1, result.length - 1);
-        // if (!isJSONString(result)) {
-        //     // add the quotes back so we can parse it into a Javascript object
-        //     // to allow support for multi-line secrets. See https://github.com/hashicorp/vault-action/issues/160
-        //     result = `"${result}"`
-        console.log(" =>>> PARSING")
+        // Support multi-line secrets like JSON strings and ssh keys, see https://github.com/hashicorp/vault-action/pull/173
+        // Deserialize the value so that newlines and special characters are
+        // not escaped in our return value.
         result = JSON.parse(result);
-        // }
     } else {
-        console.log('does not start with quote')
-        // Support secrets stored in Vault as pure JSON.
-        // See https://github.com/hashicorp/vault-action/issues/194 and https://github.com/hashicorp/vault-action/pull/173
+        // Support secrets stored in Vault as pure JSON, see https://github.com/hashicorp/vault-action/issues/194
+        // Serialize the value so that any special characters in the data are
+        // properly escaped.
         result = JSON.stringify(result);
+        // strip the surrounding quotes added by stringify because the data did
+        // not have them in the first place
         result = result.substring(1, result.length - 1);
     }
     return result;
-}
-
-/**
- * isOjbect returns true if target is a Javascript object
- * @param {Type} target
- */
-function isObject(target) {
-    return typeof target === 'object' && target !== null;
-}
-
-/**
- * isJSONString returns true if target parses as a valid JSON string
- * @param {Type} target
- */
-function isJSONString(target) {
-    if (typeof target !== "string"){
-        return false;
-    }
-
-    try {
-        JSON.parse(target);
-    } catch (e) {
-        return false;
-    }
-
-    return true;
 }
 
 module.exports = {
