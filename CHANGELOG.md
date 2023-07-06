@@ -2,6 +2,12 @@
 
 * Add changes here
 
+## 2.7.2 (July 6, 2023)
+
+Bugs:
+
+* Fix a regression that broke support for secrets in JSON format [GH-473](https://github.com/hashicorp/vault-action/pull/473)
+
 ## 2.7.1 (July 3, 2023)
 
 Bugs:
