@@ -16,4 +16,7 @@ jobs:
           # in our e2e tests.
           # This error occurs because vault-action's outputs are dynamic but
           # actionlint expects action.yml to define them.
-          args: '-ignore "property \"othersecret\" is not defined in object type"'
+          args: >
+            -ignore "property \"othersecret\" is not defined in object type"
+            -ignore "property \"jsonstring\" is not defined in object type"
+            -ignore "property \"jsonstringmultiline\" is not defined in object type"
