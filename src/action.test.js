@@ -223,10 +223,7 @@ describe('exportSecrets', () => {
     it('JSON data secret retrieval', async () => {
         const jsonData = {"x":1,"y":2};
 
-        // for secrets stored in Vault as pure JSON, we call stringify twice
-        // and remove the surrounding quotes
-        let result = JSON.stringify(JSON.stringify(jsonData));
-        result = result.substring(1, result.length - 1);
+        let result = JSON.stringify(jsonData);
 
         mockInput('test key');
         mockVaultData({
