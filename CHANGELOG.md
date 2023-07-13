@@ -2,6 +2,12 @@
 
 * Add changes here
 
+## 2.7.3 (July 13, 2023)
+
+Bugs:
+
+* Revert to the handling of secrets in JSON format since v2.1.2 [GH-478](https://github.com/hashicorp/vault-action/pull/478)
+
 ## 2.7.2 (July 6, 2023)
 
 Bugs:
