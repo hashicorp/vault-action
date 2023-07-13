@@ -19019,18 +19019,7 @@ async function selectData(data, selector) {
     }
 
     if (result.startsWith(`"`)) {
-        // Support multi-line secrets like JSON strings and ssh keys, see https://github.com/hashicorp/vault-action/pull/173
-        // Deserialize the value so that newlines and special characters are
-        // not escaped in our return value.
         result = JSON.parse(result);
-    } else {
-        // Support secrets stored in Vault as pure JSON, see https://github.com/hashicorp/vault-action/issues/194
-        // Serialize the value so that any special characters in the data are
-        // properly escaped.
-        result = JSON.stringify(result);
-        // strip the surrounding quotes added by stringify because the data did
-        // not have them in the first place
-        result = result.substring(1, result.length - 1);
     }
     return result;
 }
