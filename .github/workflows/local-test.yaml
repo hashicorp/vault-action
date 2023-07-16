@@ -46,8 +46,20 @@ jobs:
         url: http://localhost:8200
         method: token
         token: testtoken
+        secretsMethod: read
         secrets: |
           secret/data/test-json-string jsonString;
+      
+      # Write Secret examples
+      
+      # Write Simple Secret
+      # secret/data/writetest secret=TEST ;
+
+      # Write Mulitple Secrets at one path
+      # secret/data/writetest secret=TEST secret1=TEST1 secret2=TEST2 ;
+
+      # Json String Secret
+      # secret/data/writetest secret={"url":"https://google.com/hello","key":"EQWQASAMSADAD"};
 
     - name: Check Secrets
       run: |

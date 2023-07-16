@@ -18516,10 +18516,11 @@ const core = __nccwpck_require__(2186);
 const command = __nccwpck_require__(7351);
 const got = (__nccwpck_require__(3061)["default"]);
 const jsonata = __nccwpck_require__(4245);
-const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
+const { auth: { retrieveToken }, secrets: { getSecrets, writeSecrets } } = __nccwpck_require__(4351);
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
+const SECRETS_METHOD = { Read: "read", Write: "write" };
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
@@ -18528,6 +18529,7 @@ async function exportSecrets() {
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
     const outputToken = (core.getInput('outputToken', { required: false }) || 'false').toLowerCase() != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
+    const secretsMethod = core.getInput('secretsMethod', { required: false });
 
     const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
@@ -18599,7 +18601,18 @@ async function exportSecrets() {
         return request;
     });
 
-    const results = await getSecrets(requests, client);
+    let results = null;
+    switch (secretsMethod) {
+        case SECRETS_METHOD.Read:
+             results = await getSecrets(requests, client);
+            break;
+        case SECRETS_METHOD.Write:
+             results =  await writeSecrets(requests, client);
+            break;
+        default:
+             results =  await getSecrets(requests, client);
+            break;
+    }
 
 
     for (const result of results) {
@@ -18636,13 +18649,16 @@ async function exportSecrets() {
  * @property {string} envVarName
  * @property {string} outputVarName
  * @property {string} selector
+ * @property {string} secretsMethod
+ * @property {Map} secretsData
 */
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
  * @param {string} secretsInput
+ * @param {string} secretsMethod
  */
-function parseSecretsInput(secretsInput) {
+function parseSecretsInput(secretsInput, secretsMethod) {
     if (!secretsInput) {
       return []
     }
@@ -18674,18 +18690,58 @@ function parseSecretsInput(secretsInput) {
             .map(part => part.trim())
             .filter(part => part.length !== 0);
 
-        if (pathParts.length !== 2) {
-            throw Error(`You must provide a valid path and key. Input: "${secret}"`);
-        }
+        let path = null;
+        let selector = '';
+        let secretsData = new Map();
+        if(secretsMethod === SECRETS_METHOD.Write) {
+            if (pathParts.length < 2) {
+                throw Error(`You must provide a valid path and key. Input: "${secret}"`);
+            }
+            let writeSelectorParts = null;
+            let finalSelector = [];
+            for (let index = 0; index < pathParts.length; index++) {
+                const element = pathParts[index];
+                if(index == 0) {
+                    path = element;
+                    continue;
+                }
+                //if a secret is for write, it should be saperated by "="
+                writeSelectorParts = element
+                    .split("=")
+                    .map(part => part.trim())
+                    .filter(part => part.length !== 0);
+                
+                const [writeSelectorKey, writeSelectorValue] = writeSelectorParts;
 
-        const [path, selectorQuoted] = pathParts;
+                /** @type {any} */
+                const selectorAst = jsonata(writeSelectorKey).ast();
+                const writeSelector = writeSelectorKey.replace(new RegExp('"', 'g'), '');
 
-        /** @type {any} */
-        const selectorAst = jsonata(selectorQuoted).ast();
-        const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
+                if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+                    throw Error(`Write Secret: You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+                }
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
-            throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+                if(writeSelector !=='\\') {
+                    finalSelector.push(writeSelector);
+                    secretsData.set(writeSelector, writeSelectorValue);
+                }
+            }
+            selector = finalSelector.join('__');
+        } else {
+            if (pathParts.length !== 2) {
+                throw Error(`You must provide a valid path and key. Input: "${secret}"`);
+            }
+
+            path = pathParts[0];
+            const selectorQuoted = pathParts[1];
+
+            /** @type {any} */
+            const selectorAst =  jsonata(selectorQuoted).ast();
+            selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
+
+            if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+                throw Error(`Read Secret: You must provide a name for the output key when using json selectors. Input: "${secret}"`);
+            }
         }
 
         let envVarName = outputVarName;
@@ -18698,7 +18754,9 @@ function parseSecretsInput(secretsInput) {
             path,
             envVarName,
             outputVarName,
-            selector
+            selector,
+            secretsMethod,
+            secretsData
         });
     }
     return output;
@@ -18942,6 +19000,7 @@ const jsonata = __nccwpck_require__(4245);
  * @typedef {Object} SecretRequest
  * @property {string} path
  * @property {string} selector
+ * @property {Map} secretsData
  */
 
 /**
@@ -19002,6 +19061,43 @@ async function getSecrets(secretRequests, client) {
     return results;
 }
 
+ /**
+  * @template TRequest
+  * @param {Array<TRequest>} secretRequests
+  * @param {import('got').Got} client
+  * @return {Promise<SecretResponse<TRequest>[]>}
+  */
+ async function writeSecrets(secretRequests, client) {
+    const results = [];
+    for (const secretRequest of secretRequests) {
+        let { path, selector, secretsData } = secretRequest;
+        const requestPath = `v1/${path}`;
+        let body;
+        const jsonata = {};
+        for (const [key, value] of secretsData) {
+            jsonata[key] = value;
+        }
+
+        try {
+            const result = await client.post(requestPath,{
+                json: {
+                    data: jsonata
+                }
+            });
+            body = result.body;
+        } catch (error) {
+            throw error
+        }
+        //body = JSON.parse(body); //body.request_id
+        results.push({
+            request: secretRequest,
+            value: 'SUCCESS',
+            cachedResponse: false 
+        });
+    }
+    return results;
+}
+
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
  * @param {object} data
@@ -19026,6 +19122,7 @@ async function selectData(data, selector) {
 
 module.exports = {
     getSecrets,
+    writeSecrets,
     selectData
 }
 

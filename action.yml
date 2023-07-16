@@ -4,6 +4,9 @@ inputs:
   url:
     description: 'The URL for the vault endpoint'
     required: true
+  secretsMethod:
+    description: 'The secretsMethod indicates if you want to read or write to vault. Supported values are "read" and "write". If not provided default is "read"'
+    required: false
   secrets:
     description: 'A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details'
     required: false
