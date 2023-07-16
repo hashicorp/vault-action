@@ -5,6 +5,7 @@ const jsonata = require("jsonata");
  * @typedef {Object} SecretRequest
  * @property {string} path
  * @property {string} selector
+ * @property {Map} secretsData
  */
 
 /**
@@ -65,6 +66,43 @@ async function getSecrets(secretRequests, client) {
     return results;
 }
 
+ /**
+  * @template TRequest
+  * @param {Array<TRequest>} secretRequests
+  * @param {import('got').Got} client
+  * @return {Promise<SecretResponse<TRequest>[]>}
+  */
+ async function writeSecrets(secretRequests, client) {
+    const results = [];
+    for (const secretRequest of secretRequests) {
+        let { path, selector, secretsData } = secretRequest;
+        const requestPath = `v1/${path}`;
+        let body;
+        const jsonata = {};
+        for (const [key, value] of secretsData) {
+            jsonata[key] = value;
+        }
+
+        try {
+            const result = await client.post(requestPath,{
+                json: {
+                    data: jsonata
+                }
+            });
+            body = result.body;
+        } catch (error) {
+            throw error
+        }
+        //body = JSON.parse(body); //body.request_id
+        results.push({
+            request: secretRequest,
+            value: 'SUCCESS',
+            cachedResponse: false 
+        });
+    }
+    return results;
+}
+
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
  * @param {object} data
@@ -100,5 +138,6 @@ async function selectData(data, selector) {
 
 module.exports = {
     getSecrets,
+    writeSecrets,
     selectData
 }

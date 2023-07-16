@@ -9,6 +9,7 @@ const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
+const secretsMethod = { Read: "read", Write: "write" };
 
 describe('integration', () => {
     beforeAll(async () => {
@@ -64,12 +65,31 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET_IN_NAMESPACE');
     });
 
+    it('write secret: simple secret', async () => {
+        mockInput('secret/data/writetest secret=TEST');
+        mockSecretsMethod(secretsMethod.Write);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
+    });
+
     it('re-map secret', async () => {
         mockInput('secret/data/test secret | TEST_KEY');
 
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUPERSECRET_IN_NAMESPACE');
+    });
+
+    it('write secret: re-map secret', async () => {
+        mockInput('secret/data/writetest secret=TEST | TEST_KEY');
+        mockSecretsMethod(secretsMethod.Write);
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUCCESS');
     });
 
     it('get nested secret', async () => {
@@ -95,12 +115,33 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRET', 'OTHERSUPERSECRET_IN_NAMESPACE');
     });
 
+    it('write secrets: multiple secrets', async () => {
+        mockInput(`
+        secret/data/writetest secret=TEST ;
+        secret/data/writetest secret=TEST | NAMED_SECRET ;`);
+        mockSecretsMethod(secretsMethod.Write);
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(2);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
+        expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUCCESS');
+    });
+
     it('get secret from K/V v1', async () => {
         mockInput('my-secret/test secret');
 
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET_IN_NAMESPACE');
+    });
+
+    it('write secrets: secret from K/V v1', async () => {
+        mockInput('secret-kv1/test secret=CUSTOMSECRET');
+        mockSecretsMethod(secretsMethod.Write);
+
+        await exportSecrets();
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
     });
 
     it('get nested secret from K/V v1', async () => {
@@ -290,3 +331,10 @@ function mockInput(secrets) {
         .calledWith('secrets', expect.anything())
         .mockReturnValueOnce(secrets);
 }
+
+function mockSecretsMethod(method) {
+    when(core.getInput)
+        .calledWith('secretsMethod', expect.anything())
+        .mockReturnValueOnce(method);
+}
+

@@ -9,10 +9,12 @@ const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
+const secretsMethod = { Read: "read", Write: "write" };
 
 describe('integration', () => {
     beforeAll(async () => {
         // Verify Connection
+        console.log('before all');
         await got(`${vaultUrl}/v1/secret/config`, {
             headers: {
                 'X-Vault-Token': vaultToken,
@@ -75,7 +77,7 @@ describe('integration', () => {
             }
         }
 
-        await got(`${vaultUrl}/v1/secret-kv1/test`, {
+      await got(`${vaultUrl}/v1/secret-kv1/test`, {
             method: 'POST',
             headers: {
                 'X-Vault-Token': vaultToken,
@@ -124,6 +126,12 @@ describe('integration', () => {
             .mockReturnValueOnce(secrets);
     }
 
+    function mockSecretsMethod(method) {
+        when(core.getInput)
+            .calledWith('secretsMethod', expect.anything())
+            .mockReturnValueOnce(method);
+    }
+
     it('prints a nice error message when secret not found', async () => {
         mockInput(`secret/data/test secret ;
         secret/data/test secret | NAMED_SECRET ;
@@ -140,12 +148,31 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
     });
 
+    it('write secret: simple secret', async () => {
+        mockInput('secret/data/writetest secret=TEST');
+        mockSecretsMethod(secretsMethod.Write);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
+    });
+
     it('re-map secret', async () => {
         mockInput('secret/data/test secret | TEST_KEY');
 
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUPERSECRET');
+    });
+
+    it('write secret: re-map secret', async () => {
+        mockInput('secret/data/writetest secret=TEST | TEST_KEY');
+        mockSecretsMethod(secretsMethod.Write);
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('TEST_KEY', 'SUCCESS');
     });
 
     it('get nested secret', async () => {
@@ -171,6 +198,18 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
     });
 
+    it('write secrets: multiple secrets', async () => {
+        mockInput(`
+        secret/data/writetest secret=TEST ;
+        secret/data/writetest secret=TEST | NAMED_SECRET ;`);
+        mockSecretsMethod(secretsMethod.Write);
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(2);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
+        expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUCCESS');
+    });
+
     it('leading slash kvv2', async () => {
         mockInput('/secret/data/foobar fookv2');
 
@@ -179,12 +218,30 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('FOOKV2', 'bar');
     });
 
+    it('write secrets: leading slash kvv2', async () => {
+        mockInput('/secret/data/foobar fookv2=bar');
+        mockSecretsMethod(secretsMethod.Write);
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('FOOKV2', 'SUCCESS');
+    });
+
     it('get secret from K/V v1', async () => {
         mockInput('secret-kv1/test secret');
 
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET');
+    });
+
+    it('write secrets: secret from K/V v1', async () => {
+        mockInput('secret-kv1/test secret=CUSTOMSECRET');
+        mockSecretsMethod(secretsMethod.Write);
+
+        await exportSecrets();
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUCCESS');
     });
 
     it('get nested secret from K/V v1', async () => {
@@ -201,6 +258,15 @@ describe('integration', () => {
         await exportSecrets();
 
         expect(core.exportVariable).toBeCalledWith('FOOKV1', 'bar');
+    });
+
+    it('write secrets: leading slash kvv1', async () => {
+        mockInput('/secret-kv1/foobar fookv1=bar');
+        mockSecretsMethod(secretsMethod.Write);
+
+        await exportSecrets();
+        expect(core.exportVariable).toBeCalledTimes(1);
+        expect(core.exportVariable).toBeCalledWith('FOOKV1', 'SUCCESS');
     });
 
     describe('generic engines', () => {
@@ -236,6 +302,27 @@ describe('integration', () => {
 
             expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
             expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+        });
+
+        it('write secrets: supports cubbyhole', async () => {            
+            mockInput('/cubbyhole/test foo=foo');
+            mockSecretsMethod(secretsMethod.Write);
+
+            await exportSecrets();
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'SUCCESS');
+        });
+
+        it('write secrets: multiple secrets', async () => {            
+            mockInput(`
+            /cubbyhole/test foo=foo ;
+            /cubbyhole/test zip=zip`);
+            mockSecretsMethod(secretsMethod.Write);
+
+            await exportSecrets();
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'SUCCESS');
+            expect(core.exportVariable).toBeCalledWith('ZIP', 'SUCCESS');
         });
     })
 });

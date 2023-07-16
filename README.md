@@ -26,6 +26,9 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
     - [Simple Key](#simple-key)
     - [Set Output Variable Name](#set-output-variable-name)
     - [Multiple Secrets](#multiple-secrets)
+    - [Write Secrets](#write-secrets)
+    - [Write Multiple Secrets](#write-multiple-secrets)
+    - [Write Json Secrets](#write-json-secrets)
   - [Other Secret Engines](#other-secret-engines)
   - [Adding Extra Headers](#adding-extra-headers)
   - [HashiCorp Cloud Platform or Vault Enterprise](#hashicorp-cloud-platform-or-vault-enterprise)
@@ -374,6 +377,51 @@ with:
         secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
 
+### Write Secrets
+
+This action can write secrets to vault, so say you had your AWS access Key and you want them to write to vault. You can provide `secretsMethod: write` and provide the secret data as below:
+
+```yaml
+with:
+    secretsMethod: write
+    secrets: |
+        secret/data/ci/aws accessKey=someAccessKey;
+```
+
+`vault-action` create the secret at provided vault path. You will get `SUCCESS` in response for you saved secrets.
+
+You can also write the multiple secrets at a single path. You can do:
+
+```yaml
+with:
+    secretsMethod: write
+    secrets: |
+        secret/data/ci/aws accessKey=someAccessKey secretKey=someSecretKey;
+```
+
+### Write Multiple Secrets
+
+This action can take multi-line input, so say you had your AWS keys to be saved to vault. You can do:
+
+```yaml
+with:
+    secretsMethod: write
+    secrets: |
+        secret/data/ci/aws/key accessKey=someAccessKey ;
+        secret/data/ci/aws/secret secretKey=someAccessKey ;
+```
+
+### Write Json Secrets
+
+This action can take json string input as a secret value and save it to vault as a json string. You can do:
+
+```yaml
+with:
+    secretsMethod: write
+    secrets: |
+        secret/data/ci/aws/ secret={"accessKey":"someAccessKey","secretKey":"someAccessKey"} ;
+```
+
 ## Other Secret Engines
 
 Vault Action currently supports retrieving secrets from any engine where secrets
@@ -461,6 +509,7 @@ Here are all the inputs available through `with`:
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
 | `url`               | The URL for the vault endpoint                                                                                                                       |         | ✔        |
 | `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         |          |
+| `secretsMethod`     | The secretsMethod indicates if you want to read or write secrets to vault. Supported values are `"read"` and `"write"`. If not provided, `default` is `"read"` |         |          |
 | `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
 | `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
 | `role`              | Vault role for specified auth method                                                                                                                 |         |          |
