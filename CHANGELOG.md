@@ -1,5 +1,9 @@
 ## Unreleased
 
+Features:
+
+* Add `ignoreNotFound` input (default: false) to prevent the action from failing when a secret does not exist [GH-518](https://github.com/hashicorp/vault-action/pull/518)
+
 ## 2.7.5 (January 30, 2024)
 
 Improvements:

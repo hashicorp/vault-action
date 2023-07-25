@@ -124,12 +124,34 @@ describe('integration', () => {
             .mockReturnValueOnce(secrets);
     }
 
+    function mockIgnoreNotFound(shouldIgnore) {
+        when(core.getInput)
+            .calledWith('ignoreNotFound', expect.anything())
+            .mockReturnValueOnce(shouldIgnore);
+    }
+
+
     it('prints a nice error message when secret not found', async () => {
         mockInput(`secret/data/test secret ;
         secret/data/test secret | NAMED_SECRET ;
         secret/data/notFound kehe | NO_SIR ;`);
 
-        expect(exportSecrets()).rejects.toEqual(Error(`Unable to retrieve result for "secret/data/notFound" because it was not found: {"errors":[]}`));
+        await expect(exportSecrets()).rejects.toEqual(Error(`Unable to retrieve result for "secret/data/notFound" because it was not found: {"errors":[]}`));
+    })
+
+    it('does not error when secret not found and ignoreNotFound is true', async () => {
+        mockInput(`secret/data/test secret ;
+        secret/data/test secret | NAMED_SECRET ;
+        secret/data/notFound kehe | NO_SIR ;`);
+
+        mockIgnoreNotFound("true");
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(2);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+        expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET');
     })
 
     it('get simple secret', async () => {

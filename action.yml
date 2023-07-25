@@ -89,6 +89,10 @@ inputs:
   secretEncodingType:
     description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
     required: false
+  ignoreNotFound:
+    description: 'Whether or not the action should exit successfully if some requested secrets were not found.'
+    required: false
+    default: 'false'
 runs:
   using: 'node20'
   main: 'dist/index.js'
