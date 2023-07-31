@@ -17,8 +17,9 @@ inputs:
   role:
     description: 'Vault role for specified auth method'
     required: false
-  path:
-    description: 'Custom Vault path, if the auth method was mounted at a different path'
+  auth_path:
+    description: 'Custom Vault auth path, if the auth method was mounted at a different path'
+    default: 'jwt-github-actions'
     required: false
   token:
     description: 'The Vault Token to be used to authenticate with Vault'

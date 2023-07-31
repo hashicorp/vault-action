@@ -11,7 +11,7 @@ const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccoun
  * @param {import('got').Got} client
  */
 async function retrieveToken(method, client) {
-    let path = core.getInput('path', { required: false }) || method;
+    let path = core.getInput('auth_path', { required: false }) || method;
     path = `v1/auth/${path}/login`
 
     switch (method) {
