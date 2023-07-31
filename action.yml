@@ -12,7 +12,7 @@ inputs:
     required: false
   method:
     description: 'The method to use to authenticate with Vault.'
-    default: 'token'
+    default: 'jwt'
     required: false
   role:
     description: 'Vault role for specified auth method'
