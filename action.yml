@@ -54,7 +54,7 @@ inputs:
     required: false
   exportToken:
     description: 'Whether or not export Vault token as environment variables.'
-    default: 'false'
+    default: 'true'
     required: false
   outputToken:
     description: 'Whether or not to set the `vault_token` output to contain the Vault token after authentication.'
