@@ -10,14 +10,14 @@ const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
 
 async function exportSecrets() {
     const vaultUrl = core.getInput('url', { required: true });
+    const secretsPath = core.getInput('path', { required: true });
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
     const outputToken = (core.getInput('outputToken', { required: false }) || 'false').toLowerCase() != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
-    const secretsInput = core.getInput('secrets', { required: false });
-    const secretRequests = parseSecretsInput(secretsInput);
+    const secretRequests = parseSecretsInput(secretsPath);
 
     const secretEncodingType = core.getInput('secretEncodingType', { required: false });
 
