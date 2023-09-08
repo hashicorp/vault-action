@@ -48,7 +48,7 @@ async function getSecrets(secretRequests, client) {
             }
         }
 
-        if (selector == wildcard) {                     
+        if (selector === wildcard) {                     
             body = JSON.parse(body);
             let keys = body.data;
             if (body.data["data"] != undefined) {
