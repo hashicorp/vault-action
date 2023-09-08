@@ -59,6 +59,7 @@ async function getSecrets(secretRequests, client) {
             for (let key in keys) {
                 let newRequest = Object.assign({},secretRequest);
                 newRequest.selector = key;                  
+                
                 if (secretRequest.selector === secretRequest.outputVarName) {
                     newRequest.outputVarName = key;
                     newRequest.envVarName = key;        		
@@ -67,29 +68,20 @@ async function getSecrets(secretRequests, client) {
                     newRequest.outputVarName = secretRequest.outputVarName+key;
                     newRequest.envVarName = secretRequest.envVarName+key;        		
                 }
+
                 newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
                 newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
 
                 selector = key;
 
-                //This code (with exception of parsing body again and using newRequest instead of secretRequest) should match the else code for a single key
-                if (!selector.match(/.*[\.].*/)) {
-                    selector = '"' + selector + '"'
-                }
-                selector = "data." + selector
-
-                if (body.data["data"] != undefined) {
-                    selector = "data." + selector
-                }
-                const value = await selectData(body, selector);
-                results.push({
-                    request: newRequest,
-                    value,
-                    cachedResponse
-                });
-
+                results = await selectAndAppendResults(
+                  selector,
+                  body,
+                  cachedResponse,
+                  newRequest,
+                  results
+                );
             }
-
         }
         else {
           results = await selectAndAppendResults(
