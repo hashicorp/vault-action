@@ -3,24 +3,12 @@ const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got').default;
 const jsonata = require('jsonata');
+const { normalizeOutputKey } = require('./utils');
+
 module.exports = {};
 const wildcard = '*';
 module.exports.wildcard = wildcard;
 
-/**
- * Replaces any dot chars to __ and removes non-ascii charts
- * @param {string} dataKey
- * @param {boolean=} isEnvVar
- */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
-    let outputKey = dataKey
-        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
-    if (isEnvVar) {
-        outputKey = outputKey.toUpperCase();
-    }
-    return outputKey;
-}
-module.exports.normalizeOutputKey = normalizeOutputKey;
 
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
