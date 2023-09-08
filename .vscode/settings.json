@@ -1,3 +1,4 @@
 {
-    "markdown-toc.depthFrom": 2
+  "markdown-toc.depthFrom": 2,
+  "editor.formatOnSave": false
 }

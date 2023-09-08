@@ -1,5 +1,6 @@
 const jsonata = require("jsonata");
-const { normalizeOutputKey, wildcard} = require('./action');
+const { wildcard } = require('./action');
+const { normalizeOutputKey } = require('./utils');
 /**
  * @typedef {Object} SecretRequest
  * @property {string} path
@@ -75,22 +76,17 @@ async function getSecrets(secretRequests, client) {
                     selector = '"' + selector + '"'
                 }
                 selector = "data." + selector
-                //body = JSON.parse(body)
+
                 if (body.data["data"] != undefined) {
                     selector = "data." + selector
                 }
-                const value = selectData(body, selector);
+                const value = await selectData(body, selector);
                 results.push({
                     request: newRequest,
                     value,
                     cachedResponse
                 });
 
-                //DEBUG
-                //console.log("After", newRequest, value);
-
-                // used cachedResponse for first entry in wildcard list and set to true for the rest
-                cachedResponse = true;
             }
 
         }
