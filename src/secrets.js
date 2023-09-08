@@ -96,7 +96,6 @@ async function getSecrets(secretRequests, client) {
     return results;
 }
 
-
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
  * @param {object} data 
