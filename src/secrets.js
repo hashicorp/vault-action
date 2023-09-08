@@ -23,7 +23,7 @@ const { normalizeOutputKey } = require('./utils');
   */
 async function getSecrets(secretRequests, client) {
     const responseCache = new Map();
-    const results = [];
+    let results = [];
 
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
@@ -48,8 +48,9 @@ async function getSecrets(secretRequests, client) {
             }
         }
 
+        body = JSON.parse(body);
+
         if (selector === wildcard) {                     
-            body = JSON.parse(body);
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -91,22 +92,13 @@ async function getSecrets(secretRequests, client) {
 
         }
         else {
-            if (!selector.match(/.*[\.].*/)) {
-                selector = '"' + selector + '"'
-            }
-            selector = "data." + selector
-            body = JSON.parse(body)
-            if (body.data["data"] != undefined) {
-                selector = "data." + selector
-            }
-
-
-            const value = await selectData(body, selector);
-            results.push({
-                request: secretRequest,
-                value,
-                cachedResponse
-            });
+          results = await selectAndAppendResults(
+            selector, 
+            body, 
+            cachedResponse, 
+            secretRequest, 
+            results
+          );
         }   
     }
     return results;
@@ -133,6 +125,43 @@ async function selectData(data, selector) {
     }
     return result;
 }
+
+/**
+ * Uses selectData with the selector to get the value and then appends it to the
+ * results. Returns a new array with all of the results.
+ * @param {string} selector
+ * @param {object} body
+ * @param {object} cachedResponse
+ * @param {TRequest} secretRequest
+ * @param {SecretResponse<TRequest>[]} results
+ * @return {Promise<SecretResponse<TRequest>[]>}
+ */
+const selectAndAppendResults = async (
+  selector,
+  body,
+  cachedResponse,
+  secretRequest,
+  results
+) => {
+  if (!selector.match(/.*[\.].*/)) {
+    selector = '"' + selector + '"';
+  }
+  selector = "data." + selector;
+
+  if (body.data["data"] != undefined) {
+    selector = "data." + selector;
+  }
+
+  const value = await selectData(body, selector);
+  return [
+    ...results,
+    {
+      request: secretRequest,
+      value,
+      cachedResponse,
+    },
+  ];
+};
 
 module.exports = {
     getSecrets,
