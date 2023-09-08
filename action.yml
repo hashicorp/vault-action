@@ -36,6 +36,12 @@ inputs:
     description: 'The path to the Kubernetes service account secret'
     required: false
     default: '/var/run/secrets/kubernetes.io/serviceaccount/token'
+  username:
+    description: 'The username of the user to log in to Vault as. Available to both Userpass and LDAP auth methods'
+    required: false
+  password:
+    description: 'The password of the user to log in to Vault as. Available to both Userpass and LDAP auth methods'
+    required: false
   authPayload:
     description: 'The JSON payload to be sent to Vault when using a custom authentication method.'
     required: false
@@ -48,6 +54,10 @@ inputs:
     required: false
   exportToken:
     description: 'Whether or not export Vault token as environment variables.'
+    default: 'false'
+    required: false
+  outputToken:
+    description: 'Whether or not to set the `vault_token` output to contain the Vault token after authentication.'
     default: 'false'
     required: false
   caCertificate:

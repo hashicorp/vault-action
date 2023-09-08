@@ -1,5 +1,47 @@
 ## Unreleased
 
+* Add changes here
+
+## 2.7.3 (July 13, 2023)
+
+Bugs:
+
+* Revert to the handling of secrets in JSON format since v2.1.2 [GH-478](https://github.com/hashicorp/vault-action/pull/478)
+
+## 2.7.2 (July 6, 2023)
+
+Bugs:
+
+* Fix a regression that broke support for secrets in JSON format [GH-473](https://github.com/hashicorp/vault-action/pull/473)
+
+## 2.7.1 (July 3, 2023)
+
+Bugs:
+
+* Revert [GH-466](https://github.com/hashicorp/vault-action/pull/466) which caused a regression in secrets stored as JSON strings [GH-471](https://github.com/hashicorp/vault-action/pull/471)
+
+## 2.7.0 (June 21, 2023)
+
+Bugs:
+
+* Fix a regression that broke support for secrets in JSON format [GH-466](https://github.com/hashicorp/vault-action/pull/466)
+
+Improvements:
+
+* Fix a warning about outputToken being an unexpected input [GH-461](https://github.com/hashicorp/vault-action/pull/461)
+
+## 2.6.0 (June 7, 2023)
+
+Features:
+
+* Add ability to set the `vault_token` output to contain the Vault token after authentication [GH-441](https://github.com/hashicorp/vault-action/pull/441)
+* Add support for userpass and ldap authentication methods [GH-440](https://github.com/hashicorp/vault-action/pull/440)
+* Define an output, `errorMessage`, for vault-action's error messages so subsequent steps can read the errors [GH-446](https://github.com/hashicorp/vault-action/pull/446)
+
+Bugs:
+
+* Handle undefined response in getSecrets error handler [GH-431](https://github.com/hashicorp/vault-action/pull/431)
+
 ## 2.5.0 (Jan 26th, 2023)
 
 Features:
@@ -32,7 +74,7 @@ Bugs:
 * Errors due to replication delay for tokens will now be retried [GH-333](https://github.com/hashicorp/vault-action/pull/333)
 
 Improvements:
-* bump got from 11.5.1 to 11.8.5 [GH-344](https://github.com/hashicorp/vault-action/pull/344)  
+* bump got from 11.5.1 to 11.8.5 [GH-344](https://github.com/hashicorp/vault-action/pull/344)
 
 ## 2.4.1 (April 28th, 2022)
 
@@ -40,11 +82,11 @@ Improvements:
 * Make secrets parameter optional [GH-299](https://github.com/hashicorp/vault-action/pull/299)
 * auth/jwt: make "role" input optional [GH-291](https://github.com/hashicorp/vault-action/pull/291)
 * Write a better error message when secret not found [GH-306](https://github.com/hashicorp/vault-action/pull/306)
-* bump jest-when from 2.7.2 to 3.5.1 [GH-294](https://github.com/hashicorp/vault-action/pull/294)  
-* bump node-fetch from 2.6.1 to 2.6.7 [GH-308](https://github.com/hashicorp/vault-action/pull/308)  
-* bump @types/jest from 26.0.23 to 27.4.1 [GH-297](https://github.com/hashicorp/vault-action/pull/297)  
-* bump trim-off-newlines from 1.0.1 to 1.0.3 [GH-309](https://github.com/hashicorp/vault-action/pull/309)  
-* bump moment from 2.28.0 to 2.29.2 [GH-304](https://github.com/hashicorp/vault-action/pull/304)  
+* bump jest-when from 2.7.2 to 3.5.1 [GH-294](https://github.com/hashicorp/vault-action/pull/294)
+* bump node-fetch from 2.6.1 to 2.6.7 [GH-308](https://github.com/hashicorp/vault-action/pull/308)
+* bump @types/jest from 26.0.23 to 27.4.1 [GH-297](https://github.com/hashicorp/vault-action/pull/297)
+* bump trim-off-newlines from 1.0.1 to 1.0.3 [GH-309](https://github.com/hashicorp/vault-action/pull/309)
+* bump moment from 2.28.0 to 2.29.2 [GH-304](https://github.com/hashicorp/vault-action/pull/304)
 * bump @types/got from 9.6.11 to 9.6.12 [GH-266](https://github.com/hashicorp/vault-action/pull/266)
 
 ## 2.4.0 (October 21st, 2021)

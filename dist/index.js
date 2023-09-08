@@ -18521,7 +18521,7 @@ const { WILDCARD } = __nccwpck_require__(4438);
 
 const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
 
-const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes'];
+const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
 
 async function exportSecrets() {
@@ -18529,6 +18529,7 @@ async function exportSecrets() {
     const vaultNamespace = core.getInput('namespace', { required: false });
     const extraHeaders = parseHeadersInput('extraHeaders', { required: false });
     const exportEnv = core.getInput('exportEnv', { required: false }) != 'false';
+    const outputToken = (core.getInput('outputToken', { required: false }) || 'false').toLowerCase() != 'false';
     const exportToken = (core.getInput('exportToken', { required: false }) || 'false').toLowerCase() != 'false';
 
     const secretsInput = core.getInput('secrets', { required: false });
@@ -18585,11 +18586,14 @@ async function exportSecrets() {
     }
 
     const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
+    core.setSecret(vaultToken)
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
     const client = got.extend(defaultOptions);
 
+    if (outputToken === true) {
+      core.setOutput('vault_token', `${vaultToken}`);
+    }
     if (exportToken === true) {
-        command.issue('add-mask', vaultToken);
         core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
     }
 
@@ -18619,7 +18623,7 @@ async function exportSecrets() {
 
         for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
-                command.issue('add-mask', line);
+                core.setSecret(line);
             }
         }
         if (exportEnv) {
@@ -18754,7 +18758,8 @@ const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccoun
  * @param {import('got').Got} client
  */
 async function retrieveToken(method, client) {
-    const path = core.getInput('path', { required: false }) || method;
+    let path = core.getInput('path', { required: false }) || method;
+    path = `v1/auth/${path}/login`
 
     switch (method) {
         case 'approle': {
@@ -18792,6 +18797,13 @@ async function retrieveToken(method, client) {
                 throw new Error("Role Name must be set and a kubernetes token must set")
             }
             return await getClientToken(client, method, path, { jwt: data, role: role })
+        }
+        case 'userpass': 
+        case 'ldap': {
+            const username = core.getInput('username', { required: true });
+            const password = core.getInput('password', { required: true });
+            path = path + `/${username}`
+            return await getClientToken(client, method, path, { password: password })
         }
 
         default: {
@@ -18850,12 +18862,12 @@ async function getClientToken(client, method, path, payload) {
         responseType,
     };
 
-    core.debug(`Retrieving Vault Token from v1/auth/${path}/login endpoint`);
+    core.debug(`Retrieving Vault Token from ${path} endpoint`);
 
     /** @type {import('got').Response<VaultLoginResponse>} */
     let response;
     try {
-        response = await client.post(`v1/auth/${path}/login`, options);
+        response = await client.post(`${path}`, options);
     } catch (err) {
         if (err instanceof got.HTTPError) {
             throw Error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, vaultResponse: ${JSON.stringify(err.response.body)}`)
@@ -18966,7 +18978,7 @@ async function getSecrets(secretRequests, client) {
                 responseCache.set(requestPath, body);
             } catch (error) {
                 const {response} = error;
-                if (response.statusCode === 404) {
+                if (response?.statusCode === 404) {
                     throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
                 }
                 throw error
@@ -19018,13 +19030,14 @@ async function getSecrets(secretRequests, client) {
           );
         }   
     }
+
     return results;
 }
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data 
- * @param {string} selector 
+ * @param {object} data
+ * @param {string} selector
  */
 async function selectData(data, selector) {
     const ata = jsonata(selector);
@@ -19084,6 +19097,7 @@ module.exports = {
     getSecrets,
     selectData
 }
+
 
 /***/ }),
 
@@ -19297,6 +19311,7 @@ const { exportSecrets } = __nccwpck_require__(3348);
     try {
         await core.group('Get Vault Secrets', exportSecrets);
     } catch (error) {
+        core.setOutput("errorMessage", error.message);
         core.setFailed(error.message);
     }
 })();

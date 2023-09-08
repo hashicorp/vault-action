@@ -19,6 +19,8 @@ A helper action for easily pulling secrets from HashiCorp Vault™.
     - [GitHub](#github)
     - [JWT with OIDC Provider](#jwt-with-oidc-provider)
     - [Kubernetes](#kubernetes)
+    - [Userpass](#userpass)
+    - [Ldap](#ldap)
     - [Other Auth Methods](#other-auth-methods)
   - [Key Syntax](#key-syntax)
     - [Simple Key](#simple-key)
@@ -44,6 +46,7 @@ jobs:
         steps:
             # ...
             - name: Import Secrets
+              id: import-secrets
               uses: hashicorp/vault-action@v2
               with:
                 url: https://vault.mycompany.com:8200
@@ -55,6 +58,39 @@ jobs:
                     secret/data/ci npm_token
             # ...
 ```
+
+Retrieved secrets are available as environment variables or outputs for subsequent steps:
+```yaml
+#...
+            - name: Step following 'Import Secrets'
+              run: |
+                ACCESS_KEY_ID = "${{ env.AWS_ACCESS_KEY_ID }}"
+                SECRET_ACCESS_KEY = "${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}"
+            # ...
+```
+
+If your project needs a format other than env vars and step outputs, you can use additional steps to transform them into the desired format. 
+For example, a common pattern is to save all the secrets in a JSON file:
+```yaml
+#...
+            - name: Step following 'Import Secrets'
+              run: |
+                touch secrets.json
+                echo "${{ toJson(steps.import-secrets.outputs) }}" >> secrets.json
+            # ...
+```
+
+Which with our example would yield a file containing:
+```json
+{
+  "ACCESS_KEY_ID": "MY_KEY_ID",
+  "SECRET_ACCESS_KEY": "MY_SECRET_KEY",
+  "NPM_TOKEN": "MY_NPM_TOKEN"
+}
+```
+
+Note that all secrets are masked so programs need to read the file themselves otherwise all values will be replaced with a `***` placeholder.
+
 
 ## Authentication Methods
 
@@ -222,6 +258,40 @@ with:
   kubernetesTokenPath: /var/run/secrets/kubernetes.io/serviceaccount/token # default token path
 ```
 
+### Userpass
+
+The [Userpass auth method](https://developer.hashicorp.com/vault/docs/auth/userpass) allows
+your GitHub Actions workflow to authenticate to Vault with a username and password.
+Set the username and password as GitHub secrets and pass them to the
+`username` and `password` parameters.
+
+This is not the same as ldap or okta auth methods.
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  method: userpass
+  username: ${{ secrets.VAULT_USERNAME }}
+  password: ${{ secrets.VAULT_PASSWORD }}
+```
+
+### Ldap
+
+The [LDAP auth method](https://developer.hashicorp.com/vault/docs/auth/ldap) allows
+your GitHub Actions workflow to authenticate to Vault with a username and password inturn verfied with ldap servers.
+Set the username and password as GitHub secrets and pass them to the
+`username` and `password` parameters.
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  method: ldap
+  username: ${{ secrets.VAULT_USERNAME }}
+  password: ${{ secrets.VAULT_PASSWORD }}
+```
+
 ### Other Auth Methods
 
 If any other method is specified and you provide an `authPayload`, the action will
@@ -231,7 +301,8 @@ attempt to `POST` to `auth/${method}/login` with the provided payload and parse 
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
 
-Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
+Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name. 
+Note that the selector is using [JSONata](https://docs.jsonata.org/overview.html) and certain characters in keys may need to be escaped.
 
 ```raw
 {{ Secret Path }} {{ Secret Key or Selector }} | {{ Env/Output Variable Name }}
@@ -410,10 +481,13 @@ Here are all the inputs available through `with`:
 | `jwtGithubAudience` | Identifies the recipient ("aud" claim) that the JWT is intended for                                                                                   |`sigstore`|          |
 | `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
 | `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
+| `username`          | The username of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
+| `password`          | The password of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
 | `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
 | `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
 | `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
 | `exportToken`       | Whether or not export Vault token as environment variables (i.e VAULT_TOKEN).                                                                        | `false` |          |
+| `outputToken`       | Whether or not to set the `vault_token` output to contain the Vault token after authentication.                                                      | `false` |          |
 | `caCertificate`     | Base64 encoded CA certificate the server certificate was signed with.                                                                                |         |          |
 | `clientCertificate` | Base64 encoded client certificate the action uses to authenticate with Vault when mTLS is enabled.                                                   |         |          |
 | `clientKey`         | Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.                                                           |         |          |
@@ -479,18 +553,23 @@ $ npm run test:integration:basic # Choose one of: basic, enterprise, e2e, e2e-tl
 
 ### Running the action locally
 
-You can use the [act](https://github.com/nektos/act) command to test your changes locally if desired. Unfortunately it is not currently possible to use uncommitted local changes for a shared workfow. You will still need to push
-the changes you would like to validate beforehand. Even if a commit is necessary, this is still a more detailed and faster feedback loop than waiting for the action to be executed by Github in a different repository.
+You can use the [act](https://github.com/nektos/act) command to test your
+changes locally.
 
-Push your changes into a feature branch.
+Edit the ./.github/workflows/local-test.yaml file and add any steps necessary
+to test your changes. You may have to additionally edit the Vault url, token
+and secret path if you are not using one of the provided containerized
+instances. The `local-test` job will call the ./integrationTests/e2e/setup.js
+script to bootstrap your local Vault instance with secrets.
+
+Run your feature branch locally:
+
 ```sh
-$ git checkout -b my-feature-branch
-$ git commit -m "testing new changes"
-$ git push
+act workflow_dispatch -j local-test
 ```
 
-Edit the ./.github/workflows/local-test.yaml file to use your new feature branch. You may have to additionally edit the vault url, token and secret path if you are not using one of the provided containerized instance.
-Run your feature branch locally.
+Or use the provided make target which will also spin up a Vault container:
+
 ```sh
-$ act local-test
+make local-test
 ```

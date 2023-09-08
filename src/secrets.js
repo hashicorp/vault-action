@@ -41,7 +41,7 @@ async function getSecrets(secretRequests, client) {
                 responseCache.set(requestPath, body);
             } catch (error) {
                 const {response} = error;
-                if (response.statusCode === 404) {
+                if (response?.statusCode === 404) {
                     throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
                 }
                 throw error
@@ -98,8 +98,8 @@ async function getSecrets(secretRequests, client) {
 
 /**
  * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data 
- * @param {string} selector 
+ * @param {object} data
+ * @param {string} selector
  */
 async function selectData(data, selector) {
     const ata = jsonata(selector);
