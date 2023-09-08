@@ -4,11 +4,7 @@ const command = require('@actions/core/lib/command');
 const got = require('got').default;
 const jsonata = require('jsonata');
 const { normalizeOutputKey } = require('./utils');
-
-module.exports = {};
-const wildcard = '*';
-module.exports.wildcard = wildcard;
-
+const { WILDCARD } = require('./constants');
 
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
@@ -120,7 +116,6 @@ async function exportSecrets() {
         core.debug(`✔ ${request.path} => outputs.${request.outputVarName}${exportEnv ? ` | env.${request.envVarName}` : ''}`);
     }
 };
-module.exports.exportSecrets = exportSecrets;
 
 /** @typedef {Object} SecretRequest
  * @property {string} path
@@ -175,7 +170,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if (selector !== wildcard && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -194,7 +189,6 @@ function parseSecretsInput(secretsInput) {
     }
     return output;
 }
-module.exports.parseSecretsInput = parseSecretsInput;
 
 /**
  * @param {string} inputKey
@@ -220,14 +214,10 @@ function parseHeadersInput(inputKey, inputOptions) {
             return map;
         }, new Map());
 }
-module.exports.parseHeadersInput = parseHeadersInput;
-// restructured module.exports to avoid circular dependency when secrets imports this.
-/*
+
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    normalizeOutputKey,
     parseHeadersInput,
-    wildcard
 };
-*/
+

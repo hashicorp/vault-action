@@ -1,6 +1,6 @@
 const jsonata = require("jsonata");
-const { wildcard } = require('./action');
-const { normalizeOutputKey } = require('./utils');
+const { WILDCARD } = require("./constants");
+const { normalizeOutputKey } = require("./utils");
 /**
  * @typedef {Object} SecretRequest
  * @property {string} path
@@ -50,7 +50,7 @@ async function getSecrets(secretRequests, client) {
 
         body = JSON.parse(body);
 
-        if (selector === wildcard) {                     
+        if (selector == WILDCARD) {                     
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -104,6 +104,7 @@ async function getSecrets(secretRequests, client) {
 async function selectData(data, selector) {
     const ata = jsonata(selector);
     let result = JSON.stringify(await ata.evaluate(data));
+
     // Compat for custom engines
     if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
         result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
