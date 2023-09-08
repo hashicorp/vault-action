@@ -93,6 +93,7 @@ async function getSecrets(secretRequests, client) {
           );
         }   
     }
+
     return results;
 }
 
