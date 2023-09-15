@@ -76,7 +76,7 @@ For example, a common pattern is to save all the secrets in a JSON file:
             - name: Step following 'Import Secrets'
               run: |
                 touch secrets.json
-                echo "${{ toJson(steps.import-secrets.outputs) }}" >> secrets.json
+                echo '${{ toJson(steps.import-secrets.outputs) }}' >> secrets.json
             # ...
 ```
 
