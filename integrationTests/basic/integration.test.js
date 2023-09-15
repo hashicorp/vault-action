@@ -171,6 +171,26 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
     });
 
+    it('get wildcard secrets', async () => {
+        mockInput(`secret/data/test * ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
+    });
+
+    it('get wildcard secrets with name prefix', async () => {
+        mockInput(`secret/data/test * | GROUP_ ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'SUPERSECRET');
+    });
+
     it('leading slash kvv2', async () => {
         mockInput('/secret/data/foobar fookv2');
 
@@ -189,6 +209,34 @@ describe('integration', () => {
 
     it('get nested secret from K/V v1', async () => {
         mockInput('secret-kv1/nested/test "other-Secret-dash"');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERCUSTOMSECRET');
+    });
+
+    it('get K/V v1 wildcard secrets', async () => {
+        mockInput(`secret-kv1/test * ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET', 'CUSTOMSECRET');
+    });
+
+    it('get K/V v1 wildcard secrets with name prefix', async () => {
+        mockInput(`secret-kv1/test * | GROUP_ ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('GROUP_SECRET', 'CUSTOMSECRET');
+    });
+
+    it('get wildcard nested secret from K/V v1', async () => {
+        mockInput('secret-kv1/nested/test *');
 
         await exportSecrets();
 
@@ -225,6 +273,17 @@ describe('integration', () => {
             expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
         });
 
+        it('wildcard supports cubbyhole', async () => {            
+            mockInput('/cubbyhole/test *');
+
+            await exportSecrets();
+            
+            expect(core.exportVariable).toBeCalledTimes(2);
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
+            expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+        });
+        
         it('caches responses', async () => {            
             mockInput(`
             /cubbyhole/test foo ;

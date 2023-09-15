@@ -3,6 +3,9 @@ const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
 const got = require('got').default;
 const jsonata = require('jsonata');
+const { normalizeOutputKey } = require('./utils');
+const { WILDCARD } = require('./constants');
+
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
@@ -171,7 +174,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -189,20 +192,6 @@ function parseSecretsInput(secretsInput) {
         });
     }
     return output;
-}
-
-/**
- * Replaces any dot chars to __ and removes non-ascii charts
- * @param {string} dataKey
- * @param {boolean=} isEnvVar
- */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
-    let outputKey = dataKey
-        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
-    if (isEnvVar) {
-        outputKey = outputKey.toUpperCase();
-    }
-    return outputKey;
 }
 
 /**
@@ -233,6 +222,6 @@ function parseHeadersInput(inputKey, inputOptions) {
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    normalizeOutputKey,
-    parseHeadersInput
+    parseHeadersInput,
 };
+

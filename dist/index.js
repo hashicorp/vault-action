@@ -18516,6 +18516,9 @@ const core = __nccwpck_require__(2186);
 const command = __nccwpck_require__(7351);
 const got = (__nccwpck_require__(3061)["default"]);
 const jsonata = __nccwpck_require__(4245);
+const { normalizeOutputKey } = __nccwpck_require__(1608);
+const { WILDCARD } = __nccwpck_require__(4438);
+
 const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
@@ -18684,7 +18687,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if ((selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -18702,20 +18705,6 @@ function parseSecretsInput(secretsInput) {
         });
     }
     return output;
-}
-
-/**
- * Replaces any dot chars to __ and removes non-ascii charts
- * @param {string} dataKey
- * @param {boolean=} isEnvVar
- */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
-    let outputKey = dataKey
-        .replace('.', '__').replace(new RegExp('-', 'g'), '').replace(/[^\p{L}\p{N}_-]/gu, '');
-    if (isEnvVar) {
-        outputKey = outputKey.toUpperCase();
-    }
-    return outputKey;
 }
 
 /**
@@ -18746,9 +18735,9 @@ function parseHeadersInput(inputKey, inputOptions) {
 module.exports = {
     exportSecrets,
     parseSecretsInput,
-    normalizeOutputKey,
-    parseHeadersInput
+    parseHeadersInput,
 };
+
 
 
 /***/ }),
@@ -18919,6 +18908,17 @@ module.exports = {
 
 /***/ }),
 
+/***/ 4438:
+/***/ ((module) => {
+
+const WILDCARD = '*';
+
+module.exports = {
+    WILDCARD
+};
+
+/***/ }),
+
 /***/ 4351:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -18936,8 +18936,8 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const jsonata = __nccwpck_require__(4245);
-
-
+const { WILDCARD } = __nccwpck_require__(4438);
+const { normalizeOutputKey } = __nccwpck_require__(1608);
 /**
  * @typedef {Object} SecretRequest
  * @property {string} path
@@ -18960,7 +18960,8 @@ const jsonata = __nccwpck_require__(4245);
   */
 async function getSecrets(secretRequests, client) {
     const responseCache = new Map();
-    const results = [];
+    let results = [];
+
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
 
@@ -18983,22 +18984,53 @@ async function getSecrets(secretRequests, client) {
                 throw error
             }
         }
-        if (!selector.match(/.*[\.].*/)) {
-            selector = '"' + selector + '"'
-        }
-        selector = "data." + selector
-        body = JSON.parse(body)
-        if (body.data["data"] != undefined) {
-            selector = "data." + selector
-        }
 
-        const value = await selectData(body, selector);
-        results.push({
-            request: secretRequest,
-            value,
-            cachedResponse
-        });
+        body = JSON.parse(body);
+
+        if (selector == WILDCARD) {                     
+            let keys = body.data;
+            if (body.data["data"] != undefined) {
+                keys = keys.data;
+            }
+
+            for (let key in keys) {
+                let newRequest = Object.assign({},secretRequest);
+                newRequest.selector = key;                  
+                
+                if (secretRequest.selector === secretRequest.outputVarName) {
+                    newRequest.outputVarName = key;
+                    newRequest.envVarName = key;        		
+                }
+                else {
+                    newRequest.outputVarName = secretRequest.outputVarName+key;
+                    newRequest.envVarName = secretRequest.envVarName+key;        		
+                }
+
+                newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
+
+                selector = key;
+
+                results = await selectAndAppendResults(
+                  selector,
+                  body,
+                  cachedResponse,
+                  newRequest,
+                  results
+                );
+            }
+        }
+        else {
+          results = await selectAndAppendResults(
+            selector, 
+            body, 
+            cachedResponse, 
+            secretRequest, 
+            results
+          );
+        }   
     }
+
     return results;
 }
 
@@ -19024,10 +19056,73 @@ async function selectData(data, selector) {
     return result;
 }
 
+/**
+ * Uses selectData with the selector to get the value and then appends it to the
+ * results. Returns a new array with all of the results.
+ * @param {string} selector
+ * @param {object} body
+ * @param {object} cachedResponse
+ * @param {TRequest} secretRequest
+ * @param {SecretResponse<TRequest>[]} results
+ * @return {Promise<SecretResponse<TRequest>[]>}
+ */
+const selectAndAppendResults = async (
+  selector,
+  body,
+  cachedResponse,
+  secretRequest,
+  results
+) => {
+  if (!selector.match(/.*[\.].*/)) {
+    selector = '"' + selector + '"';
+  }
+  selector = "data." + selector;
+
+  if (body.data["data"] != undefined) {
+    selector = "data." + selector;
+  }
+
+  const value = await selectData(body, selector);
+  return [
+    ...results,
+    {
+      request: secretRequest,
+      value,
+      cachedResponse,
+    },
+  ];
+};
+
 module.exports = {
     getSecrets,
     selectData
 }
+
+
+/***/ }),
+
+/***/ 1608:
+/***/ ((module) => {
+
+/**
+ * Replaces any dot chars to __ and removes non-ascii charts
+ * @param {string} dataKey
+ * @param {boolean=} isEnvVar
+ */
+function normalizeOutputKey(dataKey, isEnvVar = false) {
+  let outputKey = dataKey
+    .replace(".", "__")
+    .replace(new RegExp("-", "g"), "")
+    .replace(/[^\p{L}\p{N}_-]/gu, "");
+  if (isEnvVar) {
+    outputKey = outputKey.toUpperCase();
+  }
+  return outputKey;
+}
+
+module.exports = { 
+    normalizeOutputKey 
+};
 
 
 /***/ }),
