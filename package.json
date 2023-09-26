@@ -1,5 +1,5 @@
 {
-    "name": "vault",
+    "name": "vault-action",
     "version": "0.1.0",
     "description": "A Github Action that allows you to consume vault secrets as secure environment variables.",
     "main": "dist/index.js",
