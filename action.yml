@@ -1,4 +1,4 @@
-name: 'Vault'
+name: 'Vault Secrets'
 description: 'A Github Action that allows you to consume HashiCorp Vault™ secrets as secure environment variables'
 inputs:
   url:
