@@ -18,16 +18,16 @@ inputs:
     description: 'Vault role for specified auth method'
     required: false
   path:
-    description: 'Custom Vault path, if the auth method was mounted at a different path'
+    description: 'The Vault path for the auth method.'
     required: false
   token:
-    description: 'The Vault Token to be used to authenticate with Vault'
+    description: 'The Vault token to be used to authenticate with Vault'
     required: false
   roleId:
-    description: 'The Role Id for App Role authentication'
+    description: 'The role ID for App Role authentication'
     required: false
   secretId:
-    description: 'The Secret Id for App Role authentication'
+    description: 'The secret ID for App Role authentication'
     required: false
   githubToken:
     description: 'The Github Token to be used to authenticate with Vault'
@@ -61,7 +61,7 @@ inputs:
     default: 'false'
     required: false
   caCertificate:
-    description: 'Base64 encoded CA certificate to verify the Vault server certificate.'
+    description: 'Base64 encoded CA certificate the server certificate was signed with. Defaults to CAs provided by Mozilla.'
     required: false
   clientCertificate:
     description: 'Base64 encoded client certificate for mTLS communication with the Vault server.'
