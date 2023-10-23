@@ -464,34 +464,172 @@ steps:
 
 Here are all the inputs available through `with`:
 
-| Input               | Description                                                                                                                                          | Default | Required |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `url`               | The URL for the vault endpoint                                                                                                                       |         | ✔        |
-| `secrets`           | A semicolon-separated list of secrets to retrieve. These will automatically be converted to environmental variable keys. See README for more details |         |          |
-| `namespace`         | The Vault namespace from which to query secrets. Vault Enterprise only, unset by default                                                             |         |          |
-| `method`            | The method to use to authenticate with Vault.                                                                                                        | `token` |          |
-| `role`              | Vault role for specified auth method                                                                                                                 |         |          |
-| `path`              | Custom vault path, if the auth method was enabled at a different path                                                                                                |         |          |
-| `token`             | The Vault Token to be used to authenticate with Vault                                                                                                |         |          |
-| `roleId`            | The Role Id for App Role authentication                                                                                                              |         |          |
-| `secretId`          | The Secret Id for App Role authentication                                                                                                            |         |          |
-| `githubToken`       | The Github Token to be used to authenticate with Vault                                                                                               |         |          |
-| `jwtPrivateKey`     | Base64 encoded Private key to sign JWT                                                                                                               |         |          |
-| `jwtKeyPassword`    | Password for key stored in jwtPrivateKey (if needed)                                                                                                 |         |          |
-| `jwtGithubAudience` | Identifies the recipient ("aud" claim) that the JWT is intended for                                                                                   |`sigstore`|          |
-| `jwtTtl`            | Time in seconds, after which token expires                                                                                                           |         | 3600     |
-| `kubernetesTokenPath`         | The path to the service-account secret with the jwt token for kubernetes based authentication                                                                                               |`/var/run/secrets/kubernetes.io/serviceaccount/token`         |          |
-| `username`          | The username of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
-| `password`          | The password of the user to log in to Vault as. Available to both Userpass and LDAP auth methods                                                     |         |          |
-| `authPayload`       | The JSON payload to be sent to Vault when using a custom authentication method.                                                                      |         |          |
-| `extraHeaders`      | A string of newline separated extra headers to include on every request.                                                                             |         |          |
-| `exportEnv`         | Whether or not export secrets as environment variables.                                                                                              | `true`  |          |
-| `exportToken`       | Whether or not export Vault token as environment variables (i.e VAULT_TOKEN).                                                                        | `false` |          |
-| `outputToken`       | Whether or not to set the `vault_token` output to contain the Vault token after authentication.                                                      | `false` |          |
-| `caCertificate`     | Base64 encoded CA certificate the server certificate was signed with.                                                                                |         |          |
-| `clientCertificate` | Base64 encoded client certificate the action uses to authenticate with Vault when mTLS is enabled.                                                   |         |          |
-| `clientKey`         | Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.                                                           |         |          |
-| `tlsSkipVerify`     | When set to true, disables verification of server certificates when testing the action.                                                              | `false` |          |
+### `url`
+
+**Type: `string`**\
+**Required**
+
+The URL for the Vault endpoint.
+
+### `secrets`
+
+**Type: `string`**
+
+A semicolon-separated list of secrets to retrieve. These will automatically be
+converted to environmental variable keys. See [Key Syntax](#key-syntax) for
+more details.
+
+### `namespace`
+
+**Type: `string`**
+
+The Vault namespace from which to query secrets. Vault Enterprise only, unset by default.
+
+### `method`
+
+**Type: `string`**\
+**Default: `token`**
+
+The method to use to authenticate with Vault.
+
+### `role`
+
+**Type: `string`**
+
+Vault role for the specified auth method.
+
+### `path`
+
+**Type: `string`**
+
+The Vault path for the auth method.
+
+### `token`
+
+**Type: `string`**
+
+The Vault token to be used to authenticate with Vault.
+
+### `roleId`
+
+**Type: `string`**
+
+The role ID for App Role authentication.
+
+### `secretId`
+
+**Type: `string`**
+
+The secret ID for App Role authentication.
+
+### `githubToken`
+
+**Type: `string`**
+
+The Github Token to be used to authenticate with Vault.
+
+### `jwtPrivateKey`
+
+**Type: `string`**
+
+Base64 encoded private key to sign the JWT.
+
+### `jwtKeyPassword`
+
+**Type: `string`**
+
+Password for key stored in `jwtPrivateKey` (if needed).
+
+### `jwtGithubAudience`
+
+**Type: `string`**\
+**Default: `sigstore`**
+
+Identifies the recipient ("aud" claim) that the JWT is intended for.
+
+### `jwtTtl`
+
+**Type: `string`**\
+**Default: `3600`**
+
+Time in seconds, after which token expires.
+
+### `kubernetesTokenPath`
+
+**Type: `string`**\
+**Default: `/var/run/secrets/kubernetes.io/serviceaccount/token`**
+
+The path to the service-account secret with the jwt token for kubernetes based authentication.
+
+### `username`
+
+**Type: `string`**
+
+The username of the user to log in to Vault as. Available to both Userpass and LDAP auth methods.
+
+### `password`
+
+**Type: `string`**
+
+The password of the user to log in to Vault as. Available to both Userpass and LDAP auth methods.
+
+### `authPayload`
+
+**Type: `string`**
+
+The JSON payload to be sent to Vault when using a custom authentication method.
+
+### `extraHeaders`
+
+**Type: `string`**
+
+A string of newline separated extra headers to include on every request.
+
+### `exportEnv`
+
+**Type: `string`**\
+**Default: `true`**
+
+Whether or not to export secrets as environment variables.
+
+### `exportToken`
+
+**Type: `string`**\
+**Default: `false`**
+
+Whether or not export Vault token as environment variables (i.e VAULT_TOKEN).
+
+### `outputToken`
+
+**Type: `string`**\
+**Default: `false`**
+
+Whether or not to set the `vault_token` output to contain the Vault token after authentication.
+
+### `caCertificate`
+
+**Type: `string`**
+
+Base64 encoded CA certificate the server certificate was signed with. Defaults to CAs provided by Mozilla.
+
+### `clientCertificate`
+
+**Type: `string`**
+
+Base64 encoded client certificate the action uses to authenticate with Vault when mTLS is enabled.
+
+### `clientKey`
+
+**Type: `string`**
+
+Base64 encoded client key the action uses to authenticate with Vault when mTLS is enabled.
+
+### `tlsSkipVerify`
+
+**Type: `string`**\
+**Default: `false`**
+
+When set to true, disables verification of server certificates when testing the action.
 
 ## Masking - Hiding Secrets from Logs
 
