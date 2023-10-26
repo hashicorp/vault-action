@@ -2,6 +2,12 @@
 
 * Add changes here
 
+## 2.7.4 (October 26, 2023)
+
+Features:
+
+* Add ability to specify a wildcard for the key name to get all keys in the path [GH-488](https://github.com/hashicorp/vault-action/pull/488)
+
 ## 2.7.3 (July 13, 2023)
 
 Bugs:
