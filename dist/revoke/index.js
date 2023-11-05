@@ -19344,11 +19344,11 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 const core = __nccwpck_require__(2186);
-const { exportSecrets } = __nccwpck_require__(3348);
+const { revokeToken } = __nccwpck_require__(3348);
 
 (async () => {
     try {
-        await core.group('Get Vault Secrets', exportSecrets);
+        await revokeToken()
     } catch (error) {
         core.setOutput("errorMessage", error.message);
         core.setFailed(error.message);

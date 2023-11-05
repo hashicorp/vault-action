@@ -4,7 +4,7 @@
     "description": "A Github Action that allows you to consume vault secrets as secure environment variables.",
     "main": "dist/index.js",
     "scripts": {
-        "build": "ncc build src/entry.js -o dist",
+        "build": "ncc build src/entry.js -o dist && ncc build src/revoke.js -o dist/revoke",
         "test": "jest",
         "test:integration:basic": "jest -c integrationTests/basic/jest.config.js",
         "test:integration:enterprise": "jest -c integrationTests/enterprise/jest.config.js",
