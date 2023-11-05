@@ -92,6 +92,7 @@ inputs:
 runs:
   using: 'node16'
   main: 'dist/index.js'
+  post: "dist/cache-save/index.js"
 branding:
   icon: 'unlock'
   color: 'gray-dark'
