@@ -89,7 +89,7 @@ inputs:
   secretEncodingType:
     description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
     required: false
-  revokeKey:
+  revokeToken:
     description: 'When set to true, automatically revokes the vault token after the run is complete.'
     default: "false"
     required: false
