@@ -8,26 +8,26 @@ services:
     ports:
       - 8200:8200
     privileged: true
-  # vault-enterprise:
-  #   image: hashicorp/vault-enterprise:latest
-  #   environment:
-  #     VAULT_DEV_ROOT_TOKEN_ID: testtoken
-  #     VAULT_LICENSE: ${VAULT_LICENSE_CI}
-  #   ports:
-  #     - 8200:8200
-  #   privileged: true
-  # vault-tls:
-  #   image: hashicorp/vault:latest
-  #   hostname: vault-tls
-  #   environment:
-  #     VAULT_CAPATH: /etc/vault/ca.crt
-  #   ports:
-  #   - 8200:8200
-  #   privileged: true
-  #   volumes:
-  #   - ${PWD}/integrationTests/e2e-tls/configs:/etc/vault
-  #   - vault-data:/var/lib/vault:rw
-  #   entrypoint: vault server -config=/etc/vault/config.hcl
+  vault-enterprise:
+    image: hashicorp/vault-enterprise:latest
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: testtoken
+      VAULT_LICENSE: ${VAULT_LICENSE_CI}
+    ports:
+      - 8200:8200
+    privileged: true
+  vault-tls:
+    image: hashicorp/vault:latest
+    hostname: vault-tls
+    environment:
+      VAULT_CAPATH: /etc/vault/ca.crt
+    ports:
+    - 8200:8200
+    privileged: true
+    volumes:
+    - ${PWD}/integrationTests/e2e-tls/configs:/etc/vault
+    - vault-data:/var/lib/vault:rw
+    entrypoint: vault server -config=/etc/vault/config.hcl
 
 volumes:
   vault-data:
