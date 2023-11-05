@@ -1,6 +1,8 @@
 ## Unreleased
 
-* Add changes here
+Features:
+
+*  Add `revokeToken` input to revoke the generated token after the workflow run is complete [GH-501](https://github.com/hashicorp/vault-action/pull/501)
 
 ## 2.7.4 (October 26, 2023)
 
