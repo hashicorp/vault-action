@@ -3702,7 +3702,6 @@ function asPromise(normalizedOptions) {
                     request._beforeError(new types_1.HTTPError(response));
                     return;
                 }
-                request.destroy();
                 resolve(request.options.resolveBodyOnly ? response.body : response);
             });
             const onError = (error) => {
@@ -18936,7 +18935,6 @@ module.exports = {
 /***/ 8452:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const core = __nccwpck_require__(2186);
 const jsonata = __nccwpck_require__(4245);
 const { WILDCARD } = __nccwpck_require__(4438);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
@@ -18961,7 +18959,6 @@ const { normalizeOutputKey } = __nccwpck_require__(1608);
   * @return {Promise<SecretResponse<TRequest>[]>}
   */
 async function getSecrets(secretRequests, client) {
-    const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
     const responseCache = new Map();
     let results = [];
 
@@ -18982,13 +18979,7 @@ async function getSecrets(secretRequests, client) {
             } catch (error) {
                 const {response} = error;
                 if (response?.statusCode === 404) {
-                    msg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}\n`;
-                    if (ignoreNotFound) {
-                        process.stdout.write(msg);
-                        continue;
-                    } else {
-                        throw Error(msg);
-                    }
+                    throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
                 }
                 throw error
             }
