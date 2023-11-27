@@ -1,6 +1,8 @@
 ## Unreleased
 
-* Add changes here
+Features:
+
+* Add `ignoreNotFound` input (default: false) to make the action ignore unexisting secrets without failing [GH-504](https://github.com/hashicorp/vault-action/pull/504)
 
 ## 2.7.4 (October 26, 2023)
 
