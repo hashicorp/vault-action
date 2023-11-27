@@ -1,3 +1,4 @@
+const core = require('@actions/core');
 const jsonata = require("jsonata");
 const { WILDCARD } = require("./constants");
 const { normalizeOutputKey } = require("./utils");
@@ -22,6 +23,7 @@ const { normalizeOutputKey } = require("./utils");
   * @return {Promise<SecretResponse<TRequest>[]>}
   */
 async function getSecrets(secretRequests, client) {
+    const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
     const responseCache = new Map();
     let results = [];
 
@@ -42,7 +44,13 @@ async function getSecrets(secretRequests, client) {
             } catch (error) {
                 const {response} = error;
                 if (response?.statusCode === 404) {
-                    throw Error(`Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`)
+                    msg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}\n`;
+                    if (ignoreNotFound) {
+                        process.stdout.write(msg);
+                        continue;
+                    } else {
+                        throw Error(msg);
+                    }
                 }
                 throw error
             }
