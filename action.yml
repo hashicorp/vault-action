@@ -90,7 +90,7 @@ inputs:
     description: 'The encoding type of the secret to decode. If not specified, the secret will not be decoded. Supported values: base64, hex, utf8'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 branding:
   icon: 'unlock'
