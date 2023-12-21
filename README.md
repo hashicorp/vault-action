@@ -8,6 +8,9 @@
 
 A helper action for easily pulling secrets from HashiCorp Vault™.
 
+Note: The Vault Github Action is a read-only action, and in general
+is not meant to modify Vault’s state.
+
 <!-- TOC -->
 
 - [Vault GitHub Action](#vault-github-action)
