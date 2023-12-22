@@ -1,6 +1,6 @@
 ## Unreleased
 
-* Add changes here
+* update runtime to node20 for action
 
 ## 2.7.4 (October 26, 2023)
 
