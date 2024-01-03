@@ -303,7 +303,7 @@ attempt to `POST` to `auth/${method}/login` with the provided payload and parse 
 
 ### Custom Path Name
 
-Auth methods at custom path names can be configured using the `path` parameter
+Auth methods at custom path names can be configured using the [`path`](#path) parameter
 
 ```yaml
 with:
