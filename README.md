@@ -25,6 +25,7 @@ is not meant to modify Vault’s state.
     - [Userpass](#userpass)
     - [Ldap](#ldap)
     - [Other Auth Methods](#other-auth-methods)
+    - [Custom Path](#custom-path-name)
   - [Key Syntax](#key-syntax)
     - [Simple Key](#simple-key)
     - [Set Output Variable Name](#set-output-variable-name)
@@ -299,6 +300,20 @@ with:
 
 If any other method is specified and you provide an `authPayload`, the action will
 attempt to `POST` to `auth/${method}/login` with the provided payload and parse out the client token.
+
+### Custom Path Name
+
+Auth methods at custom path names can be configured using the `path` parameter
+
+```yaml
+with:
+  url: https://vault.mycompany.com:8200
+  caCertificate: ${{ secrets.VAULT_CA_CERT }}
+  path: my-custom-path
+  method: userpass
+  username: ${{ secrets.VAULT_USERNAME }}
+  password: ${{ secrets.VAULT_PASSWORD }}
+```
 
 ## Key Syntax
 
