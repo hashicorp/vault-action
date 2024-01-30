@@ -1,6 +1,11 @@
 ## Unreleased
 
-* update runtime to node20 for action
+## 2.7.5 (January 30, 2024)
+
+Improvements:
+
+* Bump node runtime from node16 to node20 [GH-509](https://github.com/hashicorp/vault-action/pull/509)
+* Bump got from 11.8.5 to 11.8.6 [GH-492](https://github.com/hashicorp/vault-action/pull/492)
 
 ## 2.7.4 (October 26, 2023)
 
