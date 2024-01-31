@@ -1,8 +1,18 @@
 ## Unreleased
 
+## 2.8.0 (February 1, 2024)
+
 Features:
 
 * Add `ignoreNotFound` input (default: false) to prevent the action from failing when a secret does not exist [GH-518](https://github.com/hashicorp/vault-action/pull/518)
+
+Improvements:
+
+* bump jsrsasign from 10.8.6 to 11.0.0 [GH-513](https://github.com/hashicorp/vault-action/pull/513)
+* bump @actions/core from 1.10.0 to 1.10.1 [GH-489](https://github.com/hashicorp/vault-action/pull/489)
+* bump jest-when from 3.5.2 to 3.6.0 [GH-484](https://github.com/hashicorp/vault-action/pull/484)
+* bump jest from 29.5.0 to 29.7.0 [GH-490](https://github.com/hashicorp/vault-action/pull/490)
+* bump @vercel/ncc from 0.36.1 to 0.38.1 [GH-503](https://github.com/hashicorp/vault-action/pull/503)
 
 ## 2.7.5 (January 30, 2024)
 
