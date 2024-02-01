@@ -649,6 +649,13 @@ Base64 encoded client key the action uses to authenticate with Vault when mTLS i
 
 When set to true, disables verification of server certificates when testing the action.
 
+### `ignoreNotFound`
+
+**Type: `string`**\
+**Default: `false`**
+
+When set to true, prevents the action from failing when a secret does not exist.
+
 ## Masking - Hiding Secrets from Logs
 
 This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.
