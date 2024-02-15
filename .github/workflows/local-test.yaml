@@ -22,7 +22,7 @@ jobs:
 
     - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
       with:
-        node-version: '16.14.0'
+        node-version: '20.9.0'
 
     - name: NPM Install
       run: npm ci
