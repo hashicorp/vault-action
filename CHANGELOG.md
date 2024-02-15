@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 3.0.0 (February 15, 2024)
+
+Improvements:
+
+* Bump node runtime from node16 to node20 [GH-528](https://github.com/hashicorp/vault-action/pull/528)
+
 ## 2.8.1 (February 15, 2024)
 
 Bugs:
