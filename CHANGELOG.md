@@ -4,7 +4,7 @@
 
 Improvements:
 
-* Bump node runtime from node16 to node20 [GH-528](https://github.com/hashicorp/vault-action/pull/528)
+* Bump node runtime from node16 to node20 [GH-529](https://github.com/hashicorp/vault-action/pull/529)
 
 ## 2.8.1 (February 15, 2024)
 
