@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 2.8.1 (February 15, 2024)
+
+Bugs:
+
+* Revert [GH-509](https://github.com/hashicorp/vault-action/pull/509) which made a backwards incompatible bump of the node runtime from node16 to node20 [GH-524](https://github.com/hashicorp/vault-action/pull/524)
+
 ## 2.8.0 (February 1, 2024)
 
 Features:
