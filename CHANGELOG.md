@@ -4,7 +4,7 @@
 
 Bugs:
 
-* Revert [GH-509](https://github.com/hashicorp/vault-action/pull/509) which made a backwards incompatible bump of the node runtime from node16 to node20 [GH-524](https://github.com/hashicorp/vault-action/pull/524)
+* Revert [GH-509](https://github.com/hashicorp/vault-action/pull/509) which made a backwards incompatible bump of the node runtime from node16 to node20 [GH-527](https://github.com/hashicorp/vault-action/pull/527)
 
 ## 2.8.0 (February 1, 2024)
 
