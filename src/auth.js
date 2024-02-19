@@ -88,8 +88,8 @@ function generateJwt(privateKey, keyPassword, ttl, iat) {
     const now = rsasign.KJUR.jws.IntDate.getNow();
     const payload = {
         iss: 'vault-action',
-        iat: now,
-        nbf: now - iat,
+        iat: now - iat,
+        nbf: now,
         exp: now + ttl,
         event: process.env.GITHUB_EVENT_NAME,
         workflow: process.env.GITHUB_WORKFLOW,
