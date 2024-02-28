@@ -17,7 +17,7 @@ async function retrieveToken(method, client) {
     switch (method) {
         case 'approle': {
             const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: false });
             return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
         }
         case 'github': {
