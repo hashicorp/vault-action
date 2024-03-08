@@ -44,7 +44,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
             } catch (error) {
                 const {response} = error;
                 if (response?.statusCode === 404) {
-                    notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
+                    let notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
                     const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
                     if (ignoreNotFound) {
                         core.error(`✘ ${notFoundMsg}`);

@@ -9,7 +9,7 @@ export default defineConfig({
       './src/**',
       '**/integrationTests/basic/**',
       '**/integrationTests/e2e/**',
-      '**/integrationTests/e2e-tls/**',
+      '**/integrationTests/enterprise/**',
     ],
   },
 })
