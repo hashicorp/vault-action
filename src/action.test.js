@@ -1,17 +1,19 @@
+import { jest } from '@jest/globals';
+
 jest.mock('got');
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
 
-const command = require('@actions/core/lib/command');
-const core = require('@actions/core');
+import * as command from '@actions/core/lib/command';
+import * as core from '@actions/core';
 import got from 'got';
-const {
+import {
     exportSecrets,
     parseSecretsInput,
     parseHeadersInput
-} = require('./action');
+} from './action.js';
 
-const { when } = require('jest-when');
+import { when } from 'jest-when'
 
 describe('parseSecretsInput', () => {
     it('parses simple secret', () => {

@@ -1,8 +1,8 @@
 // @ts-check
-const core = require('@actions/core');
-const rsasign = require('jsrsasign');
-const fs = require('fs');
-const { default: got } = require('got');
+import * as core from '@actions/core';
+import * as fs from 'fs';
+import got from 'got';
+import rsasign from 'jsrsasign';
 
 const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 /***
@@ -154,6 +154,6 @@ async function getClientToken(client, method, path, payload) {
  * }} auth
  */
 
-module.exports = {
+export {
     retrieveToken,
 };

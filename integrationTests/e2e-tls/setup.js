@@ -1,5 +1,5 @@
 import got from 'got';
-const core = require('@actions/core');
+import * as core from '@actions/core';
 
 const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
 const caCertificateRaw = `${process.env.VAULTCA}`;

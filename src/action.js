@@ -1,12 +1,13 @@
 // @ts-check
-const core = require('@actions/core');
-const command = require('@actions/core/lib/command');
+import * as core from '@actions/core';
+import * as command from '@actions/core/lib/command';
 import got from 'got';
-const jsonata = require('jsonata');
-const { normalizeOutputKey } = require('./utils');
-const { WILDCARD } = require('./constants');
+import jsonata from 'jsonata';
+import { normalizeOutputKey } from './utils.js';
+import { WILDCARD } from './constants.js';
 
-const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
+import { retrieveToken } from './auth.js';
+import { getSecrets } from './secrets.js';
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
@@ -220,9 +221,8 @@ function parseHeadersInput(inputKey, inputOptions) {
         }, new Map());
 }
 
-module.exports = {
+export {
     exportSecrets,
     parseSecretsInput,
     parseHeadersInput,
-};
-
+}

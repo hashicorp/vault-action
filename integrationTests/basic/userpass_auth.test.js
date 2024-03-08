@@ -1,11 +1,11 @@
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
-const core = require('@actions/core');
+import * as core from '@actions/core';
 
 import got from 'got';
-const { when } = require('jest-when');
+import { when } from 'jest-when'
 
-const { exportSecrets } = require('../../src/action');
+import exportSecrets from  '../../src/action.js';
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`

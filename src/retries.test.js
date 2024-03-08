@@ -1,9 +1,9 @@
 jest.mock('@actions/core');
 
-const core = require('@actions/core');
-const ServerMock = require("mock-http-server");
-const { exportSecrets } = require("./action");
-const { when } = require('jest-when');
+import * as core from '@actions/core';
+import * as ServerMock from 'mock-http-server';
+import exportSecrets from './action.js';
+import { when } from 'jest-when'
 
 describe('exportSecrets retries', () => {
     var server = new ServerMock({ host: "127.0.0.1", port: 0 });

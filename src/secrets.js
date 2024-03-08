@@ -1,7 +1,7 @@
-const jsonata = require("jsonata");
-const { WILDCARD } = require("./constants");
-const { normalizeOutputKey } = require("./utils");
-const core = require('@actions/core');
+import jsonata from 'jsonata';
+import { WILDCARD } from './constants.js';
+import { normalizeOutputKey } from './utils.js';
+import * as core from '@actions/core';
 
 /**
  * @typedef {Object} SecretRequest
@@ -165,7 +165,7 @@ const selectAndAppendResults = async (
   ];
 };
 
-module.exports = {
+export {
     getSecrets,
     selectData
 }

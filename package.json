@@ -2,6 +2,7 @@
     "name": "vault-action",
     "version": "0.1.0",
     "description": "A Github Action that allows you to consume vault secrets as secure environment variables.",
+    "type": "module",
     "main": "dist/index.js",
     "scripts": {
         "build": "ncc build src/entry.js -o dist",

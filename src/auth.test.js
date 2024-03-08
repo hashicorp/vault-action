@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals';
+
 jest.mock('got');
 jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
@@ -8,15 +10,12 @@ jest.mock('fs', () => ({
     }
 }));
 
-const core = require('@actions/core');
+import * as core from '@actions/core';
 import * as got from 'got'
-const fs = require("fs")
-const { when } = require('jest-when');
+import * as fs from 'fs';
+import { when } from 'jest-when'
 
-
-const {
-    retrieveToken
-} = require('./auth');
+import { retrieveToken } from './auth.js';
 
 
 function mockInput(name, key) {
