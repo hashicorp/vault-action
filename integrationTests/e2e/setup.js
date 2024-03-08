@@ -1,4 +1,4 @@
-const got = require('got');
+import got from 'got';
 
 const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
 const vaultToken = `${process.env.VAULT_TOKEN}` === undefined ? `${process.env.VAULT_TOKEN}` : "testtoken";

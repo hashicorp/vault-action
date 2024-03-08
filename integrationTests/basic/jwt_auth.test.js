@@ -8,7 +8,7 @@ const {
     publicRsaKey
 } = require('./rsa_keys');
 
-const got = require('got');
+import got from 'got';
 const { when } = require('jest-when');
 
 const { exportSecrets } = require('../../src/action');

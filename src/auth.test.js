@@ -9,7 +9,7 @@ jest.mock('fs', () => ({
 }));
 
 const core = require('@actions/core');
-const got = require('got');
+import * as got from 'got'
 const fs = require("fs")
 const { when } = require('jest-when');
 

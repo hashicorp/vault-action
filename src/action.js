@@ -1,7 +1,7 @@
 // @ts-check
 const core = require('@actions/core');
 const command = require('@actions/core/lib/command');
-const got = require('got').default;
+import got from 'got';
 const jsonata = require('jsonata');
 const { normalizeOutputKey } = require('./utils');
 const { WILDCARD } = require('./constants');
@@ -110,7 +110,8 @@ async function exportSecrets() {
 
         for (const line of value.replace(/\r/g, '').split('\n')) {
             if (line.length > 0) {
-                core.setSecret(line);
+                // core.setSecret(line);
+                core.setOutput(line);
             }
         }
         if (exportEnv) {

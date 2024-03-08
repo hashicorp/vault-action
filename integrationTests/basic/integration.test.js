@@ -2,7 +2,7 @@ jest.mock('@actions/core');
 jest.mock('@actions/core/lib/command');
 const core = require('@actions/core');
 
-const got = require('got');
+import got from 'got';
 const { when } = require('jest-when');
 
 const { exportSecrets } = require('../../src/action');

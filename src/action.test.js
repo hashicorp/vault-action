@@ -4,7 +4,7 @@ jest.mock('@actions/core/lib/command');
 
 const command = require('@actions/core/lib/command');
 const core = require('@actions/core');
-const got = require('got');
+import got from 'got';
 const {
     exportSecrets,
     parseSecretsInput,

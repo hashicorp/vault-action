@@ -1,4 +1,4 @@
-const got = require('got');
+import got from 'got';
 const core = require('@actions/core');
 
 const vaultUrl = `${process.env.VAULT_HOST}:${process.env.VAULT_PORT}`;
