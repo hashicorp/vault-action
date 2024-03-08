@@ -1,8 +1,8 @@
-import { jest } from '@jest/globals';
+import { vi, describe, test, expect } from 'vitest';
 
-jest.mock('got');
-jest.mock('@actions/core');
-jest.mock('@actions/core/lib/command');
+vi.mock('got');
+vi.mock('@actions/core');
+vi.mock('@actions/core/lib/command');
 
 import * as command from '@actions/core/lib/command';
 import * as core from '@actions/core';
@@ -134,7 +134,7 @@ describe('parseHeaders', () => {
 
 describe('exportSecrets', () => {
     beforeEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
 
         when(core.getInput)
             .calledWith('url', expect.anything())

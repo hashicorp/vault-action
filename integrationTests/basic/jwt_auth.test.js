@@ -1,12 +1,14 @@
-jest.mock('@actions/core');
-jest.mock('@actions/core/lib/command');
+import { vi, describe, test, expect } from 'vitest';
+
+vi.mock('@actions/core');
+vi.mock('@actions/core/lib/command');
 import * as core from '@actions/core';
 import rsasign from 'jsrsasign';
 import {
     privateRsaKey,
     privateRsaKeyBase64,
     publicRsaKey
-} from './rsa_keys.js');
+} from './rsa_keys.js';
 
 import got from 'got';
 import { when } from 'jest-when'
@@ -139,7 +141,7 @@ describe('jwt auth', () => {
 
     describe('authenticate with private key', () => {
         beforeEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
 
             when(core.getInput)
                 .calledWith('url', expect.anything())
@@ -189,7 +191,7 @@ describe('jwt auth', () => {
         })
 
         beforeEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
 
             when(core.getInput)
                 .calledWith('url', expect.anything())

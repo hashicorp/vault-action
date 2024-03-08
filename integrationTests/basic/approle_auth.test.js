@@ -1,5 +1,7 @@
-jest.mock('@actions/core');
-jest.mock('@actions/core/lib/command');
+import { vi, describe, test, expect } from 'vitest';
+
+vi.mock('@actions/core');
+vi.mock('@actions/core/lib/command');
 import * as core from '@actions/core';
 
 import got from 'got';
@@ -102,7 +104,7 @@ describe('authenticate with approle', () => {
     });
 
     beforeEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
 
         when(core.getInput)
             .calledWith('method', expect.anything())
