@@ -11062,14 +11062,6 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
-;// CONCATENATED MODULE: external "module"
-const external_module_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("module");
-;// CONCATENATED MODULE: ./src/cjs-require.js
-
-const cjs_require_require = (0,external_module_namespaceObject.createRequire)(import.meta.url);
-
-/* harmony default export */ const cjs_require = (cjs_require_require);
-
 // EXTERNAL MODULE: ./node_modules/got/dist/source/index.js
 var source = __nccwpck_require__(3061);
 ;// CONCATENATED MODULE: ./src/utils.js
@@ -11259,11 +11251,24 @@ async function getClientToken(client, method, path, payload) {
 
 
 
+;// CONCATENATED MODULE: external "module"
+const external_module_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("module");
+;// CONCATENATED MODULE: ./src/cjs-require.js
+// This allows us to use `require` in our ECMAScript module
+// https://nodejs.org/api/module.html#modulecreaterequirefilename
+
+const cjs_require_require = (0,external_module_namespaceObject.createRequire)(import.meta.url);
+
+/* harmony default export */ const cjs_require = (cjs_require_require);
+
 ;// CONCATENATED MODULE: ./src/secrets.js
 
+
+
+
+// ncc doesn't compile jsonata imports properly, so we must use our own custom require
+
 const jsonata = cjs_require('jsonata');
-
-
 
 
 /**
@@ -11431,17 +11436,17 @@ const selectAndAppendResults = async (
 
 
 ;// CONCATENATED MODULE: ./src/action.js
-// @ts-check
+
+
+
+
+
+
+
+
+// ncc doesn't compile jsonata imports properly, so we must use our own custom require
 
 const action_jsonata = cjs_require('jsonata');
-
-
-
-
-
-
-
-
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];

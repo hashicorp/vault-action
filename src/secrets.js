@@ -1,8 +1,11 @@
-import require from "./cjs-require.js";
-const jsonata = require('jsonata');
+import core from '@actions/core';
 import { WILDCARD } from './constants.js';
 import { normalizeOutputKey } from './utils.js';
-import core from '@actions/core';
+
+// ncc doesn't compile jsonata imports properly, so we must use our own custom require
+import require from "./cjs-require.js";
+const jsonata = require('jsonata');
+
 
 /**
  * @typedef {Object} SecretRequest
