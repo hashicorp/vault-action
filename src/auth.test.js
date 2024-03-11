@@ -11,7 +11,7 @@ vi.mock('fs', () => ({
 
 import core from '@actions/core';
 import got from 'got'
-import fs from 'fs';
+import * as fs from 'fs';
 import { when } from 'jest-when'
 
 import { retrieveToken } from './auth.js';
