@@ -1,4 +1,5 @@
-import jsonata from 'jsonata';
+import require from "./cjs-require.js";
+const jsonata = require('jsonata');
 import { WILDCARD } from './constants.js';
 import { normalizeOutputKey } from './utils.js';
 import core from '@actions/core';

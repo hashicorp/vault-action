@@ -1,7 +1,9 @@
 // @ts-check
+import require from "./cjs-require.js";
+const jsonata = require('jsonata');
+
 import core from '@actions/core';
 import got from 'got';
-import jsonata from 'jsonata';
 import { normalizeOutputKey } from './utils.js';
 import { WILDCARD } from './constants.js';
 
