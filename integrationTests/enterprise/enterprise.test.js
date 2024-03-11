@@ -7,7 +7,7 @@ import * as core from '@actions/core';
 import got from 'got';
 import { when } from 'jest-when'
 
-import exportSecrets from  '../../src/action.js';
+import { exportSecrets } from  '../../src/action.js';
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
