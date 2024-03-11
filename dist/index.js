@@ -18432,14 +18432,6 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 8081:
-/***/ ((module) => {
-
-module.exports = eval("require")("@actions/core/lib/command");
-
-
-/***/ }),
-
 /***/ 9491:
 /***/ ((module) => {
 
@@ -18603,8 +18595,6 @@ var __webpack_exports__ = {};
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
-// EXTERNAL MODULE: ./node_modules/@vercel/ncc/dist/ncc/@@notfound.js?@actions/core/lib/command
-var command = __nccwpck_require__(8081);
 // EXTERNAL MODULE: ./node_modules/got/dist/source/index.js
 var source = __nccwpck_require__(3061);
 // EXTERNAL MODULE: ./node_modules/jsonata/jsonata.js
@@ -18968,7 +18958,6 @@ const selectAndAppendResults = async (
 
 ;// CONCATENATED MODULE: ./src/action.js
 // @ts-check
-
 
 
 

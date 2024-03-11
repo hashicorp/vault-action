@@ -2,7 +2,6 @@ import { vi, describe, test, expect } from 'vitest';
 
 vi.mock('got');
 vi.mock('@actions/core');
-vi.mock('@actions/core/lib/command');
 vi.mock('fs', () => ({
     stat: vi.fn().mockResolvedValue(null),
     promises: {
