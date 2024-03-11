@@ -1,10 +1,9 @@
-/******/ (() => { // webpackBootstrap
-/******/ 	var __webpack_modules__ = ({
+import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
+/******/ var __webpack_modules__ = ({
 
-/***/ 7351:
+/***/ 5241:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -103,7 +102,6 @@ function escapeProperty(s) {
 /***/ 2186:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -135,7 +133,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
-const command_1 = __nccwpck_require__(7351);
+const command_1 = __nccwpck_require__(5241);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
 const os = __importStar(__nccwpck_require__(2037));
@@ -446,7 +444,6 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
 /***/ 717:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 // For internal use, subject to change.
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -511,7 +508,6 @@ exports.prepareKeyValueMessage = prepareKeyValueMessage;
 /***/ 8041:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -595,7 +591,6 @@ exports.OidcClient = OidcClient;
 /***/ 2981:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -660,7 +655,6 @@ exports.toPlatformPath = toPlatformPath;
 /***/ 1327:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -950,7 +944,6 @@ exports.summary = _summary;
 /***/ 5278:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -997,7 +990,6 @@ exports.toCommandProperties = toCommandProperties;
 /***/ 5526:
 /***/ (function(__unused_webpack_module, exports) {
 
-"use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -1085,7 +1077,6 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 /***/ 6255:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -1697,7 +1688,6 @@ const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCa
 /***/ 9835:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkBypass = exports.getProxyUrl = void 0;
@@ -1765,7 +1755,6 @@ exports.checkBypass = checkBypass;
 /***/ 7678:
 /***/ ((module, exports) => {
 
-"use strict";
 
 /// <reference lib="es2018"/>
 /// <reference lib="dom"/>
@@ -2183,7 +2172,6 @@ module.exports.assert = exports.assert;
 /***/ 8097:
 /***/ ((module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const defer_to_connect_1 = __nccwpck_require__(6214);
@@ -2308,7 +2296,6 @@ module.exports["default"] = timer;
 /***/ 2286:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const {
 	V4MAPPED,
@@ -2752,7 +2739,6 @@ module.exports["default"] = CacheableLookup;
 /***/ 4340:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const {PassThrough: PassThroughStream} = __nccwpck_require__(2781);
 
@@ -2812,7 +2798,6 @@ module.exports = options => {
 /***/ 7040:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const {constants: BufferConstants} = __nccwpck_require__(4300);
 const pump = __nccwpck_require__(8341);
@@ -2880,7 +2865,6 @@ module.exports.MaxBufferError = MaxBufferError;
 /***/ 8116:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 const EventEmitter = __nccwpck_require__(2361);
@@ -3139,7 +3123,6 @@ module.exports = CacheableRequest;
 /***/ 1312:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 const PassThrough = (__nccwpck_require__(2781).PassThrough);
@@ -3164,7 +3147,6 @@ module.exports = cloneResponse;
 /***/ 5728:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 const { promisify } = __nccwpck_require__(3837)
@@ -3217,7 +3199,6 @@ module.exports.parse = JSONB.parse
 /***/ 4968:
 /***/ ((module) => {
 
-"use strict";
 
 
 module.exports = (defaultOptions = {}, options = {}) => {
@@ -3243,7 +3224,6 @@ module.exports = (defaultOptions = {}, options = {}) => {
 /***/ 2391:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const {Transform, PassThrough} = __nccwpck_require__(2781);
 const zlib = __nccwpck_require__(9796);
@@ -3309,7 +3289,6 @@ module.exports = response => {
 /***/ 3877:
 /***/ ((module) => {
 
-"use strict";
 
 
 // We define these manually to ensure they're always copied
@@ -3394,7 +3373,6 @@ module.exports = (fromStream, toStream) => {
 /***/ 6214:
 /***/ ((module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 function isTLSSocket(socket) {
@@ -3543,7 +3521,6 @@ module.exports = eos;
 /***/ 6457:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const types_1 = __nccwpck_require__(4597);
@@ -3581,7 +3558,6 @@ exports["default"] = createRejection;
 /***/ 6056:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3765,7 +3741,6 @@ __exportStar(__nccwpck_require__(4597), exports);
 /***/ 1048:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const is_1 = __nccwpck_require__(7678);
@@ -3851,7 +3826,6 @@ exports["default"] = normalizeArguments;
 /***/ 8220:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const types_1 = __nccwpck_require__(4597);
@@ -3884,7 +3858,6 @@ exports["default"] = parseBody;
 /***/ 4597:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -3934,7 +3907,6 @@ __exportStar(__nccwpck_require__(94), exports);
 /***/ 3462:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.retryAfterStatusCodes = void 0;
@@ -3971,7 +3943,6 @@ exports["default"] = calculateRetryDelay;
 /***/ 94:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UnsupportedProtocolError = exports.ReadError = exports.TimeoutError = exports.UploadError = exports.CacheError = exports.HTTPError = exports.MaxRedirectsError = exports.RequestError = exports.setNonEnumerableProperties = exports.knownHookEvents = exports.withoutBody = exports.kIsNormalizedAlready = void 0;
@@ -5484,7 +5455,6 @@ exports["default"] = Request;
 /***/ 4993:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.dnsLookupIpVersionToFamily = exports.isDnsLookupIpVersion = void 0;
@@ -5509,7 +5479,6 @@ exports.dnsLookupIpVersionToFamily = (dnsLookupIpVersion) => {
 /***/ 4564:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const fs_1 = __nccwpck_require__(7147);
@@ -5549,7 +5518,6 @@ exports["default"] = async (body, headers) => {
 /***/ 4500:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 // TODO: Update https://github.com/sindresorhus/get-stream
@@ -5573,7 +5541,6 @@ exports["default"] = getBuffer;
 /***/ 40:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const is_1 = __nccwpck_require__(7678);
@@ -5585,7 +5552,6 @@ exports["default"] = (body) => is_1.default.nodeStream(body) && is_1.default.fun
 /***/ 9298:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isResponseOk = void 0;
@@ -5601,7 +5567,6 @@ exports.isResponseOk = (response) => {
 /***/ 9219:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 /* istanbul ignore file: deprecated */
@@ -5662,7 +5627,6 @@ exports["default"] = (origin, options) => {
 /***/ 3021:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 function default_1(from, to, events) {
@@ -5687,7 +5651,6 @@ exports["default"] = default_1;
 /***/ 2454:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TimeoutError = void 0;
@@ -5816,7 +5779,6 @@ exports["default"] = (request, delays, options) => {
 /***/ 1593:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 // When attaching listeners, it's very easy to forget about them.
@@ -5846,7 +5808,6 @@ exports["default"] = () => {
 /***/ 8026:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const is_1 = __nccwpck_require__(7678);
@@ -5878,7 +5839,6 @@ exports["default"] = (url) => {
 /***/ 7288:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 class WeakableMap {
@@ -5915,7 +5875,6 @@ exports["default"] = WeakableMap;
 /***/ 4337:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6163,7 +6122,6 @@ __exportStar(__nccwpck_require__(2613), exports);
 /***/ 3061:
 /***/ (function(module, exports, __nccwpck_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -6303,7 +6261,6 @@ __exportStar(__nccwpck_require__(6056), exports);
 /***/ 2613:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
@@ -6313,7 +6270,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 /***/ 285:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const is_1 = __nccwpck_require__(7678);
@@ -6333,7 +6289,6 @@ exports["default"] = deepFreeze;
 /***/ 397:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const alreadyWarned = new Set();
@@ -6354,7 +6309,6 @@ exports["default"] = (message) => {
 /***/ 1002:
 /***/ ((module) => {
 
-"use strict";
 
 // rfc7231 6.1
 const statusCodeCacheableByDefault = new Set([
@@ -7036,7 +6990,6 @@ module.exports = class CachePolicy {
 /***/ 5461:
 /***/ ((module) => {
 
-"use strict";
 
 
 class QuickLRU {
@@ -7167,7 +7120,6 @@ module.exports = QuickLRU;
 /***/ 9898:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const EventEmitter = __nccwpck_require__(2361);
 const tls = __nccwpck_require__(4404);
@@ -7845,7 +7797,6 @@ module.exports = {
 /***/ 7167:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const http = __nccwpck_require__(3685);
 const https = __nccwpck_require__(5687);
@@ -8002,7 +7953,6 @@ module.exports.protocolCache = cache;
 /***/ 9632:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const http2 = __nccwpck_require__(5158);
 const {Writable} = __nccwpck_require__(2781);
@@ -8455,7 +8405,6 @@ module.exports = ClientRequest;
 /***/ 2575:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const {Readable} = __nccwpck_require__(2781);
 
@@ -8521,7 +8470,6 @@ module.exports = IncomingMessage;
 /***/ 4645:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const http2 = __nccwpck_require__(5158);
 const agent = __nccwpck_require__(9898);
@@ -8557,7 +8505,6 @@ module.exports = {
 /***/ 1982:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const net = __nccwpck_require__(1808);
 /* istanbul ignore file: https://github.com/nodejs/node/blob/v13.0.1/lib/_http_agent.js */
@@ -8592,7 +8539,6 @@ module.exports = options => {
 /***/ 7087:
 /***/ ((module) => {
 
-"use strict";
 
 /* istanbul ignore file: https://github.com/nodejs/node/blob/master/lib/internal/errors.js */
 
@@ -8645,7 +8591,6 @@ makeError(TypeError, 'ERR_INVALID_CHAR', args => {
 /***/ 1199:
 /***/ ((module) => {
 
-"use strict";
 
 
 module.exports = header => {
@@ -8666,7 +8611,6 @@ module.exports = header => {
 /***/ 1818:
 /***/ ((module) => {
 
-"use strict";
 
 
 module.exports = (from, to, events) => {
@@ -8681,7 +8625,6 @@ module.exports = (from, to, events) => {
 /***/ 2686:
 /***/ ((module) => {
 
-"use strict";
 
 /* istanbul ignore file: https://github.com/nodejs/node/blob/a91293d4d9ab403046ab5eb022332e4e3d249bd3/lib/internal/url.js#L1257 */
 
@@ -16312,6 +16255,7 @@ module.exports = utils;
 /***/ 7175:
 /***/ ((__unused_webpack_module, exports) => {
 
+var __webpack_unused_export__;
 
 var navigator = {};
 navigator.userAgent = false;
@@ -16558,105 +16502,105 @@ function X509(v){var o=ASN1HEX,s=o.getChildIdx,k=o.getV,y=o.dump,j=o.parse,b=o.g
 var X509CRL=function(e){var a=KJUR,f=a.lang.String.isHex,m=ASN1HEX,k=m.getV,b=m.getTLV,h=m.getVbyList,c=m.getTLVbyList,d=m.getTLVbyListEx,i=m.getIdxbyList,g=m.getIdxbyListEx,l=m.getChildIdx,j=new X509();this.hex=null;this.posSigAlg=null;this.posRevCert=null;this.parsed=null;this._setPos=function(){var o=i(this.hex,0,[0,0]);var n=this.hex.substr(o,2);if(n=="02"){this.posSigAlg=1}else{if(n=="30"){this.posSigAlg=0}else{throw new Error("malformed 1st item of TBSCertList: "+n)}}var s=i(this.hex,0,[0,this.posSigAlg+3]);var r=this.hex.substr(s,2);if(r=="17"||r=="18"){var q,p;q=i(this.hex,0,[0,this.posSigAlg+4]);this.posRevCert=null;if(q!=-1){p=this.hex.substr(q,2);if(p=="30"){this.posRevCert=this.posSigAlg+4}}}else{if(r=="30"){this.posRevCert=this.posSigAlg+3}else{if(r=="a0"){this.posRevCert=null}else{throw new Error("malformed nextUpdate or revCert tag: "+r)}}}};this.getVersion=function(){if(this.posSigAlg==0){return null}return parseInt(h(this.hex,0,[0,0],"02"),16)+1};this.getSignatureAlgorithmField=function(){var n=c(this.hex,0,[0,this.posSigAlg],"30");return j.getAlgorithmIdentifierName(n)};this.getIssuer=function(){return j.getX500Name(this.getIssuerHex())};this.getIssuerHex=function(){return c(this.hex,0,[0,this.posSigAlg+1],"30")};this.getThisUpdate=function(){var n=h(this.hex,0,[0,this.posSigAlg+2]);return result=hextorstr(n)};this.getNextUpdate=function(){var o=i(this.hex,0,[0,this.posSigAlg+3]);var n=this.hex.substr(o,2);if(n!="17"&&n!="18"){return null}return hextorstr(k(this.hex,o))};this.getRevCertArray=function(){if(this.posRevCert==null){return null}var o=[];var n=i(this.hex,0,[0,this.posRevCert]);var p=l(this.hex,n);for(var q=0;q<p.length;q++){var r=b(this.hex,p[q]);o.push(this.getRevCert(r))}return o};this.getRevCert=function(p){var o={};var n=l(p,0);o.sn={hex:h(p,0,[0],"02")};o.date=hextorstr(h(p,0,[1]));if(n.length==3){o.ext=j.getExtParamArray(c(p,0,[2]))}return o};this.findRevCert=function(p){var n=new X509(p);var o=n.getSerialNumberHex();return this.findRevCertBySN(o)};this.findRevCertBySN=function(o){if(this.parsed==null){this.getParam()}if(this.parsed.revcert==null){return null}var n=this.parsed.revcert;for(var p=0;p<n.length;p++){if(o==n[p].sn.hex){return n[p]}}return null};this.getSignatureValueHex=function(){return h(this.hex,0,[2],"03",true)};this.verifySignature=function(o){var p=this.getSignatureAlgorithmField();var n=this.getSignatureValueHex();var q=c(this.hex,0,[0],"30");var r=new KJUR.crypto.Signature({alg:p});r.init(o);r.updateHex(q);return r.verify(n)};this.getParam=function(r){var n={};var p=this.getVersion();if(p!=null){n.version=p}n.sigalg=this.getSignatureAlgorithmField();n.issuer=this.getIssuer();n.thisupdate=this.getThisUpdate();var q=this.getNextUpdate();if(q!=null){n.nextupdate=q}var t=this.getRevCertArray();if(t!=null){n.revcert=t}var s=g(this.hex,0,[0,"[0]"]);if(s!=-1){var o=d(this.hex,0,[0,"[0]",0]);n.ext=j.getExtParamArray(o)}n.sighex=this.getSignatureValueHex();this.parsed=n;if(typeof r=="object"){if(r.tbshex==true){n.tbshex=c(this.hex,0,[0])}if(r.nodnarray==true){delete n.issuer.array}}return n};if(typeof e=="string"){if(f(e)){this.hex=e}else{if(e.match(/-----BEGIN X509 CRL/)){this.hex=pemtohex(e)}}this._setPos()}};
 if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJUR.jws){KJUR.jws={}}KJUR.jws.JWS=function(){var b=KJUR,a=b.jws.JWS,c=a.isSafeJSONString;this.parseJWS=function(g,j){if((this.parsedJWS!==undefined)&&(j||(this.parsedJWS.sigvalH!==undefined))){return}var i=g.match(/^([^.]+)\.([^.]+)\.([^.]+)$/);if(i==null){throw"JWS signature is not a form of 'Head.Payload.SigValue'."}var k=i[1];var e=i[2];var l=i[3];var n=k+"."+e;this.parsedJWS={};this.parsedJWS.headB64U=k;this.parsedJWS.payloadB64U=e;this.parsedJWS.sigvalB64U=l;this.parsedJWS.si=n;if(!j){var h=b64utohex(l);var f=parseBigInt(h,16);this.parsedJWS.sigvalH=h;this.parsedJWS.sigvalBI=f}var d=b64utoutf8(k);var m=b64utoutf8(e);this.parsedJWS.headS=d;this.parsedJWS.payloadS=m;if(!c(d,this.parsedJWS,"headP")){throw"malformed JSON string for JWS Head: "+d}}};KJUR.jws.JWS.sign=function(j,w,z,A,a){var x=KJUR,n=x.jws,r=n.JWS,h=r.readSafeJSONString,q=r.isSafeJSONString,d=x.crypto,l=d.ECDSA,p=d.Mac,c=d.Signature,u=JSON;var t,k,o;if(typeof w!="string"&&typeof w!="object"){throw"spHeader must be JSON string or object: "+w}if(typeof w=="object"){k=w;t=u.stringify(k)}if(typeof w=="string"){t=w;if(!q(t)){throw"JWS Head is not safe JSON string: "+t}k=h(t)}o=z;if(typeof z=="object"){o=u.stringify(z)}if((j==""||j==null)&&k.alg!==undefined){j=k.alg}if((j!=""&&j!=null)&&k.alg===undefined){k.alg=j;t=u.stringify(k)}if(j!==k.alg){throw"alg and sHeader.alg doesn't match: "+j+"!="+k.alg}var s=null;if(r.jwsalg2sigalg[j]===undefined){throw"unsupported alg name: "+j}else{s=r.jwsalg2sigalg[j]}var e=utf8tob64u(t);var m=utf8tob64u(o);var b=e+"."+m;var y="";if(s.substr(0,4)=="Hmac"){if(A===undefined){throw"mac key shall be specified for HS* alg"}var i=new p({alg:s,prov:"cryptojs",pass:A});i.updateString(b);y=i.doFinal()}else{if(s.indexOf("withECDSA")!=-1){var f=new c({alg:s});f.init(A,a);f.updateString(b);var g=f.sign();y=KJUR.crypto.ECDSA.asn1SigToConcatSig(g)}else{if(s!="none"){var f=new c({alg:s});f.init(A,a);f.updateString(b);y=f.sign()}}}var v=hextob64u(y);return b+"."+v};KJUR.jws.JWS.verify=function(w,B,n){var x=KJUR,q=x.jws,t=q.JWS,i=t.readSafeJSONString,e=x.crypto,p=e.ECDSA,s=e.Mac,d=e.Signature,m;if(typeof RSAKey!==undefined){m=RSAKey}if(!isBase64URLDot(w)){return false}var y=w.split(".");if(y.length!==3){return false}var f=y[0];var r=y[1];var c=f+"."+r;var A=b64utohex(y[2]);var l=i(b64utoutf8(y[0]));var k=null;var z=null;if(l.alg===undefined){throw"algorithm not specified in header"}else{k=l.alg;z=k.substr(0,2)}if(n!=null&&Object.prototype.toString.call(n)==="[object Array]"&&n.length>0){var b=":"+n.join(":")+":";if(b.indexOf(":"+k+":")==-1){throw"algorithm '"+k+"' not accepted in the list"}}if(k!="none"&&B===null){throw"key shall be specified to verify."}if(typeof B=="string"&&B.indexOf("-----BEGIN ")!=-1){B=KEYUTIL.getKey(B)}if(z=="RS"||z=="PS"){if(!(B instanceof m)){throw"key shall be a RSAKey obj for RS* and PS* algs"}}if(z=="ES"){if(!(B instanceof p)){throw"key shall be a ECDSA obj for ES* algs"}}if(k=="none"){}var u=null;if(t.jwsalg2sigalg[l.alg]===undefined){throw"unsupported alg name: "+k}else{u=t.jwsalg2sigalg[k]}if(u=="none"){throw"not supported"}else{if(u.substr(0,4)=="Hmac"){var o=null;if(B===undefined){throw"hexadecimal key shall be specified for HMAC"}var j=new s({alg:u,pass:B});j.updateString(c);o=j.doFinal();return A==o}else{if(u.indexOf("withECDSA")!=-1){var h=null;try{h=p.concatSigToASN1Sig(A)}catch(v){return false}var g=new d({alg:u});g.init(B);g.updateString(c);return g.verify(h)}else{var g=new d({alg:u});g.init(B);g.updateString(c);return g.verify(A)}}}};KJUR.jws.JWS.parse=function(g){var c=g.split(".");var b={};var f,e,d;if(c.length!=2&&c.length!=3){throw"malformed sJWS: wrong number of '.' splitted elements"}f=c[0];e=c[1];if(c.length==3){d=c[2]}b.headerObj=KJUR.jws.JWS.readSafeJSONString(b64utoutf8(f));b.payloadObj=KJUR.jws.JWS.readSafeJSONString(b64utoutf8(e));b.headerPP=JSON.stringify(b.headerObj,null,"  ");if(b.payloadObj==null){b.payloadPP=b64utoutf8(e)}else{b.payloadPP=JSON.stringify(b.payloadObj,null,"  ")}if(d!==undefined){b.sigHex=b64utohex(d)}return b};KJUR.jws.JWS.verifyJWT=function(e,l,r){var d=KJUR,j=d.jws,o=j.JWS,n=o.readSafeJSONString,p=o.inArray,f=o.includedArray;if(!isBase64URLDot(e)){return false}var k=e.split(".");if(k.length!=3){return false}var c=k[0];var i=k[1];var q=c+"."+i;var m=b64utohex(k[2]);var h=n(b64utoutf8(c));var g=n(b64utoutf8(i));if(h.alg===undefined){return false}if(r.alg===undefined){throw"acceptField.alg shall be specified"}if(!p(h.alg,r.alg)){return false}if(g.iss!==undefined&&typeof r.iss==="object"){if(!p(g.iss,r.iss)){return false}}if(g.sub!==undefined&&typeof r.sub==="object"){if(!p(g.sub,r.sub)){return false}}if(g.aud!==undefined&&typeof r.aud==="object"){if(typeof g.aud=="string"){if(!p(g.aud,r.aud)){return false}}else{if(typeof g.aud=="object"){if(!f(g.aud,r.aud)){return false}}}}var b=j.IntDate.getNow();if(r.verifyAt!==undefined&&typeof r.verifyAt==="number"){b=r.verifyAt}if(r.gracePeriod===undefined||typeof r.gracePeriod!=="number"){r.gracePeriod=0}if(g.exp!==undefined&&typeof g.exp=="number"){if(g.exp+r.gracePeriod<b){return false}}if(g.nbf!==undefined&&typeof g.nbf=="number"){if(b<g.nbf-r.gracePeriod){return false}}if(g.iat!==undefined&&typeof g.iat=="number"){if(b<g.iat-r.gracePeriod){return false}}if(g.jti!==undefined&&r.jti!==undefined){if(g.jti!==r.jti){return false}}if(!o.verify(e,l,r.alg)){return false}return true};KJUR.jws.JWS.includedArray=function(b,a){var c=KJUR.jws.JWS.inArray;if(b===null){return false}if(typeof b!=="object"){return false}if(typeof b.length!=="number"){return false}for(var d=0;d<b.length;d++){if(!c(b[d],a)){return false}}return true};KJUR.jws.JWS.inArray=function(d,b){if(b===null){return false}if(typeof b!=="object"){return false}if(typeof b.length!=="number"){return false}for(var c=0;c<b.length;c++){if(b[c]==d){return true}}return false};KJUR.jws.JWS.jwsalg2sigalg={HS256:"HmacSHA256",HS384:"HmacSHA384",HS512:"HmacSHA512",RS256:"SHA256withRSA",RS384:"SHA384withRSA",RS512:"SHA512withRSA",ES256:"SHA256withECDSA",ES384:"SHA384withECDSA",ES512:"SHA512withECDSA",PS256:"SHA256withRSAandMGF1",PS384:"SHA384withRSAandMGF1",PS512:"SHA512withRSAandMGF1",none:"none",};KJUR.jws.JWS.isSafeJSONString=function(c,b,d){var e=null;try{e=jsonParse(c);if(typeof e!="object"){return 0}if(e.constructor===Array){return 0}if(b){b[d]=e}return 1}catch(a){return 0}};KJUR.jws.JWS.readSafeJSONString=function(b){var c=null;try{c=jsonParse(b);if(typeof c!="object"){return null}if(c.constructor===Array){return null}return c}catch(a){return null}};KJUR.jws.JWS.getEncodedSignatureValueFromJWS=function(b){var a=b.match(/^[^.]+\.[^.]+\.([^.]+)$/);if(a==null){throw"JWS signature is not a form of 'Head.Payload.SigValue'."}return a[1]};KJUR.jws.JWS.getJWKthumbprint=function(d){if(d.kty!=="RSA"&&d.kty!=="EC"&&d.kty!=="oct"){throw"unsupported algorithm for JWK Thumprint"}var a="{";if(d.kty==="RSA"){if(typeof d.n!="string"||typeof d.e!="string"){throw"wrong n and e value for RSA key"}a+='"e":"'+d.e+'",';a+='"kty":"'+d.kty+'",';a+='"n":"'+d.n+'"}'}else{if(d.kty==="EC"){if(typeof d.crv!="string"||typeof d.x!="string"||typeof d.y!="string"){throw"wrong crv, x and y value for EC key"}a+='"crv":"'+d.crv+'",';a+='"kty":"'+d.kty+'",';a+='"x":"'+d.x+'",';a+='"y":"'+d.y+'"}'}else{if(d.kty==="oct"){if(typeof d.k!="string"){throw"wrong k value for oct(symmetric) key"}a+='"kty":"'+d.kty+'",';a+='"k":"'+d.k+'"}'}}}var b=rstrtohex(a);var c=KJUR.crypto.Util.hashHex(b,"sha256");var e=hextob64u(c);return e};KJUR.jws.IntDate={};KJUR.jws.IntDate.get=function(c){var b=KJUR.jws.IntDate,d=b.getNow,a=b.getZulu;if(c=="now"){return d()}else{if(c=="now + 1hour"){return d()+60*60}else{if(c=="now + 1day"){return d()+60*60*24}else{if(c=="now + 1month"){return d()+60*60*24*30}else{if(c=="now + 1year"){return d()+60*60*24*365}else{if(c.match(/Z$/)){return a(c)}else{if(c.match(/^[0-9]+$/)){return parseInt(c)}}}}}}}throw"unsupported format: "+c};KJUR.jws.IntDate.getZulu=function(a){return zulutosec(a)};KJUR.jws.IntDate.getNow=function(){var a=~~(new Date()/1000);return a};KJUR.jws.IntDate.intDate2UTCString=function(a){var b=new Date(a*1000);return b.toUTCString()};KJUR.jws.IntDate.intDate2Zulu=function(e){var i=new Date(e*1000),h=("0000"+i.getUTCFullYear()).slice(-4),g=("00"+(i.getUTCMonth()+1)).slice(-2),b=("00"+i.getUTCDate()).slice(-2),a=("00"+i.getUTCHours()).slice(-2),c=("00"+i.getUTCMinutes()).slice(-2),f=("00"+i.getUTCSeconds()).slice(-2);return h+g+b+a+c+f+"Z"};
 if(typeof KJUR=="undefined"||!KJUR){KJUR={}}if(typeof KJUR.jws=="undefined"||!KJUR.jws){KJUR.jws={}}KJUR.jws.JWSJS=function(){var c=KJUR,b=c.jws,a=b.JWS,d=a.readSafeJSONString;this.aHeader=[];this.sPayload="";this.aSignature=[];this.init=function(){this.aHeader=[];this.sPayload=undefined;this.aSignature=[]};this.initWithJWS=function(f){this.init();var e=f.split(".");if(e.length!=3){throw"malformed input JWS"}this.aHeader.push(e[0]);this.sPayload=e[1];this.aSignature.push(e[2])};this.addSignature=function(e,h,m,k){if(this.sPayload===undefined||this.sPayload===null){throw"there's no JSON-JS signature to add."}var l=this.aHeader.length;if(this.aHeader.length!=this.aSignature.length){throw"aHeader.length != aSignature.length"}try{var f=KJUR.jws.JWS.sign(e,h,this.sPayload,m,k);var j=f.split(".");var n=j[0];var g=j[2];this.aHeader.push(j[0]);this.aSignature.push(j[2])}catch(i){if(this.aHeader.length>l){this.aHeader.pop()}if(this.aSignature.length>l){this.aSignature.pop()}throw"addSignature failed: "+i}};this.verifyAll=function(h){if(this.aHeader.length!==h.length||this.aSignature.length!==h.length){return false}for(var g=0;g<h.length;g++){var f=h[g];if(f.length!==2){return false}var e=this.verifyNth(g,f[0],f[1]);if(e===false){return false}}return true};this.verifyNth=function(f,j,g){if(this.aHeader.length<=f||this.aSignature.length<=f){return false}var h=this.aHeader[f];var k=this.aSignature[f];var l=h+"."+this.sPayload+"."+k;var e=false;try{e=a.verify(l,j,g)}catch(i){return false}return e};this.readJWSJS=function(g){if(typeof g==="string"){var f=d(g);if(f==null){throw"argument is not safe JSON object string"}this.aHeader=f.headers;this.sPayload=f.payload;this.aSignature=f.signatures}else{try{if(g.headers.length>0){this.aHeader=g.headers}else{throw"malformed header"}if(typeof g.payload==="string"){this.sPayload=g.payload}else{throw"malformed signatures"}if(g.signatures.length>0){this.aSignature=g.signatures}else{throw"malformed signatures"}}catch(e){throw"malformed JWS-JS JSON object: "+e}}};this.getJSON=function(){return{headers:this.aHeader,payload:this.sPayload,signatures:this.aSignature}};this.isEmpty=function(){if(this.aHeader.length==0){return 1}return 0}};
-exports.SecureRandom = SecureRandom;
-exports.rng_seed_time = rng_seed_time;
+__webpack_unused_export__ = SecureRandom;
+__webpack_unused_export__ = rng_seed_time;
 
-exports.BigInteger = BigInteger;
-exports.RSAKey = RSAKey;
-exports.ECDSA = KJUR.crypto.ECDSA;
-exports.DSA = KJUR.crypto.DSA;
-exports.Signature = KJUR.crypto.Signature;
-exports.MessageDigest = KJUR.crypto.MessageDigest;
-exports.Mac = KJUR.crypto.Mac;
+__webpack_unused_export__ = BigInteger;
+__webpack_unused_export__ = RSAKey;
+__webpack_unused_export__ = KJUR.crypto.ECDSA;
+__webpack_unused_export__ = KJUR.crypto.DSA;
+__webpack_unused_export__ = KJUR.crypto.Signature;
+__webpack_unused_export__ = KJUR.crypto.MessageDigest;
+__webpack_unused_export__ = KJUR.crypto.Mac;
 //exports.Cipher = KJUR.crypto.Cipher;
-exports.KEYUTIL = KEYUTIL;
-exports.ASN1HEX = ASN1HEX;
-exports.X509 = X509;
-exports.X509CRL = X509CRL;
-exports.CryptoJS = CryptoJS;
+exports.KZ = KEYUTIL;
+__webpack_unused_export__ = ASN1HEX;
+__webpack_unused_export__ = X509;
+__webpack_unused_export__ = X509CRL;
+__webpack_unused_export__ = CryptoJS;
 
 // ext/base64.js
-exports.b64tohex = b64tohex;
-exports.b64toBA = b64toBA;
+__webpack_unused_export__ = b64tohex;
+__webpack_unused_export__ = b64toBA;
 
 // ext/ec*.js
-exports.ECFieldElementFp = ECFieldElementFp;
-exports.ECPointFp = ECPointFp;
-exports.ECCurveFp = ECCurveFp;
+__webpack_unused_export__ = ECFieldElementFp;
+__webpack_unused_export__ = ECPointFp;
+__webpack_unused_export__ = ECCurveFp;
 
 // base64x.js
-exports.stoBA = stoBA;
-exports.BAtos = BAtos;
-exports.BAtohex = BAtohex;
-exports.stohex = stohex;
-exports.stob64 = stob64;
-exports.stob64u = stob64u;
-exports.b64utos = b64utos;
-exports.b64tob64u = b64tob64u;
-exports.b64utob64 = b64utob64;
-exports.hex2b64 = hex2b64;
-exports.hextob64u = hextob64u;
-exports.b64utohex = b64utohex;
-exports.utf8tob64u = utf8tob64u;
-exports.b64utoutf8 = b64utoutf8;
-exports.utf8tob64 = utf8tob64;
-exports.b64toutf8 = b64toutf8;
-exports.utf8tohex = utf8tohex;
-exports.hextoutf8 = hextoutf8;
-exports.hextorstr = hextorstr;
-exports.rstrtohex = rstrtohex;
-exports.hextob64 = hextob64;
-exports.hextob64nl = hextob64nl;
-exports.b64nltohex = b64nltohex;
-exports.hextopem = hextopem;
-exports.pemtohex = pemtohex;
-exports.hextoArrayBuffer = hextoArrayBuffer;
-exports.ArrayBuffertohex = ArrayBuffertohex;
-exports.zulutomsec = zulutomsec;
-exports.msectozulu = msectozulu;
-exports.zulutosec = zulutosec;
-exports.zulutodate = zulutodate;
-exports.datetozulu = datetozulu;
-exports.uricmptohex = uricmptohex;
-exports.hextouricmp = hextouricmp;
-exports.ipv6tohex = ipv6tohex;
-exports.hextoipv6 = hextoipv6;
-exports.hextoip = hextoip;
-exports.iptohex = iptohex;
-exports.ucs2hextoutf8 = ucs2hextoutf8;
-exports.encodeURIComponentAll = encodeURIComponentAll;
-exports.newline_toUnix = newline_toUnix;
-exports.newline_toDos = newline_toDos;
-exports.hextoposhex = hextoposhex;
-exports.intarystrtohex = intarystrtohex;
-exports.strdiffidx = strdiffidx;
-exports.oidtohex = oidtohex;
-exports.hextooid = hextooid;
-exports.strpad = strpad;
-exports.bitstrtoint = bitstrtoint;
-exports.inttobitstr = inttobitstr;
-exports.bitstrtobinstr = bitstrtobinstr;
-exports.binstrtobitstr = binstrtobitstr;
-exports.isBase64URLDot = isBase64URLDot;
-exports.namearraytobinstr = namearraytobinstr;
-exports.extendClass = extendClass;
-exports.foldnl = foldnl;
-exports.b64topem = b64topem;
-exports.pemtob64 = pemtob64;
-exports.timeogen = timetogen;
-exports.aryval = aryval;
-exports.inttohex = inttohex;
-exports.twoscompl = twoscompl;
+__webpack_unused_export__ = stoBA;
+__webpack_unused_export__ = BAtos;
+__webpack_unused_export__ = BAtohex;
+__webpack_unused_export__ = stohex;
+__webpack_unused_export__ = stob64;
+__webpack_unused_export__ = stob64u;
+__webpack_unused_export__ = b64utos;
+__webpack_unused_export__ = b64tob64u;
+__webpack_unused_export__ = b64utob64;
+__webpack_unused_export__ = hex2b64;
+__webpack_unused_export__ = hextob64u;
+__webpack_unused_export__ = b64utohex;
+__webpack_unused_export__ = utf8tob64u;
+__webpack_unused_export__ = b64utoutf8;
+__webpack_unused_export__ = utf8tob64;
+__webpack_unused_export__ = b64toutf8;
+__webpack_unused_export__ = utf8tohex;
+__webpack_unused_export__ = hextoutf8;
+__webpack_unused_export__ = hextorstr;
+__webpack_unused_export__ = rstrtohex;
+__webpack_unused_export__ = hextob64;
+__webpack_unused_export__ = hextob64nl;
+__webpack_unused_export__ = b64nltohex;
+__webpack_unused_export__ = hextopem;
+__webpack_unused_export__ = pemtohex;
+__webpack_unused_export__ = hextoArrayBuffer;
+__webpack_unused_export__ = ArrayBuffertohex;
+__webpack_unused_export__ = zulutomsec;
+__webpack_unused_export__ = msectozulu;
+__webpack_unused_export__ = zulutosec;
+__webpack_unused_export__ = zulutodate;
+__webpack_unused_export__ = datetozulu;
+__webpack_unused_export__ = uricmptohex;
+__webpack_unused_export__ = hextouricmp;
+__webpack_unused_export__ = ipv6tohex;
+__webpack_unused_export__ = hextoipv6;
+__webpack_unused_export__ = hextoip;
+__webpack_unused_export__ = iptohex;
+__webpack_unused_export__ = ucs2hextoutf8;
+__webpack_unused_export__ = encodeURIComponentAll;
+__webpack_unused_export__ = newline_toUnix;
+__webpack_unused_export__ = newline_toDos;
+__webpack_unused_export__ = hextoposhex;
+__webpack_unused_export__ = intarystrtohex;
+__webpack_unused_export__ = strdiffidx;
+__webpack_unused_export__ = oidtohex;
+__webpack_unused_export__ = hextooid;
+__webpack_unused_export__ = strpad;
+__webpack_unused_export__ = bitstrtoint;
+__webpack_unused_export__ = inttobitstr;
+__webpack_unused_export__ = bitstrtobinstr;
+__webpack_unused_export__ = binstrtobitstr;
+__webpack_unused_export__ = isBase64URLDot;
+__webpack_unused_export__ = namearraytobinstr;
+__webpack_unused_export__ = extendClass;
+__webpack_unused_export__ = foldnl;
+__webpack_unused_export__ = b64topem;
+__webpack_unused_export__ = pemtob64;
+__webpack_unused_export__ = timetogen;
+__webpack_unused_export__ = aryval;
+__webpack_unused_export__ = inttohex;
+__webpack_unused_export__ = twoscompl;
 
 // name spaces
-exports.KJUR = KJUR;
-exports.crypto = KJUR.crypto;
-exports.asn1 = KJUR.asn1;
-exports.jws = KJUR.jws;
-exports.lang = KJUR.lang;
+exports.fs = KJUR;
+__webpack_unused_export__ = KJUR.crypto;
+__webpack_unused_export__ = KJUR.asn1;
+__webpack_unused_export__ = KJUR.jws;
+__webpack_unused_export__ = KJUR.lang;
 
-exports.VERSION = VERSION;
-exports.VERSION_FULL = VERSION_FULL;
+__webpack_unused_export__ = VERSION;
+__webpack_unused_export__ = VERSION_FULL;
 
 
 
@@ -16667,7 +16611,6 @@ exports.VERSION_FULL = VERSION_FULL;
 /***/ 1531:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 const EventEmitter = __nccwpck_require__(2361);
@@ -16947,7 +16890,6 @@ module.exports = Keyv;
 /***/ 9662:
 /***/ ((module) => {
 
-"use strict";
 
 module.exports = object => {
 	const result = {};
@@ -16965,7 +16907,6 @@ module.exports = object => {
 /***/ 2610:
 /***/ ((module) => {
 
-"use strict";
 
 
 // We define these manually to ensure they're always copied
@@ -17005,7 +16946,6 @@ module.exports = (fromStream, toStream) => {
 /***/ 7952:
 /***/ ((module) => {
 
-"use strict";
 
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
@@ -17278,7 +17218,6 @@ function onceStrict (fn) {
 /***/ 9072:
 /***/ ((module) => {
 
-"use strict";
 
 
 class CancelError extends Error {
@@ -17482,7 +17421,6 @@ module.exports = pump
 /***/ 6624:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 const tls = __nccwpck_require__(4404);
 
@@ -17506,7 +17444,6 @@ module.exports = (options = {}) => new Promise((resolve, reject) => {
 /***/ 9004:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 const Readable = (__nccwpck_require__(2781).Readable);
@@ -17556,7 +17493,6 @@ module.exports = __nccwpck_require__(4219);
 /***/ 4219:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 var net = __nccwpck_require__(1808);
@@ -17828,7 +17764,6 @@ exports.debug = debug; // for test
 /***/ 5840:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -17914,7 +17849,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 /***/ 4569:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -17944,7 +17878,6 @@ exports["default"] = _default;
 /***/ 5332:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -17959,7 +17892,6 @@ exports["default"] = _default;
 /***/ 2746:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18011,7 +17943,6 @@ exports["default"] = _default;
 /***/ 814:
 /***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18026,7 +17957,6 @@ exports["default"] = _default;
 /***/ 807:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18057,7 +17987,6 @@ function rng() {
 /***/ 5274:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18087,7 +18016,6 @@ exports["default"] = _default;
 /***/ 8950:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18133,7 +18061,6 @@ exports["default"] = _default;
 /***/ 8628:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18247,7 +18174,6 @@ exports["default"] = _default;
 /***/ 6409:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18270,7 +18196,6 @@ exports["default"] = _default;
 /***/ 5998:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18355,7 +18280,6 @@ function _default(name, version, hashfunc) {
 /***/ 5122:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18399,7 +18323,6 @@ exports["default"] = _default;
 /***/ 9120:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18422,7 +18345,6 @@ exports["default"] = _default;
 /***/ 6900:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18446,7 +18368,6 @@ exports["default"] = _default;
 /***/ 1595:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-"use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({
@@ -18511,18 +18432,551 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 3348:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 8081:
+/***/ ((module) => {
 
+module.exports = eval("require")("@actions/core/lib/command");
+
+
+/***/ }),
+
+/***/ 9491:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("assert");
+
+/***/ }),
+
+/***/ 4300:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("buffer");
+
+/***/ }),
+
+/***/ 6113:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("crypto");
+
+/***/ }),
+
+/***/ 9523:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("dns");
+
+/***/ }),
+
+/***/ 2361:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("events");
+
+/***/ }),
+
+/***/ 7147:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("fs");
+
+/***/ }),
+
+/***/ 3685:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("http");
+
+/***/ }),
+
+/***/ 5158:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("http2");
+
+/***/ }),
+
+/***/ 5687:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("https");
+
+/***/ }),
+
+/***/ 1808:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("net");
+
+/***/ }),
+
+/***/ 2037:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("os");
+
+/***/ }),
+
+/***/ 1017:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("path");
+
+/***/ }),
+
+/***/ 2781:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("stream");
+
+/***/ }),
+
+/***/ 4404:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("tls");
+
+/***/ }),
+
+/***/ 7310:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("url");
+
+/***/ }),
+
+/***/ 3837:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
+
+/***/ }),
+
+/***/ 9796:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("zlib");
+
+/***/ })
+
+/******/ });
+/************************************************************************/
+/******/ // The module cache
+/******/ var __webpack_module_cache__ = {};
+/******/ 
+/******/ // The require function
+/******/ function __nccwpck_require__(moduleId) {
+/******/ 	// Check if module is in cache
+/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 	if (cachedModule !== undefined) {
+/******/ 		return cachedModule.exports;
+/******/ 	}
+/******/ 	// Create a new module (and put it into the cache)
+/******/ 	var module = __webpack_module_cache__[moduleId] = {
+/******/ 		// no module.id needed
+/******/ 		// no module.loaded needed
+/******/ 		exports: {}
+/******/ 	};
+/******/ 
+/******/ 	// Execute the module function
+/******/ 	var threw = true;
+/******/ 	try {
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
+/******/ 		threw = false;
+/******/ 	} finally {
+/******/ 		if(threw) delete __webpack_module_cache__[moduleId];
+/******/ 	}
+/******/ 
+/******/ 	// Return the exports of the module
+/******/ 	return module.exports;
+/******/ }
+/******/ 
+/************************************************************************/
+/******/ /* webpack/runtime/compat */
+/******/ 
+/******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
+/******/ 
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(2186);
+// EXTERNAL MODULE: ./node_modules/@vercel/ncc/dist/ncc/@@notfound.js?@actions/core/lib/command
+var command = __nccwpck_require__(8081);
+// EXTERNAL MODULE: ./node_modules/got/dist/source/index.js
+var source = __nccwpck_require__(3061);
+// EXTERNAL MODULE: ./node_modules/jsonata/jsonata.js
+var jsonata = __nccwpck_require__(4245);
+;// CONCATENATED MODULE: ./src/utils.js
+/**
+ * Replaces any dot chars to __ and removes non-ascii charts
+ * @param {string} dataKey
+ * @param {boolean=} isEnvVar
+ */
+function normalizeOutputKey(dataKey, isEnvVar = false) {
+  let outputKey = dataKey
+    .replace(".", "__")
+    .replace(new RegExp("-", "g"), "")
+    .replace(/[^\p{L}\p{N}_-]/gu, "");
+  if (isEnvVar) {
+    outputKey = outputKey.toUpperCase();
+  }
+  return outputKey;
+}
+
+
+
+;// CONCATENATED MODULE: ./src/constants.js
+const WILDCARD = '*';
+
+
+
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(7147);
+// EXTERNAL MODULE: ./node_modules/jsrsasign/lib/jsrsasign.js
+var jsrsasign = __nccwpck_require__(7175);
+;// CONCATENATED MODULE: ./src/auth.js
 // @ts-check
-const core = __nccwpck_require__(2186);
-const command = __nccwpck_require__(7351);
-const got = (__nccwpck_require__(3061)["default"]);
-const jsonata = __nccwpck_require__(4245);
-const { normalizeOutputKey } = __nccwpck_require__(1608);
-const { WILDCARD } = __nccwpck_require__(4438);
 
-const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
+
+
+
+
+const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+/***
+ * Authenticate with Vault and retrieve a Vault token that can be used for requests.
+ * @param {string} method
+ * @param {import('got').Got} client
+ */
+async function retrieveToken(method, client) {
+    let path = core.getInput('path', { required: false }) || method;
+    path = `v1/auth/${path}/login`
+
+    switch (method) {
+        case 'approle': {
+            const vaultRoleId = core.getInput('roleId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: false });
+            return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
+        }
+        case 'github': {
+            const githubToken = core.getInput('githubToken', { required: true });
+            return await getClientToken(client, method, path, { token: githubToken });
+        }
+        case 'jwt': {
+            /** @type {string} */
+            let jwt;
+            const role = core.getInput('role', { required: false });
+            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
+            const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
+            const keyPassword = core.getInput('jwtKeyPassword', { required: false });
+            const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
+            const githubAudience = core.getInput('jwtGithubAudience', { required: false });
+
+            if (!privateKey) {
+                jwt = await core.getIDToken(githubAudience)
+            } else {
+                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+            }
+
+            return await getClientToken(client, method, path, { jwt: jwt, role: role });
+        }
+        case 'kubernetes': {
+            const role = core.getInput('role', { required: true })
+            const tokenPath = core.getInput('kubernetesTokenPath', { required: false }) || defaultKubernetesTokenPath
+            const data = external_fs_.readFileSync(tokenPath, 'utf8')
+            if (!(role && data) && data != "") {
+                throw new Error("Role Name must be set and a kubernetes token must set")
+            }
+            return await getClientToken(client, method, path, { jwt: data, role: role })
+        }
+        case 'userpass': 
+        case 'ldap': {
+            const username = core.getInput('username', { required: true });
+            const password = core.getInput('password', { required: true });
+            path = path + `/${username}`
+            return await getClientToken(client, method, path, { password: password })
+        }
+
+        default: {
+            if (!method || method === 'token') {
+                return core.getInput('token', { required: true });
+            } else {
+                /** @type {string} */
+                const payload = core.getInput('authPayload', { required: true });
+                if (!payload) {
+                    throw Error('When using a custom authentication method, you must provide the payload');
+                }
+                return await getClientToken(client, method, path, JSON.parse(payload.trim()));
+            }
+        }
+    }
+}
+
+/***
+ * Generates signed Json Web Token with specified private key and ttl
+ * @param {string} privateKey
+ * @param {string} keyPassword
+ * @param {number} ttl
+ */
+function generateJwt(privateKey, keyPassword, ttl) {
+    const alg = 'RS256';
+    const header = { alg: alg, typ: 'JWT' };
+    const now = jsrsasign/* KJUR.jws.IntDate.getNow */.fs.jws.IntDate.getNow();
+    const payload = {
+        iss: 'vault-action',
+        iat: now,
+        nbf: now,
+        exp: now + ttl,
+        event: process.env.GITHUB_EVENT_NAME,
+        workflow: process.env.GITHUB_WORKFLOW,
+        sha: process.env.GITHUB_SHA,
+        actor: process.env.GITHUB_ACTOR,
+        repository: process.env.GITHUB_REPOSITORY,
+        ref: process.env.GITHUB_REF
+    };
+    const decryptedKey = jsrsasign/* KEYUTIL.getKey */.KZ.getKey(privateKey, keyPassword);
+    return jsrsasign/* KJUR.jws.JWS.sign */.fs.jws.JWS.sign(alg, JSON.stringify(header), JSON.stringify(payload), decryptedKey);
+}
+
+/***
+ * Call the appropriate login endpoint and parse out the token in the response.
+ * @param {import('got').Got} client
+ * @param {string} method
+ * @param {string} path
+ * @param {any} payload
+ */
+async function getClientToken(client, method, path, payload) {
+    /** @type {'json'} */
+    const responseType = 'json';
+    var options = {
+        json: payload,
+        responseType,
+    };
+
+    core.debug(`Retrieving Vault Token from ${path} endpoint`);
+
+    /** @type {import('got').Response<VaultLoginResponse>} */
+    let response;
+    try {
+        response = await client.post(`${path}`, options);
+    } catch (err) {
+        if (err instanceof source.HTTPError) {
+            throw Error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, vaultResponse: ${JSON.stringify(err.response.body)}`)
+        } else {
+            throw err
+        }
+    }
+    if (response && response.body && response.body.auth && response.body.auth.client_token) {
+        core.debug('✔ Vault Token successfully retrieved');
+
+        core.startGroup('Token Info');
+        core.debug(`Operating under policies: ${JSON.stringify(response.body.auth.policies)}`);
+        core.debug(`Token Metadata: ${JSON.stringify(response.body.auth.metadata)}`);
+        core.endGroup();
+
+        return response.body.auth.client_token;
+    } else {
+        throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
+    }
+}
+
+/***
+ * @typedef {Object} VaultLoginResponse
+ * @property {{
+ *  client_token: string;
+ *  accessor: string;
+ *  policies: string[];
+ *  metadata: unknown;
+ *  lease_duration: number;
+ *  renewable: boolean;
+ * }} auth
+ */
+
+
+
+;// CONCATENATED MODULE: ./src/secrets.js
+
+
+
+
+
+/**
+ * @typedef {Object} SecretRequest
+ * @property {string} path
+ * @property {string} selector
+ */
+
+/**
+ * @template {SecretRequest} TRequest
+ * @typedef {Object} SecretResponse
+ * @property {TRequest} request
+ * @property {string} value
+ * @property {boolean} cachedResponse
+ */
+
+ /**
+  * @template TRequest
+  * @param {Array<TRequest>} secretRequests
+  * @param {import('got').Got} client
+  * @return {Promise<SecretResponse<TRequest>[]>}
+  */
+async function getSecrets(secretRequests, client, ignoreNotFound) {
+    const responseCache = new Map();
+    let results = [];
+
+    for (const secretRequest of secretRequests) {
+        let { path, selector } = secretRequest;
+
+        const requestPath = `v1/${path}`;
+        let body;
+        let cachedResponse = false;
+        if (responseCache.has(requestPath)) {
+            body = responseCache.get(requestPath);
+            cachedResponse = true;
+        } else {
+            try {
+                const result = await client.get(requestPath);
+                body = result.body;
+                responseCache.set(requestPath, body);
+            } catch (error) {
+                const {response} = error;
+                if (response?.statusCode === 404) {
+                    let notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
+                    const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
+                    if (ignoreNotFound) {
+                        core.error(`✘ ${notFoundMsg}`);
+                        continue;
+                    } else {
+                        throw Error(notFoundMsg)
+                    }
+                }
+                throw error
+            }
+        }
+
+        body = JSON.parse(body);
+
+        if (selector == WILDCARD) {                     
+            let keys = body.data;
+            if (body.data["data"] != undefined) {
+                keys = keys.data;
+            }
+
+            for (let key in keys) {
+                let newRequest = Object.assign({},secretRequest);
+                newRequest.selector = key;                  
+                
+                if (secretRequest.selector === secretRequest.outputVarName) {
+                    newRequest.outputVarName = key;
+                    newRequest.envVarName = key;        		
+                }
+                else {
+                    newRequest.outputVarName = secretRequest.outputVarName+key;
+                    newRequest.envVarName = secretRequest.envVarName+key;        		
+                }
+
+                newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
+
+                selector = key;
+
+                results = await selectAndAppendResults(
+                  selector,
+                  body,
+                  cachedResponse,
+                  newRequest,
+                  results
+                );
+            }
+        }
+        else {
+          results = await selectAndAppendResults(
+            selector, 
+            body, 
+            cachedResponse, 
+            secretRequest, 
+            results
+          );
+        }   
+    }
+
+    return results;
+}
+
+/**
+ * Uses a Jsonata selector retrieve a bit of data from the result
+ * @param {object} data
+ * @param {string} selector
+ */
+async function selectData(data, selector) {
+    const ata = jsonata(selector);
+    let result = JSON.stringify(await ata.evaluate(data));
+
+    // Compat for custom engines
+    if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
+        result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
+    } else if (!result) {
+        throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
+    }
+
+    if (result.startsWith(`"`)) {
+        result = JSON.parse(result);
+    }
+    return result;
+}
+
+/**
+ * Uses selectData with the selector to get the value and then appends it to the
+ * results. Returns a new array with all of the results.
+ * @param {string} selector
+ * @param {object} body
+ * @param {object} cachedResponse
+ * @param {TRequest} secretRequest
+ * @param {SecretResponse<TRequest>[]} results
+ * @return {Promise<SecretResponse<TRequest>[]>}
+ */
+const selectAndAppendResults = async (
+  selector,
+  body,
+  cachedResponse,
+  secretRequest,
+  results
+) => {
+  if (!selector.match(/.*[\.].*/)) {
+    selector = '"' + selector + '"';
+  }
+  selector = "data." + selector;
+
+  if (body.data["data"] != undefined) {
+    selector = "data." + selector;
+  }
+
+  const value = await selectData(body, selector);
+  return [
+    ...results,
+    {
+      request: secretRequest,
+      value,
+      cachedResponse,
+    },
+  ];
+};
+
+
+
+;// CONCATENATED MODULE: ./src/action.js
+// @ts-check
+
+
+
+
+
+
+
+
+
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
@@ -18552,7 +19006,7 @@ async function exportSecrets() {
         https: {},
         retry: {
             statusCodes: [
-                ...got.defaults.options.retry.statusCodes,
+                ...source.defaults.options.retry.statusCodes,
                 // Vault returns 412 when the token in use hasn't yet been replicated
                 // to the performance replica queried. See issue #332.
                 412,
@@ -18588,10 +19042,10 @@ async function exportSecrets() {
         defaultOptions.headers["X-Vault-Namespace"] = vaultNamespace;
     }
 
-    const vaultToken = await retrieveToken(vaultMethod, got.extend(defaultOptions));
+    const vaultToken = await retrieveToken(vaultMethod, source.extend(defaultOptions));
     core.setSecret(vaultToken)
     defaultOptions.headers['X-Vault-Token'] = vaultToken;
-    const client = got.extend(defaultOptions);
+    const client = source.extend(defaultOptions);
 
     if (outputToken === true) {
       core.setOutput('vault_token', `${vaultToken}`);
@@ -18735,589 +19189,11 @@ function parseHeadersInput(inputKey, inputOptions) {
         }, new Map());
 }
 
-module.exports = {
-    exportSecrets,
-    parseSecretsInput,
-    parseHeadersInput,
-};
 
 
+;// CONCATENATED MODULE: ./src/entry.js
 
-/***/ }),
 
-/***/ 4915:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-// @ts-check
-const core = __nccwpck_require__(2186);
-const rsasign = __nccwpck_require__(7175);
-const fs = __nccwpck_require__(7147);
-const { default: got } = __nccwpck_require__(3061);
-
-const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-/***
- * Authenticate with Vault and retrieve a Vault token that can be used for requests.
- * @param {string} method
- * @param {import('got').Got} client
- */
-async function retrieveToken(method, client) {
-    let path = core.getInput('path', { required: false }) || method;
-    path = `v1/auth/${path}/login`
-
-    switch (method) {
-        case 'approle': {
-            const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
-            return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
-        }
-        case 'github': {
-            const githubToken = core.getInput('githubToken', { required: true });
-            return await getClientToken(client, method, path, { token: githubToken });
-        }
-        case 'jwt': {
-            /** @type {string} */
-            let jwt;
-            const role = core.getInput('role', { required: false });
-            const privateKeyRaw = core.getInput('jwtPrivateKey', { required: false });
-            const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
-            const keyPassword = core.getInput('jwtKeyPassword', { required: false });
-            const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
-            const githubAudience = core.getInput('jwtGithubAudience', { required: false });
-
-            if (!privateKey) {
-                jwt = await core.getIDToken(githubAudience)
-            } else {
-                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
-            }
-
-            return await getClientToken(client, method, path, { jwt: jwt, role: role });
-        }
-        case 'kubernetes': {
-            const role = core.getInput('role', { required: true })
-            const tokenPath = core.getInput('kubernetesTokenPath', { required: false }) || defaultKubernetesTokenPath
-            const data = fs.readFileSync(tokenPath, 'utf8')
-            if (!(role && data) && data != "") {
-                throw new Error("Role Name must be set and a kubernetes token must set")
-            }
-            return await getClientToken(client, method, path, { jwt: data, role: role })
-        }
-        case 'userpass': 
-        case 'ldap': {
-            const username = core.getInput('username', { required: true });
-            const password = core.getInput('password', { required: true });
-            path = path + `/${username}`
-            return await getClientToken(client, method, path, { password: password })
-        }
-
-        default: {
-            if (!method || method === 'token') {
-                return core.getInput('token', { required: true });
-            } else {
-                /** @type {string} */
-                const payload = core.getInput('authPayload', { required: true });
-                if (!payload) {
-                    throw Error('When using a custom authentication method, you must provide the payload');
-                }
-                return await getClientToken(client, method, path, JSON.parse(payload.trim()));
-            }
-        }
-    }
-}
-
-/***
- * Generates signed Json Web Token with specified private key and ttl
- * @param {string} privateKey
- * @param {string} keyPassword
- * @param {number} ttl
- */
-function generateJwt(privateKey, keyPassword, ttl) {
-    const alg = 'RS256';
-    const header = { alg: alg, typ: 'JWT' };
-    const now = rsasign.KJUR.jws.IntDate.getNow();
-    const payload = {
-        iss: 'vault-action',
-        iat: now,
-        nbf: now,
-        exp: now + ttl,
-        event: process.env.GITHUB_EVENT_NAME,
-        workflow: process.env.GITHUB_WORKFLOW,
-        sha: process.env.GITHUB_SHA,
-        actor: process.env.GITHUB_ACTOR,
-        repository: process.env.GITHUB_REPOSITORY,
-        ref: process.env.GITHUB_REF
-    };
-    const decryptedKey = rsasign.KEYUTIL.getKey(privateKey, keyPassword);
-    return rsasign.KJUR.jws.JWS.sign(alg, JSON.stringify(header), JSON.stringify(payload), decryptedKey);
-}
-
-/***
- * Call the appropriate login endpoint and parse out the token in the response.
- * @param {import('got').Got} client
- * @param {string} method
- * @param {string} path
- * @param {any} payload
- */
-async function getClientToken(client, method, path, payload) {
-    /** @type {'json'} */
-    const responseType = 'json';
-    var options = {
-        json: payload,
-        responseType,
-    };
-
-    core.debug(`Retrieving Vault Token from ${path} endpoint`);
-
-    /** @type {import('got').Response<VaultLoginResponse>} */
-    let response;
-    try {
-        response = await client.post(`${path}`, options);
-    } catch (err) {
-        if (err instanceof got.HTTPError) {
-            throw Error(`failed to retrieve vault token. code: ${err.code}, message: ${err.message}, vaultResponse: ${JSON.stringify(err.response.body)}`)
-        } else {
-            throw err
-        }
-    }
-    if (response && response.body && response.body.auth && response.body.auth.client_token) {
-        core.debug('✔ Vault Token successfully retrieved');
-
-        core.startGroup('Token Info');
-        core.debug(`Operating under policies: ${JSON.stringify(response.body.auth.policies)}`);
-        core.debug(`Token Metadata: ${JSON.stringify(response.body.auth.metadata)}`);
-        core.endGroup();
-
-        return response.body.auth.client_token;
-    } else {
-        throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
-    }
-}
-
-/***
- * @typedef {Object} VaultLoginResponse
- * @property {{
- *  client_token: string;
- *  accessor: string;
- *  policies: string[];
- *  metadata: unknown;
- *  lease_duration: number;
- *  renewable: boolean;
- * }} auth
- */
-
-module.exports = {
-    retrieveToken,
-};
-
-
-/***/ }),
-
-/***/ 4438:
-/***/ ((module) => {
-
-const WILDCARD = '*';
-
-module.exports = {
-    WILDCARD
-};
-
-/***/ }),
-
-/***/ 4351:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const auth = __nccwpck_require__(4915);
-const secrets = __nccwpck_require__(8452);
-
-module.exports = {
-    auth,
-    secrets
-};
-
-/***/ }),
-
-/***/ 8452:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const jsonata = __nccwpck_require__(4245);
-const { WILDCARD } = __nccwpck_require__(4438);
-const { normalizeOutputKey } = __nccwpck_require__(1608);
-const core = __nccwpck_require__(2186);
-
-/**
- * @typedef {Object} SecretRequest
- * @property {string} path
- * @property {string} selector
- */
-
-/**
- * @template {SecretRequest} TRequest
- * @typedef {Object} SecretResponse
- * @property {TRequest} request
- * @property {string} value
- * @property {boolean} cachedResponse
- */
-
- /**
-  * @template TRequest
-  * @param {Array<TRequest>} secretRequests
-  * @param {import('got').Got} client
-  * @return {Promise<SecretResponse<TRequest>[]>}
-  */
-async function getSecrets(secretRequests, client, ignoreNotFound) {
-    const responseCache = new Map();
-    let results = [];
-
-    for (const secretRequest of secretRequests) {
-        let { path, selector } = secretRequest;
-
-        const requestPath = `v1/${path}`;
-        let body;
-        let cachedResponse = false;
-        if (responseCache.has(requestPath)) {
-            body = responseCache.get(requestPath);
-            cachedResponse = true;
-        } else {
-            try {
-                const result = await client.get(requestPath);
-                body = result.body;
-                responseCache.set(requestPath, body);
-            } catch (error) {
-                const {response} = error;
-                if (response?.statusCode === 404) {
-                    notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
-                    const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
-                    if (ignoreNotFound) {
-                        core.error(`✘ ${notFoundMsg}`);
-                        continue;
-                    } else {
-                        throw Error(notFoundMsg)
-                    }
-                }
-                throw error
-            }
-        }
-
-        body = JSON.parse(body);
-
-        if (selector == WILDCARD) {                     
-            let keys = body.data;
-            if (body.data["data"] != undefined) {
-                keys = keys.data;
-            }
-
-            for (let key in keys) {
-                let newRequest = Object.assign({},secretRequest);
-                newRequest.selector = key;                  
-                
-                if (secretRequest.selector === secretRequest.outputVarName) {
-                    newRequest.outputVarName = key;
-                    newRequest.envVarName = key;        		
-                }
-                else {
-                    newRequest.outputVarName = secretRequest.outputVarName+key;
-                    newRequest.envVarName = secretRequest.envVarName+key;        		
-                }
-
-                newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
-                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
-
-                selector = key;
-
-                results = await selectAndAppendResults(
-                  selector,
-                  body,
-                  cachedResponse,
-                  newRequest,
-                  results
-                );
-            }
-        }
-        else {
-          results = await selectAndAppendResults(
-            selector, 
-            body, 
-            cachedResponse, 
-            secretRequest, 
-            results
-          );
-        }   
-    }
-
-    return results;
-}
-
-/**
- * Uses a Jsonata selector retrieve a bit of data from the result
- * @param {object} data
- * @param {string} selector
- */
-async function selectData(data, selector) {
-    const ata = jsonata(selector);
-    let result = JSON.stringify(await ata.evaluate(data));
-
-    // Compat for custom engines
-    if (!result && ((ata.ast().type === "path" && ata.ast()['steps'].length === 1) || ata.ast().type === "string") && selector !== 'data' && 'data' in data) {
-        result = JSON.stringify(await jsonata(`data.${selector}`).evaluate(data));
-    } else if (!result) {
-        throw Error(`Unable to retrieve result for ${selector}. No match data was found. Double check your Key or Selector.`);
-    }
-
-    if (result.startsWith(`"`)) {
-        result = JSON.parse(result);
-    }
-    return result;
-}
-
-/**
- * Uses selectData with the selector to get the value and then appends it to the
- * results. Returns a new array with all of the results.
- * @param {string} selector
- * @param {object} body
- * @param {object} cachedResponse
- * @param {TRequest} secretRequest
- * @param {SecretResponse<TRequest>[]} results
- * @return {Promise<SecretResponse<TRequest>[]>}
- */
-const selectAndAppendResults = async (
-  selector,
-  body,
-  cachedResponse,
-  secretRequest,
-  results
-) => {
-  if (!selector.match(/.*[\.].*/)) {
-    selector = '"' + selector + '"';
-  }
-  selector = "data." + selector;
-
-  if (body.data["data"] != undefined) {
-    selector = "data." + selector;
-  }
-
-  const value = await selectData(body, selector);
-  return [
-    ...results,
-    {
-      request: secretRequest,
-      value,
-      cachedResponse,
-    },
-  ];
-};
-
-module.exports = {
-    getSecrets,
-    selectData
-}
-
-
-/***/ }),
-
-/***/ 1608:
-/***/ ((module) => {
-
-/**
- * Replaces any dot chars to __ and removes non-ascii charts
- * @param {string} dataKey
- * @param {boolean=} isEnvVar
- */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
-  let outputKey = dataKey
-    .replace(".", "__")
-    .replace(new RegExp("-", "g"), "")
-    .replace(/[^\p{L}\p{N}_-]/gu, "");
-  if (isEnvVar) {
-    outputKey = outputKey.toUpperCase();
-  }
-  return outputKey;
-}
-
-module.exports = { 
-    normalizeOutputKey 
-};
-
-
-/***/ }),
-
-/***/ 9491:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("assert");
-
-/***/ }),
-
-/***/ 4300:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("buffer");
-
-/***/ }),
-
-/***/ 6113:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("crypto");
-
-/***/ }),
-
-/***/ 9523:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("dns");
-
-/***/ }),
-
-/***/ 2361:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("events");
-
-/***/ }),
-
-/***/ 7147:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ 3685:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("http");
-
-/***/ }),
-
-/***/ 5158:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("http2");
-
-/***/ }),
-
-/***/ 5687:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("https");
-
-/***/ }),
-
-/***/ 1808:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("net");
-
-/***/ }),
-
-/***/ 2037:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("os");
-
-/***/ }),
-
-/***/ 1017:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 2781:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("stream");
-
-/***/ }),
-
-/***/ 4404:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("tls");
-
-/***/ }),
-
-/***/ 7310:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("url");
-
-/***/ }),
-
-/***/ 3837:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("util");
-
-/***/ }),
-
-/***/ 9796:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("zlib");
-
-/***/ })
-
-/******/ 	});
-/************************************************************************/
-/******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
-/******/ 	
-/******/ 	// The require function
-/******/ 	function __nccwpck_require__(moduleId) {
-/******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 		if (cachedModule !== undefined) {
-/******/ 			return cachedModule.exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			// no module.id needed
-/******/ 			// no module.loaded needed
-/******/ 			exports: {}
-/******/ 		};
-/******/ 	
-/******/ 		// Execute the module function
-/******/ 		var threw = true;
-/******/ 		try {
-/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
-/******/ 			threw = false;
-/******/ 		} finally {
-/******/ 			if(threw) delete __webpack_module_cache__[moduleId];
-/******/ 		}
-/******/ 	
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/ 	
-/************************************************************************/
-/******/ 	/* webpack/runtime/compat */
-/******/ 	
-/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
-/******/ 	
-/************************************************************************/
-var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
-(() => {
-const core = __nccwpck_require__(2186);
-const { exportSecrets } = __nccwpck_require__(3348);
 
 (async () => {
     try {
@@ -19330,6 +19206,3 @@ const { exportSecrets } = __nccwpck_require__(3348);
 
 })();
 
-module.exports = __webpack_exports__;
-/******/ })()
-;
