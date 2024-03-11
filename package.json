@@ -6,7 +6,7 @@
     "main": "dist/index.js",
     "scripts": {
         "build": "ncc build src/entry.js -o dist",
-        "test": "vitest run retries",
+        "test": "vitest run",
         "test:integration:basic": "vitest run -c integrationTests/basic/vitest.config.js",
         "test:integration:enterprise": "vitest run -c integrationTests/enterprise/vitest.config.js",
         "test:integration:e2e": "vitest run -c integrationTests/e2e/vitest.config.js",
