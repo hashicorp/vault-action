@@ -1,6 +1,6 @@
 // @ts-check
-import * as core from '@actions/core';
-import * as fs from 'fs';
+import core from '@actions/core';
+import fs from 'fs';
 import got from 'got';
 import rsasign from 'jsrsasign';
 

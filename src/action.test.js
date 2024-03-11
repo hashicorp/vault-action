@@ -3,7 +3,7 @@ import { vi, describe, test, expect } from 'vitest';
 vi.mock('got');
 vi.mock('@actions/core');
 
-import * as core from '@actions/core';
+import core from '@actions/core';
 import got from 'got';
 import {
     exportSecrets,

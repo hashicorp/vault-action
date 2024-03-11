@@ -1,7 +1,7 @@
 import jsonata from 'jsonata';
 import { WILDCARD } from './constants.js';
 import { normalizeOutputKey } from './utils.js';
-import * as core from '@actions/core';
+import core from '@actions/core';
 
 /**
  * @typedef {Object} SecretRequest

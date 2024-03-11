@@ -9,9 +9,9 @@ vi.mock('fs', () => ({
     }
 }));
 
-import * as core from '@actions/core';
-import * as got from 'got'
-import * as fs from 'fs';
+import core from '@actions/core';
+import got from 'got'
+import fs from 'fs';
 import { when } from 'jest-when'
 
 import { retrieveToken } from './auth.js';

@@ -1,7 +1,7 @@
 import { vi, describe, test, expect } from 'vitest';
 
 vi.mock('@actions/core');
-import * as core from '@actions/core';
+import core from '@actions/core';
 import rsasign from 'jsrsasign';
 import {
     privateRsaKey,

@@ -1,5 +1,5 @@
 // @ts-check
-import * as core from '@actions/core';
+import core from '@actions/core';
 import got from 'got';
 import jsonata from 'jsonata';
 import { normalizeOutputKey } from './utils.js';
