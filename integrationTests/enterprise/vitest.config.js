@@ -4,12 +4,8 @@ export default defineConfig({
   test: {
     // required to make jest-when work with vitest
     globals: true,
-    exclude:[
-      ...configDefaults.exclude,
-      './src/**',
-      '**/integrationTests/basic/**',
-      '**/integrationTests/e2e/**',
-      '**/integrationTests/e2e-tls/**',
+    include: [
+        '**/integrationTests/enterprise/**.{test,spec}.?(c|m)[jt]s?(x)',
     ],
   },
 })
