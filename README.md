@@ -179,6 +179,7 @@ with:
   method: jwt
   jwtGithubAudience: sigstore # set the GitHub token's aud claim
 ```
+**N.B** If your `jwt` auth method is not mounted at `jwt` you need to supply `path: custom-mount-path` otherwise you will get `ERR_NON_2XX_3XX_RESPONSE` error.
 
 ### AppRole
 
