@@ -48,14 +48,26 @@ jobs:
         token: testtoken
         secrets: |
           secret/data/test-json-string jsonString;
+          secret/data/test-json-data jsonData;
 
-    - name: Check Secrets
-      run: |
-        touch secrets.json
-        echo "${{ steps.import-secrets.outputs.jsonString }}" >> secrets.json
+    - uses: actions/github-script@v7
+      with:
+        github-token: "foobar"
+        script: |
+          const { JSONSTRING, JSONDATA } = process.env
 
-    - name: Check json file format
-      run: |
-        echo
-        cat secrets.json
-        jq -c . < secrets.json
+          console.log(`string ${JSONSTRING}`)
+          console.log(`data ${JSONDATA}`)
+          const str = JSONDATA
+
+          let valid = true
+          try {
+              JSON.parse(str)
+          } catch (e) {
+            valid = false
+          }
+          if (valid) {
+            console.log("valid json")
+          } else {
+            console.log("not valid json")
+          }

@@ -1,5 +1,5 @@
 const WILDCARD = '*';
 
-module.exports = {
+export {
     WILDCARD
 };

@@ -14,6 +14,6 @@ function normalizeOutputKey(dataKey, isEnvVar = false) {
   return outputKey;
 }
 
-module.exports = { 
-    normalizeOutputKey 
+export {
+    normalizeOutputKey
 };

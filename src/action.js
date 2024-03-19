@@ -1,12 +1,14 @@
-// @ts-check
-const core = require('@actions/core');
-const command = require('@actions/core/lib/command');
-const got = require('got').default;
-const jsonata = require('jsonata');
-const { normalizeOutputKey } = require('./utils');
-const { WILDCARD } = require('./constants');
+import core from '@actions/core';
+import got from 'got';
 
-const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
+import { normalizeOutputKey } from './utils.js';
+import { WILDCARD } from './constants.js';
+import { retrieveToken } from './auth.js';
+import { getSecrets } from './secrets.js';
+
+// ncc doesn't compile jsonata imports properly, so we must use our own custom require
+import require from "./cjs-require.js";
+const jsonata = require('jsonata');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
@@ -219,9 +221,8 @@ function parseHeadersInput(inputKey, inputOptions) {
         }, new Map());
 }
 
-module.exports = {
+export {
     exportSecrets,
     parseSecretsInput,
     parseHeadersInput,
-};
-
+}

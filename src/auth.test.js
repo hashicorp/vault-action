@@ -1,22 +1,20 @@
-jest.mock('got');
-jest.mock('@actions/core');
-jest.mock('@actions/core/lib/command');
-jest.mock('fs', () => ({
-    stat: jest.fn().mockResolvedValue(null),
+import { vi, describe, test, expect } from 'vitest';
+
+vi.mock('got');
+vi.mock('@actions/core');
+vi.mock('fs', () => ({
+    stat: vi.fn().mockResolvedValue(null),
     promises: {
-        access: jest.fn().mockResolvedValue(null),
+        access: vi.fn().mockResolvedValue(null),
     }
 }));
 
-const core = require('@actions/core');
-const got = require('got');
-const fs = require("fs")
-const { when } = require('jest-when');
+import core from '@actions/core';
+import got from 'got'
+import * as fs from 'fs';
+import { when } from 'jest-when'
 
-
-const {
-    retrieveToken
-} = require('./auth');
+import { retrieveToken } from './auth.js';
 
 
 function mockInput(name, key) {
@@ -27,7 +25,7 @@ function mockInput(name, key) {
 
 function mockApiResponse() {
     const response = { body: { auth: { client_token: testToken, renewable: true, policies: [], accessor: "accessor" } } }
-    got.post = jest.fn()
+    got.post = vi.fn()
     got.post.mockReturnValue(response)
 }
 const testToken = "testoken";
@@ -35,7 +33,7 @@ const testToken = "testoken";
 describe("test retrival for token", () => {
 
     beforeEach(() => {
-        jest.resetAllMocks();
+        vi.resetAllMocks();
     });
 
     it("test retrival with approle", async () => {
@@ -76,7 +74,7 @@ describe("test retrival for token", () => {
         mockInput("kubernetesTokenPath", testTokenPath)
         mockInput("role", testRole)
         mockInput("path", testPath)
-        fs.readFileSync = jest.fn()
+        fs.readFileSync = vi.fn()
         fs.readFileSync.mockReturnValueOnce(jwtToken)
         const token = await retrieveToken(method, got)
         expect(token).toEqual(testToken)

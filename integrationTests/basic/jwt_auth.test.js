@@ -1,17 +1,18 @@
-jest.mock('@actions/core');
-jest.mock('@actions/core/lib/command');
-const core = require('@actions/core');
-const rsasign = require('jsrsasign');
-const {
+import { vi, describe, test, expect } from 'vitest';
+
+vi.mock('@actions/core');
+import core from '@actions/core';
+import rsasign from 'jsrsasign';
+import {
     privateRsaKey,
     privateRsaKeyBase64,
     publicRsaKey
-} = require('./rsa_keys');
+} from './rsa_keys.js';
 
-const got = require('got');
-const { when } = require('jest-when');
+import got from 'got';
+import { when } from 'jest-when'
 
-const { exportSecrets } = require('../../src/action');
+import { exportSecrets } from  '../../src/action.js';
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8200'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
@@ -139,7 +140,7 @@ describe('jwt auth', () => {
 
     describe('authenticate with private key', () => {
         beforeEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
 
             when(core.getInput)
                 .calledWith('url', expect.anything())
@@ -189,7 +190,7 @@ describe('jwt auth', () => {
         })
 
         beforeEach(() => {
-            jest.resetAllMocks();
+            vi.resetAllMocks();
 
             when(core.getInput)
                 .calledWith('url', expect.anything())
