@@ -14073,9 +14073,6 @@ function normalizeOutputKey(dataKey, isEnvVar = false) {
     .replace(".", "__")
     .replace(new RegExp("-", "g"), "")
     .replace(/[^\p{L}\p{N}_-]/gu, "");
-  if (isEnvVar) {
-    outputKey = outputKey.toUpperCase();
-  }
   return outputKey;
 }
 
