@@ -1,5 +1,9 @@
 ## Unreleased
 
+Improvements:
+
+* chore(deps): bump jsonata from 2.0.3 to 2.0.4 [GH-531](https://github.com/hashicorp/vault-action/pull/531)
+
 Features:
 
 * `secretId` is no longer required for approle to support advanced use cases like machine login when `bind_secret_id` is false. [GH-522](https://github.com/hashicorp/vault-action/pull/522)
