@@ -1,5 +1,11 @@
 ## Unreleased
 
+Improvements:
+
+* chore(deps): bump jsonata from 2.0.3 to 2.0.4 [GH-531](https://github.com/hashicorp/vault-action/pull/531)
+* chore(deps): bump got from 11.8.6 to 14.2.1 [GH-533](https://github.com/hashicorp/vault-action/pull/533)
+* convert project from common js to an esm module [GH-533](https://github.com/hashicorp/vault-action/pull/533)
+
 Features:
 
 * `secretId` is no longer required for approle to support advanced use cases like machine login when `bind_secret_id` is false. [GH-522](https://github.com/hashicorp/vault-action/pull/522)
