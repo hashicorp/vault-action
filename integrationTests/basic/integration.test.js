@@ -31,6 +31,14 @@ describe('integration', () => {
             },
         });
 
+        await got(`${vaultUrl}/v1/secret/data/test-with-dot-char`, {
+            method: 'POST',
+            headers: {
+                'X-Vault-Token': vaultToken,
+            },
+            body: `{"data":{"secret.foo":"SUPERSECRET"}}`
+        });
+
         await got(`${vaultUrl}/v1/secret/data/nested/test`, {
             method: 'POST',
             headers: {
@@ -191,6 +199,16 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
         expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET');
         expect(core.exportVariable).toBeCalledWith('OTHERSECRETDASH', 'OTHERSUPERSECRET');
+    });
+
+    it('get wildcard secrets with dot char', async () => {
+        mockInput(`secret/data/test-with-dot-char * ;`);
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(1);
+
+        expect(core.exportVariable).toBeCalledWith('SECRET__FOO', 'SUPERSECRET');
     });
 
     it('get wildcard secrets', async () => {
