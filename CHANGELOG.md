@@ -5,6 +5,7 @@ Improvements:
 * chore(deps): bump jsonata from 2.0.3 to 2.0.4 [GH-531](https://github.com/hashicorp/vault-action/pull/531)
 * chore(deps): bump got from 11.8.6 to 14.2.1 [GH-533](https://github.com/hashicorp/vault-action/pull/533)
 * convert project from common js to an esm module [GH-533](https://github.com/hashicorp/vault-action/pull/533)
+* fix wildcard handling when field contains dot [GH-542](https://github.com/hashicorp/vault-action/pull/542)
 
 Features:
 
