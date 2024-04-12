@@ -63,7 +63,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
 
         body = JSON.parse(body);
 
-        if (selector == WILDCARD) {                     
+        if (selector == WILDCARD) {
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -71,20 +71,26 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
 
             for (let key in keys) {
                 let newRequest = Object.assign({},secretRequest);
-                newRequest.selector = key;                  
-                
+                newRequest.selector = key;
+
                 if (secretRequest.selector === secretRequest.outputVarName) {
                     newRequest.outputVarName = key;
-                    newRequest.envVarName = key;        		
-                }
-                else {
+                    newRequest.envVarName = key;
+                } else {
                     newRequest.outputVarName = secretRequest.outputVarName+key;
-                    newRequest.envVarName = secretRequest.envVarName+key;        		
+                    newRequest.envVarName = secretRequest.envVarName+key;
                 }
 
                 newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
-                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);   
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);
 
+                // JSONata field references containing reserved tokens should
+                // be enclosed in backticks
+                // https://docs.jsonata.org/simple#examples
+                if (key.includes(".")) {
+                    const backtick = '`';
+                    key = backtick.concat(key, backtick);
+                }
                 selector = key;
 
                 results = await selectAndAppendResults(
@@ -98,13 +104,13 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
         }
         else {
           results = await selectAndAppendResults(
-            selector, 
-            body, 
-            cachedResponse, 
-            secretRequest, 
+            selector,
+            body,
+            cachedResponse,
+            secretRequest,
             results
           );
-        }   
+        }
     }
 
     return results;
