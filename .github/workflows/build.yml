@@ -133,7 +133,7 @@ jobs:
         VAULT_PORT: 8200
 
     - name: Test Vault Action (default KV V2)
-      uses: ./
+      uses: hashicorp/vault-action@main
       id: kv-secrets
       with:
         url: http://localhost:8200
@@ -144,7 +144,7 @@ jobs:
           secret/data/nested/test otherSecret ;
 
     - name: Test Vault Action (default KV V1)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: http://localhost:8200
         token: testtoken
@@ -154,7 +154,7 @@ jobs:
           my-secret/nested/test otherAltSecret ;
 
     - name: Test Vault Action (cubbyhole)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: http://localhost:8200
         token: testtoken
@@ -165,7 +165,7 @@ jobs:
     # The ordering of these two Test Vault Action Overwrites Env Vars In Subsequent Action steps matters
     # They should come before the Verify Vault Action Outputs step
     - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: http://localhost:8200/
         token: testtoken
@@ -173,7 +173,7 @@ jobs:
           secret/data/test secret | SUBSEQUENT_TEST_SECRET;
 
     - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: http://localhost:8200/
         token: testtoken
@@ -181,7 +181,7 @@ jobs:
           secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
 
     - name: Test JSON Secrets
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: http://localhost:8200
         token: testtoken
@@ -233,7 +233,7 @@ jobs:
         VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
 
     - name: Test Vault Action (default KV V2)
-      uses: ./
+      uses: hashicorp/vault-action@main
       id: kv-secrets-tls
       with:
         url: https://localhost:8200
@@ -247,7 +247,7 @@ jobs:
           secret/data/nested/test otherSecret ;
 
     - name: Test Vault Action (tlsSkipVerify)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: https://localhost:8200
         token: ${{ env.VAULT_TOKEN }}
@@ -258,7 +258,7 @@ jobs:
           secret/data/tlsSkipVerify skip ;
 
     - name: Test Vault Action (default KV V1)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: https://localhost:8200
         token: ${{ env.VAULT_TOKEN }}
@@ -271,7 +271,7 @@ jobs:
           my-secret/nested/test otherAltSecret ;
 
     - name: Test Vault Action (cubbyhole)
-      uses: ./
+      uses: hashicorp/vault-action@main
       with:
         url: https://localhost:8200
         token: ${{ env.VAULT_TOKEN }}
