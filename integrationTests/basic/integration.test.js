@@ -37,7 +37,7 @@ describe('integration', () => {
             headers: {
                 'X-Vault-Token': vaultToken,
             },
-            body: `{"data":{"secret.foo":"SUPERSECRET"}}`
+            body: `{"data":{"secret.foo":{"SUPERKEY":"SUPERSECRET"}}}`
         });
 
         await got(`${vaultUrl}/v1/secret/data/nested/test`, {
