@@ -1,7 +1,9 @@
 // This allows us to use `require` in our ECMAScript module
 // See: https://github.com/vercel/ncc/issues/791
-// https://nodejs.org/api/module.html#modulecreaterequirefilename
 import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+import url from 'node:url';
+
+const __filename = url.fileURLToPath(import.meta.url);
+globalThis.require = createRequire(__filename);
 
 export default require;
