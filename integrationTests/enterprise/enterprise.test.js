@@ -1,12 +1,11 @@
-import { vi, describe, test, expect } from 'vitest';
+jest.mock('@actions/core');
+jest.mock('@actions/core/lib/command');
+const core = require('@actions/core');
 
-vi.mock('@actions/core');
-import core from '@actions/core';
+const got = require('got');
+const { when } = require('jest-when');
 
-import got from 'got';
-import { when } from 'jest-when'
-
-import { exportSecrets } from  '../../src/action.js';
+const { exportSecrets } = require('../../src/action');
 
 const vaultUrl = `http://${process.env.VAULT_HOST || 'localhost'}:${process.env.VAULT_PORT || '8201'}`;
 const vaultToken = `${process.env.VAULT_TOKEN || 'testtoken'}`
@@ -42,7 +41,7 @@ describe('integration', () => {
     });
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        jest.resetAllMocks();
 
         when(core.getInput)
             .calledWith('url', expect.anything())
@@ -239,7 +238,7 @@ describe('authenticate with approle', () => {
     });
 
     beforeEach(() => {
-        vi.resetAllMocks();
+        jest.resetAllMocks();
 
         when(core.getInput)
             .calledWith('method', expect.anything())

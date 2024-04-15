@@ -1,5 +1,3 @@
-import { describe, test, expect } from 'vitest';
-
 describe('e2e', () => {
     it('verify', () => {
         expect(process.env.SECRET).toBe("SUPERSECRET");

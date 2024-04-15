@@ -1,11 +1,7 @@
-import core from '@actions/core';
-import { WILDCARD } from './constants.js';
-import { normalizeOutputKey } from './utils.js';
-
-// ncc doesn't compile jsonata imports properly, so we must use our own custom require
-import require from "./cjs-require.js";
-const jsonata = require('jsonata');
-
+const jsonata = require("jsonata");
+const { WILDCARD } = require("./constants");
+const { normalizeOutputKey } = require("./utils");
+const core = require('@actions/core');
 
 /**
  * @typedef {Object} SecretRequest
@@ -48,7 +44,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
             } catch (error) {
                 const {response} = error;
                 if (response?.statusCode === 404) {
-                    let notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
+                    notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
                     const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
                     if (ignoreNotFound) {
                         core.error(`✘ ${notFoundMsg}`);
@@ -169,7 +165,7 @@ const selectAndAppendResults = async (
   ];
 };
 
-export {
+module.exports = {
     getSecrets,
     selectData
 }

@@ -1,7 +1,7 @@
-import auth from './auth.js';
-import secrets from './secrets.js';
+const auth = require('./auth');
+const secrets = require('./secrets');
 
-export default {
+module.exports = {
     auth,
     secrets
 };

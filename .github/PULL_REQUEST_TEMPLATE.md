@@ -8,6 +8,7 @@ Relates OR Closes #0000
 
 ### Checklist
 - [ ] Added [CHANGELOG](https://github.com/hashicorp/vault-action/blob/master/CHANGELOG.md) entry (only for user-facing changes)
+- [ ] Did not commit changes to `dist/index.js` (This is only done for releases by vault-action maintainers)
 
 
 ### Community Note
