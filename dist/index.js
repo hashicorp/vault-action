@@ -14249,14 +14249,14 @@ async function getClientToken(client, method, path, payload) {
 
 
 
-;// CONCATENATED MODULE: external "module"
-const external_module_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("module");
+;// CONCATENATED MODULE: external "node:module"
+const external_node_module_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:module");
 ;// CONCATENATED MODULE: ./src/cjs-require.js
 // This allows us to use `require` in our ECMAScript module
 // See: https://github.com/vercel/ncc/issues/791
 // https://nodejs.org/api/module.html#modulecreaterequirefilename
 
-const cjs_require_require = (0,external_module_namespaceObject.createRequire)(import.meta.url);
+const cjs_require_require = (0,external_node_module_namespaceObject.createRequire)(import.meta.url);
 
 /* harmony default export */ const cjs_require = (cjs_require_require);
 
