@@ -1,5 +1,5 @@
-import core from '@actions/core';
-import { exportSecrets } from './action.js';
+const core = require('@actions/core');
+const { exportSecrets } = require('./action');
 
 (async () => {
     try {

@@ -1,17 +1,17 @@
-import { vi, describe, test, expect } from 'vitest';
+jest.mock('got');
+jest.mock('@actions/core');
+jest.mock('@actions/core/lib/command');
 
-vi.mock('got');
-vi.mock('@actions/core');
-
-import core from '@actions/core';
-import got from 'got';
-import {
+const command = require('@actions/core/lib/command');
+const core = require('@actions/core');
+const got = require('got');
+const {
     exportSecrets,
     parseSecretsInput,
     parseHeadersInput
-} from './action.js';
+} = require('./action');
 
-import { when } from 'jest-when'
+const { when } = require('jest-when');
 
 describe('parseSecretsInput', () => {
     it('parses simple secret', () => {
@@ -132,7 +132,7 @@ describe('parseHeaders', () => {
 
 describe('exportSecrets', () => {
     beforeEach(() => {
-        vi.resetAllMocks();
+        jest.resetAllMocks();
 
         when(core.getInput)
             .calledWith('url', expect.anything())

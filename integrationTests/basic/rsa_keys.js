@@ -42,7 +42,7 @@ LrJEY9tZaRF8xraMZiOcBcyAt6S/TS29HttJ6+zlhcWx34fItEZ8jA5gzhTmspOY
 -----END PUBLIC KEY-----
 `;
 
-export {
+module.exports = {
     privateRsaKey,
     privateRsaKeyBase64,
     publicRsaKey
