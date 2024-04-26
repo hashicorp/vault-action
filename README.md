@@ -399,6 +399,16 @@ with:
         secret/data/ci/aws * | MYAPP_ ;
 ```
 
+When using the `exportEnv` option all exported keys will be normalized to uppercase.  For example, the key `SecretKey` would be exported as `MYAPP_SECRETKEY`. You disable uppercase normalization by specifying double asterisks `**` in the selector path:
+
+```yaml
+with:
+    secrets: |
+        secret/data/ci/aws ** | MYAPP_ ;
+```
+
+```yaml
+
 ## Other Secret Engines
 
 Vault Action currently supports retrieving secrets from any engine where secrets

@@ -1,5 +1,5 @@
 const jsonata = require("jsonata");
-const { WILDCARD } = require("./constants");
+const { WILDCARD, WILDCARD_UPPERCASE} = require("./constants");
 const { normalizeOutputKey } = require("./utils");
 const core = require('@actions/core');
 
@@ -26,6 +26,7 @@ const core = require('@actions/core');
 async function getSecrets(secretRequests, client, ignoreNotFound) {
     const responseCache = new Map();
     let results = [];
+    let upperCaseEnv = false;
 
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
@@ -59,7 +60,8 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
 
         body = JSON.parse(body);
 
-        if (selector == WILDCARD) {
+        if (selector === WILDCARD || selector === WILDCARD_UPPERCASE) {
+            upperCaseEnv = selector === WILDCARD_UPPERCASE;
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -78,7 +80,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
                 }
 
                 newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
-                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName, upperCaseEnv);
 
                 // JSONata field references containing reserved tokens should
                 // be enclosed in backticks

@@ -9686,6 +9686,13 @@ const dateTime = (function () {
                 if (offset === 0 && markerSpec.presentation2 === 't') {
                     componentValue = 'Z';
                 }
+            } else if (markerSpec.component === 'P') {
+                // §9.8.4.7 Formatting Other Components
+                // Formatting P for am/pm
+                // getDateTimeFragment() always returns am/pm lower case so check for UPPER here
+                if (markerSpec.names === tcase.UPPER) {
+                    componentValue = componentValue.toUpperCase();
+                }
             }
             return componentValue;
         };
@@ -13501,6 +13508,13 @@ var jsonata = (function() {
                 }
                 for(var ii = 0; ii < matches.length; ii++) {
                     var match = matches[ii];
+                    if (match && (match.isPrototypeOf(result) || match instanceof Object.constructor)) {
+                        throw {
+                            code: "D1010",
+                            stack: (new Error()).stack,
+                            position: expr.position
+                        };
+                    }
                     // evaluate the update value for each match
                     var update = await evaluate(expr.update, match, environment);
                     // update must be an object
@@ -13747,7 +13761,7 @@ var jsonata = (function() {
                 if (typeof err.token == 'undefined' && typeof proc.token !== 'undefined') {
                     err.token = proc.token;
                 }
-                err.position = proc.position;
+                err.position = proc.position || err.position;
             }
             throw err;
         }
@@ -14180,6 +14194,7 @@ var jsonata = (function() {
         "T1007": "Attempted to partially apply a non-function. Did you mean ${{{token}}}?",
         "T1008": "Attempted to partially apply a non-function",
         "D1009": "Multiple key definitions evaluate to same key: {{value}}",
+        "D1010": "Attempted to access the Javascript object prototype", // Javascript specific 
         "T1010": "The matcher function argument passed to function {{token}} does not return the correct object structure",
         "T2001": "The left side of the {{token}} operator must evaluate to a number",
         "T2002": "The right side of the {{token}} operator must evaluate to a number",
@@ -18520,7 +18535,7 @@ const command = __nccwpck_require__(7351);
 const got = (__nccwpck_require__(3061)["default"]);
 const jsonata = __nccwpck_require__(4245);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
-const { WILDCARD } = __nccwpck_require__(4438);
+const { WILDCARD, WILDCARD_UPPERCASE } = __nccwpck_require__(4438);
 
 const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
 
@@ -18690,7 +18705,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && selector !== WILDCARD_UPPERCASE && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -18767,7 +18782,7 @@ async function retrieveToken(method, client) {
     switch (method) {
         case 'approle': {
             const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: false });
             return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
         }
         case 'github': {
@@ -18914,11 +18929,14 @@ module.exports = {
 /***/ 4438:
 /***/ ((module) => {
 
-const WILDCARD = '*';
+const WILDCARD_UPPERCASE = '*';
+const WILDCARD = '**';
 
 module.exports = {
-    WILDCARD
+    WILDCARD,
+    WILDCARD_UPPERCASE,
 };
+
 
 /***/ }),
 
@@ -18939,7 +18957,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const jsonata = __nccwpck_require__(4245);
-const { WILDCARD } = __nccwpck_require__(4438);
+const { WILDCARD, WILDCARD_UPPERCASE} = __nccwpck_require__(4438);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
 const core = __nccwpck_require__(2186);
 
@@ -18966,6 +18984,7 @@ const core = __nccwpck_require__(2186);
 async function getSecrets(secretRequests, client, ignoreNotFound) {
     const responseCache = new Map();
     let results = [];
+    let upperCaseEnv = false;
 
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
@@ -18999,7 +19018,8 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
 
         body = JSON.parse(body);
 
-        if (selector == WILDCARD) {
+        if (selector === WILDCARD || selector === WILDCARD_UPPERCASE) {
+            upperCaseEnv = selector === WILDCARD_UPPERCASE;
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -19018,7 +19038,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
                 }
 
                 newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
-                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName, upperCaseEnv);
 
                 // JSONata field references containing reserved tokens should
                 // be enclosed in backticks
@@ -19127,12 +19147,12 @@ module.exports = {
  * @param {string} dataKey
  * @param {boolean=} isEnvVar
  */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
+function normalizeOutputKey(dataKey, upperCase = false) {
   let outputKey = dataKey
     .replace(".", "__")
     .replace(new RegExp("-", "g"), "")
     .replace(/[^\p{L}\p{N}_-]/gu, "");
-  if (isEnvVar) {
+  if (upperCase) {
     outputKey = outputKey.toUpperCase();
   }
   return outputKey;

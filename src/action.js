@@ -4,7 +4,7 @@ const command = require('@actions/core/lib/command');
 const got = require('got').default;
 const jsonata = require('jsonata');
 const { normalizeOutputKey } = require('./utils');
-const { WILDCARD } = require('./constants');
+const { WILDCARD, WILDCARD_UPPERCASE } = require('./constants');
 
 const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
 
@@ -174,7 +174,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && selector !== WILDCARD_UPPERCASE && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
