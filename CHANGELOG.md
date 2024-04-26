@@ -7,6 +7,7 @@ Improvements:
 Features:
 
 * `secretId` is no longer required for approle to support advanced use cases like machine login when `bind_secret_id` is false. [GH-522](https://github.com/hashicorp/vault-action/pull/522)
+* Wildcard secret imports can use `**` to retain case of exported env keys [GH-545](https://github.com/hashicorp/vault-action/pull/545)
 
 ## 3.0.0 (February 15, 2024)
 

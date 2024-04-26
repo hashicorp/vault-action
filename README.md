@@ -407,8 +407,6 @@ with:
         secret/data/ci/aws ** | MYAPP_ ;
 ```
 
-```yaml
-
 ## Other Secret Engines
 
 Vault Action currently supports retrieving secrets from any engine where secrets
