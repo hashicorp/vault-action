@@ -32,12 +32,13 @@ async function retrieveToken(method, client) {
             const privateKey = Buffer.from(privateKeyRaw, 'base64').toString();
             const keyPassword = core.getInput('jwtKeyPassword', { required: false });
             const tokenTtl = core.getInput('jwtTtl', { required: false }) || '3600'; // 1 hour
+            const tokenIat = core.getInput('jwtIat', { required: false }) || '60';
             const githubAudience = core.getInput('jwtGithubAudience', { required: false });
 
             if (!privateKey) {
                 jwt = await core.getIDToken(githubAudience)
             } else {
-                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
+                jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl), Number(tokenIat));
             }
 
             return await getClientToken(client, method, path, { jwt: jwt, role: role });
@@ -79,14 +80,15 @@ async function retrieveToken(method, client) {
  * @param {string} privateKey
  * @param {string} keyPassword
  * @param {number} ttl
+ * @param {number} iat
  */
-function generateJwt(privateKey, keyPassword, ttl) {
+function generateJwt(privateKey, keyPassword, ttl, iat) {
     const alg = 'RS256';
     const header = { alg: alg, typ: 'JWT' };
     const now = rsasign.KJUR.jws.IntDate.getNow();
     const payload = {
         iss: 'vault-action',
-        iat: now,
+        iat: now - iat,
         nbf: now,
         exp: now + ttl,
         event: process.env.GITHUB_EVENT_NAME,
