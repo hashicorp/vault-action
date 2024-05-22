@@ -30,6 +30,7 @@ is not meant to modify Vault’s state.
     - [Simple Key](#simple-key)
     - [Set Output Variable Name](#set-output-variable-name)
     - [Multiple Secrets](#multiple-secrets)
+    - [KV secrets engine version 2](#kv-secrets-engine-version-2)
   - [Other Secret Engines](#other-secret-engines)
   - [Adding Extra Headers](#adding-extra-headers)
   - [HashiCorp Cloud Platform or Vault Enterprise](#hashicorp-cloud-platform-or-vault-enterprise)
@@ -399,6 +400,23 @@ with:
         secret/data/ci/aws * | MYAPP_ ;
 ```
 
+### KV secrets engine version 2
+
+When accessing secrets from the KV secrets engine version 2, Vault Action
+requires the full path to the secret. This is the same path that would be used
+in a Vault policy for the secret. You can find the full path to your secret by
+performing a `kv get` command like the following:
+
+```bash
+$ vault kv get secret/test
+== Secret Path ==
+secret/data/test
+
+...
+```
+
+Note that the full path is not `secret/test`, but `secret/data/test`.
+
 ## Other Secret Engines
 
 Vault Action currently supports retrieving secrets from any engine where secrets
@@ -441,8 +459,8 @@ If you ever need to add extra headers to the vault request, say if you need to a
 ```yaml
 with:
     secrets: |
-        secret/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-        secret/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
+        secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+        secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
     extraHeaders: |
       X-Secure-Id: ${{ secrets.SECURE_ID }}
       X-Secure-Secret: ${{ secrets.SECURE_SECRET }}
@@ -473,9 +491,9 @@ steps:
         token: ${{ secrets.VAULT_TOKEN }}
         namespace: admin
         secrets: |
-            secret/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-            secret/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
-            secret/ci npm_token
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            secret/data/ci npm_token
 ```
 
 ## Reference
