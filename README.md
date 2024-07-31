@@ -486,7 +486,6 @@ steps:
       uses: hashicorp/vault-action
       with:
         url: https://vault-enterprise.mycompany.com:8200
-        caCertificate: ${{ secrets.VAULT_CA_CERT }}
         method: token
         token: ${{ secrets.VAULT_TOKEN }}
         namespace: admin
@@ -494,6 +493,25 @@ steps:
             secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
             secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
             secret/data/ci npm_token
+```
+
+Alternatively, you may need to authenticate to the root namespace and retrieve
+a secret from a different namespace. To do this, do not set the `namespace`
+parameter. Instead set the namespace in the secret path. For example, `<NAMESPACE>/secret/data/app`:
+
+```yaml
+steps:
+    # ...
+    - name: Import Secrets
+      uses: hashicorp/vault-action
+      with:
+        url: https://vault-enterprise.mycompany.com:8200
+        method: token
+        token: ${{ secrets.VAULT_TOKEN }}
+        secrets: |
+            namespace-1/secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            namespace-1/secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            namespace-1/secret/data/ci npm_token
 ```
 
 ## Reference
