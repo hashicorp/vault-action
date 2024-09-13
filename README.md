@@ -417,12 +417,34 @@ secret/data/test
 
 Note that the full path is not `secret/test`, but `secret/data/test`.
 
+## PKI Certificate Requests
+
+You can use the `pki` option to generate a certificate and private key for a given role.
+
+````yaml
+with:
+    pki: |
+        pki/issue/rolename {"common_name": "role.mydomain.com", "ttl": "1h"} ;
+        pki/issue/otherrole {"common_name": "otherrole.mydomain.com", "ttl": "1h"} ;
+```
+
+Resulting in:
+
+```bash
+ROLENAME_CA=-----BEGIN CERTIFICATE-----...
+ROLENAME_CERT=-----BEGIN CERTIFICATE-----...
+ROLENAME_KEY=-----BEGIN RSA PRIVATE KEY-----...
+ROLENAME_CA_CHAIN=-----BEGIN CERTIFICATE-----...
+OTHERROLE_CA=-----BEGIN CERTIFICATE-----...
+OTHERROLE_CERT=-----BEGIN CERTIFICATE-----...
+OTHERROLE_KEY=-----BEGIN RSA PRIVATE KEY-----...
+OTHERROLE_CA_CHAIN=-----BEGIN CERTIFICATE-----...
+````
+
 ## Other Secret Engines
 
 Vault Action currently supports retrieving secrets from any engine where secrets
-are retrieved via `GET` requests.  This means secret engines such as PKI are currently
-not supported due to their requirement of sending parameters along with the request
-(such as `common_name`).
+are retrieved via `GET` requests, except for the PKI engine as noted above.
 
 For example, to request a secret from the `cubbyhole` secret engine:
 

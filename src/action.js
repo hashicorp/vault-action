@@ -6,7 +6,7 @@ const jsonata = require('jsonata');
 const { normalizeOutputKey } = require('./utils');
 const { WILDCARD } = require('./constants');
 
-const { auth: { retrieveToken }, secrets: { getSecrets } } = require('./index');
+const { auth: { retrieveToken }, secrets: { getSecrets }, pki: { getCertificates } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
@@ -21,6 +21,16 @@ async function exportSecrets() {
 
     const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
+
+    const pkiInput = core.getInput('pki', { required: false });
+    let pkiRequests = [];
+    if (pkiInput) {
+        if (secretsInput) {
+            throw Error('You cannot provide both "secrets" and "pki" inputs.');
+        }
+
+        pkiRequests = parsePkiInput(pkiInput);
+    }
 
     const secretEncodingType = core.getInput('secretEncodingType', { required: false });
 
@@ -84,12 +94,12 @@ async function exportSecrets() {
         core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
     }
 
-    const requests = secretRequests.map(request => {
-        const { path, selector } = request;
-        return request;
-    });
-
-    const results = await getSecrets(requests, client);
+    let results = [];
+    if (pkiRequests.length > 0) {
+        results = await getCertificates(pkiRequests, client);
+    } else {
+        results = await getSecrets(secretRequests, client);
+    }
 
 
     for (const result of results) {
@@ -127,6 +137,43 @@ async function exportSecrets() {
  * @property {string} outputVarName
  * @property {string} selector
 */
+
+/**
+ * Parses a pki input string into key paths and the request parameters.
+ * @param {string} pkiInput
+ */
+function parsePkiInput(pkiInput) {
+    if (!pkiInput) {
+        return []
+    }
+
+    const secrets = pkiInput
+        .split(';')
+        .filter(key => !!key)
+        .map(key => key.trim())
+        .filter(key => key.length !== 0);
+
+    return secrets.map(secret => {
+        const path = secret.substring(0, secret.indexOf(' '));
+        const parameters = secret.substring(secret.indexOf(' ') + 1);
+
+        core.debug(`ℹ Parsing PKI: ${path} with parameters: ${parameters}`);
+
+        if (!path || !parameters) {
+            throw Error(`You must provide a valid path and parameters. Input: "${secret}"`);
+        }
+
+        let outputVarName = path.split('/').pop();
+        let envVarName = normalizeOutputKey(outputVarName);
+
+        return { 
+            path, 
+            envVarName, 
+            outputVarName,
+            parameters: JSON.parse(parameters),
+        };
+    });
+}
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
