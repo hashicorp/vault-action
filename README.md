@@ -46,46 +46,51 @@ is not meant to modify Vault’s state.
 
 ```yaml
 jobs:
-    build:
-        # ...
-        steps:
-            # ...
-            - name: Import Secrets
-              id: import-secrets
-              uses: hashicorp/vault-action@v2
-              with:
-                url: https://vault.mycompany.com:8200
-                token: ${{ secrets.VAULT_TOKEN }}
-                caCertificate: ${{ secrets.VAULT_CA_CERT }}
-                secrets: |
-                    secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-                    secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
-                    secret/data/ci npm_token
-            # ...
+  build:
+    # ...
+    steps:
+      # ...
+      - name: Import Secrets
+        id: import-secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: https://vault.mycompany.com:8200
+          token: ${{ secrets.VAULT_TOKEN }}
+          caCertificate: ${{ secrets.VAULT_CA_CERT }}
+          secrets: |
+            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+            secret/data/ci npm_token
+      # ...
 ```
 
 Retrieved secrets are available as environment variables or outputs for subsequent steps:
+
 ```yaml
 #...
-            - name: Step following 'Import Secrets'
-              run: |
-                ACCESS_KEY_ID = "${{ env.AWS_ACCESS_KEY_ID }}"
-                SECRET_ACCESS_KEY = "${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}"
-            # ...
+- name: Step following 'Import Secrets'
+  run: |
+    ACCESS_KEY_ID = "${{ env.AWS_ACCESS_KEY_ID }}"
+    SECRET_ACCESS_KEY = "${{ steps.import-secrets.outputs.AWS_SECRET_ACCESS_KEY }}"
+
+# ...
 ```
 
-If your project needs a format other than env vars and step outputs, you can use additional steps to transform them into the desired format. 
+If your project needs a format other than env vars and step outputs, you can use additional steps to transform them into the desired format.
 For example, a common pattern is to save all the secrets in a JSON file:
+
 ```yaml
 #...
-            - name: Step following 'Import Secrets'
-              run: |
-                touch secrets.json
-                echo '${{ toJson(steps.import-secrets.outputs) }}' >> secrets.json
-            # ...
+- name: Step following 'Import Secrets'
+  run: |
+    touch secrets.json
+    echo '${{ toJson(steps.import-secrets.outputs) }}' >> secrets.json
+
+# ...
 ```
 
 Which with our example would yield a file containing:
+
 ```json
 {
   "ACCESS_KEY_ID": "MY_KEY_ID",
@@ -95,7 +100,6 @@ Which with our example would yield a file containing:
 ```
 
 Note that all secrets are masked so programs need to read the file themselves otherwise all values will be replaced with a `***` placeholder.
-
 
 ## Authentication Methods
 
@@ -110,7 +114,7 @@ and Vault using the
 Each GitHub Actions workflow receives an auto-generated OIDC token with claims
 to establish the identity of the workflow.
 
-__Vault Configuration__
+**Vault Configuration**
 
 <details>
 <summary>Click to toggle instructions for configuring Vault.</summary>
@@ -120,7 +124,6 @@ Pass the following parameters to your auth method configuration:
 
 - `oidc_discovery_url`: `https://token.actions.githubusercontent.com`
 - `bound_issuer`: `https://token.actions.githubusercontent.com`
-
 
 Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) for the auth method.
 
@@ -137,12 +140,12 @@ Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) f
 
   - For wildcard (non-exact) matches, use `bound_claims`.
 
-     - `bound_claims_type`: `glob`
+    - `bound_claims_type`: `glob`
 
-     - `bound_claims`: JSON object. Maps one or more claim names to corresponding wildcard values.
-       ```json
-       {"sub": "repo:<orgName>/*"}
-       ```
+    - `bound_claims`: JSON object. Maps one or more claim names to corresponding wildcard values.
+      ```json
+      { "sub": "repo:<orgName>/*" }
+      ```
 
   - For exact matches, use `bound_subject`.
 
@@ -155,17 +158,17 @@ Configure a [Vault role](https://www.vaultproject.io/api/auth/jwt#create-role) f
 
 </details>
 
-__GitHub Actions Workflow__
+**GitHub Actions Workflow**
 
 In the GitHub Actions workflow, the workflow needs permissions to read contents
 and write the ID token.
 
 ```yaml
 jobs:
-    retrieve-secret:
-        permissions:
-            contents: read
-            id-token: write
+  retrieve-secret:
+    permissions:
+      contents: read
+      id-token: write
 ```
 
 In the action, provide the name of the Vault role you created to the `role` parameter.
@@ -320,7 +323,7 @@ with:
 
 The `secrets` parameter is a set of multiple secret requests separated by the `;` character.
 
-Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name. 
+Each secret request consists of the `path` and the `key` of the desired secret, and optionally the desired Env Var output name.
 Note that the selector is using [JSONata](https://docs.jsonata.org/overview.html) and certain characters in keys may need to be escaped.
 
 ```raw
@@ -333,7 +336,7 @@ To retrieve a key `npmToken` from path `secret/data/ci` that has value `somelong
 
 ```yaml
 with:
-    secrets: secret/data/ci npmToken
+  secrets: secret/data/ci npmToken
 ```
 
 `vault-action` will automatically normalize the given secret selector key, and set the follow as environment variables for the following steps in the current job:
@@ -346,12 +349,12 @@ You can also access the secret via outputs:
 
 ```yaml
 steps:
-    # ...
-    - name: Import Secrets
-      id: secrets
-      # Import config...
-    - name: Sensitive Operation
-      run: "my-cli --token '${{ steps.secrets.outputs.npmToken }}'"
+  # ...
+  - name: Import Secrets
+    id: secrets
+    # Import config...
+  - name: Sensitive Operation
+    run: "my-cli --token '${{ steps.secrets.outputs.npmToken }}'"
 ```
 
 _**Note:** If you'd like to only use outputs and disable automatic environment variables, you can set the `exportEnv` option to `false`._
@@ -362,7 +365,7 @@ However, if you want to set it to a specific name, say `NPM_TOKEN`, you could do
 
 ```yaml
 with:
-    secrets: secret/data/ci npmToken | NPM_TOKEN
+  secrets: secret/data/ci npmToken | NPM_TOKEN
 ```
 
 With that, `vault-action` will now use your requested name and output:
@@ -379,7 +382,6 @@ steps:
     # Import config...
   - name: Sensitive Operation
     run: "my-cli --token '${{ steps.secrets.outputs.NPM_TOKEN }}'"
-
 ```
 
 ### Multiple Secrets
@@ -388,16 +390,17 @@ This action can take multi-line input, so say you had your AWS keys stored in a 
 
 ```yaml
 with:
-    secrets: |
-        secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-        secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
+  secrets: |
+    secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+    secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
 ```
-You can specify a wildcard * for the key name to get all keys in the path.  If you provide an output name with the wildcard, the name will be prepended to the key name:
+
+You can specify a wildcard \* for the key name to get all keys in the path. If you provide an output name with the wildcard, the name will be prepended to the key name:
 
 ```yaml
 with:
-    secrets: |
-        secret/data/ci/aws * | MYAPP_ ;
+  secrets: |
+    secret/data/ci/aws * | MYAPP_ ;
 ```
 
 ### KV secrets engine version 2
@@ -450,9 +453,9 @@ For example, to request a secret from the `cubbyhole` secret engine:
 
 ```yaml
 with:
-    secrets: |
-        /cubbyhole/foo foo ;
-        /cubbyhole/foo zip | MY_KEY ;
+  secrets: |
+    /cubbyhole/foo foo ;
+    /cubbyhole/foo zip | MY_KEY ;
 ```
 
 Resulting in:
@@ -480,12 +483,12 @@ If you ever need to add extra headers to the vault request, say if you need to a
 
 ```yaml
 with:
-    secrets: |
-        secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-        secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
-    extraHeaders: |
-      X-Secure-Id: ${{ secrets.SECURE_ID }}
-      X-Secure-Secret: ${{ secrets.SECURE_SECRET }}
+  secrets: |
+    secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+    secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY
+  extraHeaders: |
+    X-Secure-Id: ${{ secrets.SECURE_ID }}
+    X-Secure-Secret: ${{ secrets.SECURE_SECRET }}
 ```
 
 This will automatically add the `x-secure-id` and `x-secure-secret` headers to every request to Vault.
@@ -503,18 +506,18 @@ parameter specifying the namespace. In HCP Vault, the namespace defaults to `adm
 
 ```yaml
 steps:
-    # ...
-    - name: Import Secrets
-      uses: hashicorp/vault-action
-      with:
-        url: https://vault-enterprise.mycompany.com:8200
-        method: token
-        token: ${{ secrets.VAULT_TOKEN }}
-        namespace: admin
-        secrets: |
-            secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-            secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
-            secret/data/ci npm_token
+  # ...
+  - name: Import Secrets
+    uses: hashicorp/vault-action
+    with:
+      url: https://vault-enterprise.mycompany.com:8200
+      method: token
+      token: ${{ secrets.VAULT_TOKEN }}
+      namespace: admin
+      secrets: |
+        secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+        secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+        secret/data/ci npm_token
 ```
 
 Alternatively, you may need to authenticate to the root namespace and retrieve
@@ -523,17 +526,17 @@ parameter. Instead set the namespace in the secret path. For example, `<NAMESPAC
 
 ```yaml
 steps:
-    # ...
-    - name: Import Secrets
-      uses: hashicorp/vault-action
-      with:
-        url: https://vault-enterprise.mycompany.com:8200
-        method: token
-        token: ${{ secrets.VAULT_TOKEN }}
-        secrets: |
-            namespace-1/secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
-            namespace-1/secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
-            namespace-1/secret/data/ci npm_token
+  # ...
+  - name: Import Secrets
+    uses: hashicorp/vault-action
+    with:
+      url: https://vault-enterprise.mycompany.com:8200
+      method: token
+      token: ${{ secrets.VAULT_TOKEN }}
+      secrets: |
+        namespace-1/secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+        namespace-1/secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+        namespace-1/secret/data/ci npm_token
 ```
 
 ## Reference
@@ -726,9 +729,10 @@ To make it simpler to consume certain secrets as env vars, if no Env/Output Var 
 ## Contributing
 
 If you wish to contribute to this project, the following dependencies are recommended for local development:
+
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) to install dependencies, build project and run tests
 - [docker](https://docs.docker.com/get-docker/) to run the pre-configured vault containers for acceptance tests
-- [docker-compose](https://docs.docker.com/compose/) to spin up the pre-configured vault containers for acceptance tests
+- [docker compose](https://docs.docker.com/compose/) to spin up the pre-configured vault containers for acceptance tests
 - [act](https://github.com/nektos/act) to run the vault-action locally
 
 ### Build
@@ -741,11 +745,11 @@ $ npm install && npm run build
 
 ### Vault test instance
 
-The Github Action needs access to a working Vault instance to function. 
+The Github Action needs access to a working Vault instance to function.
 Multiple docker configurations are available via the docker-compose.yml file to run containers compatible with the various acceptance test suites.
 
 ```sh
-$ docker-compose up -d vault # Choose one of: vault, vault-enterprise, vault-tls depending on which tests you would like to run
+$ docker compose up -d vault # Choose one of: vault, vault-enterprise, vault-tls depending on which tests you would like to run
 ```
 
 Instead of using one of the dockerized instance, you can also use your own local or remote Vault instance by exporting these environment variables:
