@@ -6,283 +6,282 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-      with:
-        node-version: '20.9.0'
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: "20.9.0"
 
-    - name: Setup NPM Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Setup NPM Cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+      - name: NPM Install
+        run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+      - name: NPM Build
+        run: npm run build
 
-    - name: NPM Run Test
-      run: npm run test
+      - name: NPM Run Test
+        run: npm run test
 
   integrationOSS:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-    - name: Run docker-compose
-      run: docker-compose up -d vault
+      - name: Run docker compose
+        run: docker compose up -d vault
 
-    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-      with:
-        node-version: '20.9.0'
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: "20.9.0"
 
-    - name: Setup NPM Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Setup NPM Cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+      - name: NPM Install
+        run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+      - name: NPM Build
+        run: npm run build
 
-    - name: NPM Run test;integration:basic
-      run: npm run test:integration:basic
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: 8200
-        CI: true
+      - name: NPM Run test;integration:basic
+        run: npm run test:integration:basic
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: 8200
+          CI: true
 
   integrationEnterprise:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-    - name: Run docker-compose
-      run: docker-compose up -d vault-enterprise
-      env:
-        VAULT_LICENSE_CI: ${{ secrets.VAULT_LICENSE_CI }}
+      - name: Run docker compose
+        run: docker compose up -d vault-enterprise
+        env:
+          VAULT_LICENSE_CI: ${{ secrets.VAULT_LICENSE_CI }}
 
-    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-      with:
-        node-version: '20.9.0'
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: "20.9.0"
 
-    - name: Setup NPM Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Setup NPM Cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+      - name: NPM Install
+        run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+      - name: NPM Build
+        run: npm run build
 
-    - name: NPM Run test:integration:enterprise
-      run: npm run test:integration:enterprise
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: 8200
-        CI: true
+      - name: NPM Run test:integration:enterprise
+        run: npm run test:integration:enterprise
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: 8200
+          CI: true
 
   e2e:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-    - name: Run docker-compose
-      run: docker-compose up -d vault
+      - name: Run docker compose
+        run: docker compose up -d vault
 
-    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-      with:
-        node-version: '20.9.0'
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: "20.9.0"
 
-    - name: Setup NPM Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Setup NPM Cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+      - name: NPM Install
+        run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+      - name: NPM Build
+        run: npm run build
 
-    - name: Setup Vault
-      run: node ./integrationTests/e2e/setup.js
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: 8200
+      - name: Setup Vault
+        run: node ./integrationTests/e2e/setup.js
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: 8200
 
-    - name: Test Vault Action (default KV V2)
-      uses: ./
-      id: kv-secrets
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          secret/data/test secret ;
-          secret/data/test secret | NAMED_SECRET ;
-          secret/data/nested/test otherSecret ;
+      - name: Test Vault Action (default KV V2)
+        uses: ./
+        id: kv-secrets
+        with:
+          url: http://localhost:8200
+          token: testtoken
+          secrets: |
+            secret/data/test secret ;
+            secret/data/test secret | NAMED_SECRET ;
+            secret/data/nested/test otherSecret ;
 
-    - name: Test Vault Action (default KV V1)
-      uses: ./
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          my-secret/test altSecret ;
-          my-secret/test altSecret | NAMED_ALTSECRET ;
-          my-secret/nested/test otherAltSecret ;
+      - name: Test Vault Action (default KV V1)
+        uses: ./
+        with:
+          url: http://localhost:8200
+          token: testtoken
+          secrets: |
+            my-secret/test altSecret ;
+            my-secret/test altSecret | NAMED_ALTSECRET ;
+            my-secret/nested/test otherAltSecret ;
 
-    - name: Test Vault Action (cubbyhole)
-      uses: ./
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          /cubbyhole/test foo ;
-          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+      - name: Test Vault Action (cubbyhole)
+        uses: ./
+        with:
+          url: http://localhost:8200
+          token: testtoken
+          secrets: |
+            /cubbyhole/test foo ;
+            /cubbyhole/test zip | NAMED_CUBBYSECRET ;
 
-    # The ordering of these two Test Vault Action Overwrites Env Vars In Subsequent Action steps matters
-    # They should come before the Verify Vault Action Outputs step
-    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
-      uses: ./
-      with:
-        url: http://localhost:8200/
-        token: testtoken
-        secrets: |
-          secret/data/test secret | SUBSEQUENT_TEST_SECRET;
+      # The ordering of these two Test Vault Action Overwrites Env Vars In Subsequent Action steps matters
+      # They should come before the Verify Vault Action Outputs step
+      - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 1/2)
+        uses: ./
+        with:
+          url: http://localhost:8200/
+          token: testtoken
+          secrets: |
+            secret/data/test secret | SUBSEQUENT_TEST_SECRET;
 
-    - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
-      uses: ./
-      with:
-        url: http://localhost:8200/
-        token: testtoken
-        secrets: |
-          secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
+      - name: Test Vault Action Overwrites Env Vars In Subsequent Action (part 2/2)
+        uses: ./
+        with:
+          url: http://localhost:8200/
+          token: testtoken
+          secrets: |
+            secret/data/subsequent-test secret | SUBSEQUENT_TEST_SECRET;
 
-    - name: Test JSON Secrets
-      uses: ./
-      with:
-        url: http://localhost:8200
-        token: testtoken
-        secrets: |
-          secret/data/test-json-data jsonData;
-          secret/data/test-json-string jsonString;
-          secret/data/test-json-string-multiline jsonStringMultiline;
+      - name: Test JSON Secrets
+        uses: ./
+        with:
+          url: http://localhost:8200
+          token: testtoken
+          secrets: |
+            secret/data/test-json-data jsonData;
+            secret/data/test-json-string jsonString;
+            secret/data/test-json-string-multiline jsonStringMultiline;
 
-    - name: Verify Vault Action Outputs
-      run: npm run test:integration:e2e
-      env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
-
+      - name: Verify Vault Action Outputs
+        run: npm run test:integration:e2e
+        env:
+          OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets.outputs.otherSecret }}
 
   e2e-tls:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
-    - name: Run docker-compose
-      run: docker-compose up -d vault-tls
+      - name: Run docker compose
+        run: docker compose up -d vault-tls
 
-    - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
-      with:
-        node-version: '20.9.0'
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: "20.9.0"
 
-    - name: Setup NPM Cache
-      uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Setup NPM Cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: NPM Install
-      run: npm ci
+      - name: NPM Install
+        run: npm ci
 
-    - name: NPM Build
-      run: npm run build
+      - name: NPM Build
+        run: npm run build
 
-    - name: Setup Vault
-      run: node ./integrationTests/e2e-tls/setup.js
-      env:
-        VAULT_HOST: localhost
-        VAULT_PORT: 8200
-        VAULTCA: ${{ secrets.VAULTCA }}
-        VAULT_CLIENT_CERT: ${{ secrets.VAULT_CLIENT_CERT }}
-        VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
+      - name: Setup Vault
+        run: node ./integrationTests/e2e-tls/setup.js
+        env:
+          VAULT_HOST: localhost
+          VAULT_PORT: 8200
+          VAULTCA: ${{ secrets.VAULTCA }}
+          VAULT_CLIENT_CERT: ${{ secrets.VAULT_CLIENT_CERT }}
+          VAULT_CLIENT_KEY: ${{ secrets.VAULT_CLIENT_KEY }}
 
-    - name: Test Vault Action (default KV V2)
-      uses: ./
-      id: kv-secrets-tls
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          secret/data/test secret ;
-          secret/data/test secret | NAMED_SECRET ;
-          secret/data/nested/test otherSecret ;
+      - name: Test Vault Action (default KV V2)
+        uses: ./
+        id: kv-secrets-tls
+        with:
+          url: https://localhost:8200
+          token: ${{ env.VAULT_TOKEN }}
+          caCertificate: ${{ secrets.VAULTCA }}
+          clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+          clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+          secrets: |
+            secret/data/test secret ;
+            secret/data/test secret | NAMED_SECRET ;
+            secret/data/nested/test otherSecret ;
 
-    - name: Test Vault Action (tlsSkipVerify)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        tlsSkipVerify: true
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          secret/data/tlsSkipVerify skip ;
+      - name: Test Vault Action (tlsSkipVerify)
+        uses: ./
+        with:
+          url: https://localhost:8200
+          token: ${{ env.VAULT_TOKEN }}
+          tlsSkipVerify: true
+          clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+          clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+          secrets: |
+            secret/data/tlsSkipVerify skip ;
 
-    - name: Test Vault Action (default KV V1)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
-        secrets: |
-          my-secret/test altSecret ;
-          my-secret/test altSecret | NAMED_ALTSECRET ;
-          my-secret/nested/test otherAltSecret ;
+      - name: Test Vault Action (default KV V1)
+        uses: ./
+        with:
+          url: https://localhost:8200
+          token: ${{ env.VAULT_TOKEN }}
+          caCertificate: ${{ secrets.VAULTCA }}
+          clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+          clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+          secrets: |
+            my-secret/test altSecret ;
+            my-secret/test altSecret | NAMED_ALTSECRET ;
+            my-secret/nested/test otherAltSecret ;
 
-    - name: Test Vault Action (cubbyhole)
-      uses: ./
-      with:
-        url: https://localhost:8200
-        token: ${{ env.VAULT_TOKEN }}
-        secrets: |
-          /cubbyhole/test foo ;
-          /cubbyhole/test zip | NAMED_CUBBYSECRET ;
-        caCertificate: ${{ secrets.VAULTCA }}
-        clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
-        clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
+      - name: Test Vault Action (cubbyhole)
+        uses: ./
+        with:
+          url: https://localhost:8200
+          token: ${{ env.VAULT_TOKEN }}
+          secrets: |
+            /cubbyhole/test foo ;
+            /cubbyhole/test zip | NAMED_CUBBYSECRET ;
+          caCertificate: ${{ secrets.VAULTCA }}
+          clientCertificate: ${{ secrets.VAULT_CLIENT_CERT }}
+          clientKey: ${{ secrets.VAULT_CLIENT_KEY }}
 
-    - name: Verify Vault Action Outputs
-      run: npm run test:integration:e2e-tls
-      env:
-        OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecret }}
+      - name: Verify Vault Action Outputs
+        run: npm run test:integration:e2e-tls
+        env:
+          OTHER_SECRET_OUTPUT: ${{ steps.kv-secrets-tls.outputs.otherSecret }}
