@@ -9686,6 +9686,13 @@ const dateTime = (function () {
                 if (offset === 0 && markerSpec.presentation2 === 't') {
                     componentValue = 'Z';
                 }
+            } else if (markerSpec.component === 'P') {
+                // §9.8.4.7 Formatting Other Components
+                // Formatting P for am/pm
+                // getDateTimeFragment() always returns am/pm lower case so check for UPPER here
+                if (markerSpec.names === tcase.UPPER) {
+                    componentValue = componentValue.toUpperCase();
+                }
             }
             return componentValue;
         };
@@ -13501,6 +13508,13 @@ var jsonata = (function() {
                 }
                 for(var ii = 0; ii < matches.length; ii++) {
                     var match = matches[ii];
+                    if (match && (match.isPrototypeOf(result) || match instanceof Object.constructor)) {
+                        throw {
+                            code: "D1010",
+                            stack: (new Error()).stack,
+                            position: expr.position
+                        };
+                    }
                     // evaluate the update value for each match
                     var update = await evaluate(expr.update, match, environment);
                     // update must be an object
@@ -13747,7 +13761,7 @@ var jsonata = (function() {
                 if (typeof err.token == 'undefined' && typeof proc.token !== 'undefined') {
                     err.token = proc.token;
                 }
-                err.position = proc.position;
+                err.position = proc.position || err.position;
             }
             throw err;
         }
@@ -14180,6 +14194,7 @@ var jsonata = (function() {
         "T1007": "Attempted to partially apply a non-function. Did you mean ${{{token}}}?",
         "T1008": "Attempted to partially apply a non-function",
         "D1009": "Multiple key definitions evaluate to same key: {{value}}",
+        "D1010": "Attempted to access the Javascript object prototype", // Javascript specific 
         "T1010": "The matcher function argument passed to function {{token}} does not return the correct object structure",
         "T2001": "The left side of the {{token}} operator must evaluate to a number",
         "T2002": "The right side of the {{token}} operator must evaluate to a number",
@@ -18522,7 +18537,7 @@ const jsonata = __nccwpck_require__(4245);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
 const { WILDCARD } = __nccwpck_require__(4438);
 
-const { auth: { retrieveToken }, secrets: { getSecrets } } = __nccwpck_require__(4351);
+const { auth: { retrieveToken }, secrets: { getSecrets }, pki: { getCertificates } } = __nccwpck_require__(4351);
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
 const ENCODING_TYPES = ['base64', 'hex', 'utf8'];
@@ -18537,6 +18552,16 @@ async function exportSecrets() {
 
     const secretsInput = core.getInput('secrets', { required: false });
     const secretRequests = parseSecretsInput(secretsInput);
+
+    const pkiInput = core.getInput('pki', { required: false });
+    let pkiRequests = [];
+    if (pkiInput) {
+        if (secretsInput) {
+            throw Error('You cannot provide both "secrets" and "pki" inputs.');
+        }
+
+        pkiRequests = parsePkiInput(pkiInput);
+    }
 
     const secretEncodingType = core.getInput('secretEncodingType', { required: false });
 
@@ -18600,12 +18625,12 @@ async function exportSecrets() {
         core.exportVariable('VAULT_TOKEN', `${vaultToken}`);
     }
 
-    const requests = secretRequests.map(request => {
-        const { path, selector } = request;
-        return request;
-    });
-
-    const results = await getSecrets(requests, client);
+    let results = [];
+    if (pkiRequests.length > 0) {
+        results = await getCertificates(pkiRequests, client);
+    } else {
+        results = await getSecrets(secretRequests, client);
+    }
 
 
     for (const result of results) {
@@ -18643,6 +18668,43 @@ async function exportSecrets() {
  * @property {string} outputVarName
  * @property {string} selector
 */
+
+/**
+ * Parses a pki input string into key paths and the request parameters.
+ * @param {string} pkiInput
+ */
+function parsePkiInput(pkiInput) {
+    if (!pkiInput) {
+        return []
+    }
+
+    const secrets = pkiInput
+        .split(';')
+        .filter(key => !!key)
+        .map(key => key.trim())
+        .filter(key => key.length !== 0);
+
+    return secrets.map(secret => {
+        const path = secret.substring(0, secret.indexOf(' '));
+        const parameters = secret.substring(secret.indexOf(' ') + 1);
+
+        core.debug(`ℹ Parsing PKI: ${path} with parameters: ${parameters}`);
+
+        if (!path || !parameters) {
+            throw Error(`You must provide a valid path and parameters. Input: "${secret}"`);
+        }
+
+        let outputVarName = path.split('/').pop();
+        let envVarName = normalizeOutputKey(outputVarName);
+
+        return { 
+            path, 
+            envVarName, 
+            outputVarName,
+            parameters: JSON.parse(parameters),
+        };
+    });
+}
 
 /**
  * Parses a secrets input string into key paths and their resulting environment variable name.
@@ -18767,7 +18829,7 @@ async function retrieveToken(method, client) {
     switch (method) {
         case 'approle': {
             const vaultRoleId = core.getInput('roleId', { required: true });
-            const vaultSecretId = core.getInput('secretId', { required: true });
+            const vaultSecretId = core.getInput('secretId', { required: false });
             return await getClientToken(client, method, path, { role_id: vaultRoleId, secret_id: vaultSecretId });
         }
         case 'github': {
@@ -18927,10 +18989,94 @@ module.exports = {
 
 const auth = __nccwpck_require__(4915);
 const secrets = __nccwpck_require__(8452);
+const pki = __nccwpck_require__(1973);
 
 module.exports = {
     auth,
-    secrets
+    secrets,
+    pki
+};
+
+/***/ }),
+
+/***/ 1973:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { normalizeOutputKey } = __nccwpck_require__(1608);
+const core = __nccwpck_require__(2186);
+
+/** A map of postfix values mapped to the key in the certificate response and a transformer function */
+const outputMap = {
+    cert: { key: 'certificate', tx: (v) => v },
+    key: { key: 'private_key', tx: (v) => v },
+    ca: { key: 'issuing_ca', tx: (v) => v },
+    ca_chain: { key: 'ca_chain', tx: (v) => v.join('\n') },
+};
+
+/**
+ * @typedef PkiRequest
+ * @type {object}
+ * @property {string} path - The path to the PKI endpoint
+ * @property {Record<string, any>} parameters - The parameters to send to the PKI endpoint
+ * @property {string} envVarName - The name of the environment variable to set
+ * @property {string} outputVarName - The name of the output variable to set
+ */
+
+/**
+ * @typedef {Object} PkiResponse
+ * @property {PkiRequest} request
+ * @property {string} value
+ * @property {boolean} cachedResponse
+ */
+
+/**
+ * Generate and return the certificates from the PKI engine
+ * @param {Array<PkiRequest>} pkiRequests
+ * @param {import('got').Got} client
+ * @return {Promise<Array<PkiResponse>>}
+ */
+async function getCertificates(pkiRequests, client) {
+    /** @type Array<PkiResponse> */
+    let results = [];
+
+    for (const pkiRequest of pkiRequests) {
+        const { path, parameters } = pkiRequest;
+
+        const requestPath = `v1/${path}`;
+        let body;
+        try {
+            const result = await client.post(requestPath, {
+                body: JSON.stringify(parameters),
+            });
+            body = result.body;
+        } catch (error) {
+            core.error(`✘ ${error.response?.body ?? error.message}`);
+            throw error;
+        }
+
+        body = JSON.parse(body);
+
+        core.info(`✔ Successfully generated certificate (serial number ${body.data.serial_number})`);
+
+        Object.entries(outputMap).forEach(([key, value]) => {
+            const val = value.tx(body.data[value.key]);
+            results.push({
+                request: {
+                    ...pkiRequest,
+                    envVarName: normalizeOutputKey(`${pkiRequest.envVarName}_${key}`, true),
+                    outputVarName: normalizeOutputKey(`${pkiRequest.outputVarName}_${key}`),
+                },
+                value: val,
+                cachedResponse: false,
+            });
+        });
+    }
+
+    return results;
+}
+
+module.exports = {
+    getCertificates,
 };
 
 /***/ }),
