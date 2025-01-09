@@ -1,8 +1,12 @@
-## Unreleased
+## 3.1.0 (January 9, 2025)
 
 Improvements:
 
 * fix wildcard handling when field contains dot [GH-542](https://github.com/hashicorp/vault-action/pull/542)
+* bump body-parser from 1.20.0 to 1.20.3
+* bump braces from 3.0.2 to 3.0.3
+* bump cross-spawn from 7.0.3 to 7.0.6
+* bump micromatch from 4.0.5 to 4.0.8
 
 Features:
 
