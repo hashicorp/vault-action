@@ -18847,7 +18847,10 @@ async function retrieveToken(method, client) {
             const githubAudience = core.getInput('jwtGithubAudience', { required: false });
 
             if (!privateKey) {
-                jwt = await core.getIDToken(githubAudience)
+                jwt = await retryAsyncFunction( 3, 3000, core.getIDToken, githubAudience)
+                  .then((result) => {
+                    return result;
+                });
             } else {
                 jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
             }
@@ -18952,6 +18955,30 @@ async function getClientToken(client, method, path, payload) {
     } else {
         throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
     }
+}
+
+/***
+ * Generic function for retrying an async function
+ * @param {number} retries
+ * @param {number} delay milliseconds
+ * @param {Function} func
+ * @param {any[]} args
+ */
+async function retryAsyncFunction(retries, delay, func, ...args) {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const result = await func(...args);
+      return result;
+    } catch (error) {
+      attempt++;
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
 }
 
 /***
