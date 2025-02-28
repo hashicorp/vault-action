@@ -18817,6 +18817,8 @@ const fs = __nccwpck_require__(7147);
 const { default: got } = __nccwpck_require__(3061);
 
 const defaultKubernetesTokenPath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+const retries = 5
+const retries_delay = 3000
 /***
  * Authenticate with Vault and retrieve a Vault token that can be used for requests.
  * @param {string} method
@@ -18847,7 +18849,10 @@ async function retrieveToken(method, client) {
             const githubAudience = core.getInput('jwtGithubAudience', { required: false });
 
             if (!privateKey) {
-                jwt = await core.getIDToken(githubAudience)
+                jwt = await retryAsyncFunction(retries, retries_delay, core.getIDToken, githubAudience)
+                  .then((result) => {
+                    return result;
+                });
             } else {
                 jwt = generateJwt(privateKey, keyPassword, Number(tokenTtl));
             }
@@ -18952,6 +18957,30 @@ async function getClientToken(client, method, path, payload) {
     } else {
         throw Error(`Unable to retrieve token from ${method}'s login endpoint.`);
     }
+}
+
+/***
+ * Generic function for retrying an async function
+ * @param {number} retries
+ * @param {number} delay
+ * @param {Function} func
+ * @param {any[]} args
+ */
+async function retryAsyncFunction(retries, delay, func, ...args) {
+  let attempt = 0;
+  while (attempt < retries) {
+    try {
+      const result = await func(...args);
+      return result;
+    } catch (error) {
+      attempt++;
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
 }
 
 /***

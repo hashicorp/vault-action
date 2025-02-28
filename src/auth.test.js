@@ -85,4 +85,23 @@ describe("test retrival for token", () => {
         const url = got.post.mock.calls[0][0]
         expect(url).toContain('differentK8sPath')
     })
+
+    it("test retrieval with jwt", async () => {
+        const method = "jwt"
+        const jwtToken = "someTestToken"
+        const testRole = "testRole"
+        const privateKeyRaw = ""
+
+        mockApiResponse()
+        mockInput("role", testRole)
+        mockInput("jwtPrivateKey", privateKeyRaw)
+        core.getIDToken = jest.fn()
+        core.getIDToken.mockReturnValueOnce(jwtToken)
+        const token = await retrieveToken(method, got)
+        expect(token).toEqual(testToken)
+        const payload = got.post.mock.calls[0][1].json
+        expect(payload).toEqual({ jwt: jwtToken,  role: testRole })
+        const url = got.post.mock.calls[0][0]
+        expect(url).toContain('jwt')
+  })
 })
