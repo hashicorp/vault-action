@@ -1,13 +1,28 @@
-## Unreleased
+## 3.3.0 (March 3, 2025)
+
+Features:
+* Wildcard secret imports can use `**` to retain case of exported env keys [GH-545](https://github.com/hashicorp/vault-action/pull/545)
+
+## 3.2.0 (March 3, 2025)
+
+Improvements:
+
+* Add retry for jwt auth login to fix intermittent login failures [GH-574](https://github.com/hashicorp/vault-action/pull/574)
+
+## 3.1.0 (January 9, 2025)
 
 Improvements:
 
 * fix wildcard handling when field contains dot [GH-542](https://github.com/hashicorp/vault-action/pull/542)
+* bump body-parser from 1.20.0 to 1.20.3
+* bump braces from 3.0.2 to 3.0.3
+* bump cross-spawn from 7.0.3 to 7.0.6
+* bump micromatch from 4.0.5 to 4.0.8
 
 Features:
 
 * `secretId` is no longer required for approle to support advanced use cases like machine login when `bind_secret_id` is false. [GH-522](https://github.com/hashicorp/vault-action/pull/522)
-* Wildcard secret imports can use `**` to retain case of exported env keys [GH-545](https://github.com/hashicorp/vault-action/pull/545)
+* Use `pki` configuration to generate certificates from Vault [GH-564](https://github.com/hashicorp/vault-action/pull/564)
 
 ## 3.0.0 (February 15, 2024)
 

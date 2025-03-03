@@ -112,6 +112,69 @@ describe('integration', () => {
                 "other-Secret-dash": 'OTHERCUSTOMSECRET',
             },
         });
+
+        // Enable pki engine
+        try {
+            await got(`${vaultUrl}/v1/sys/mounts/pki`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': vaultToken,
+                },
+                json: {
+                    type: 'pki'
+                }
+            });
+        } catch (error) {
+            const {response} = error;
+            if (response.statusCode === 400 && response.body.includes("path is already in use")) {
+                // Engine might already be enabled from previous test runs
+            } else {
+                throw error;
+            }
+        }
+
+        // Configure Root CA
+        try {
+            await got(`${vaultUrl}/v1/pki/root/generate/internal`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': vaultToken,
+                },
+                json: {
+                    common_name: 'test',
+                    ttl: '24h',
+                },
+            });
+        } catch (error) {
+            const {response} = error;
+            if (response.statusCode === 400 && response.body.includes("already exists")) {
+                // Root CA might already be configured from previous test runs
+            } else {
+                throw error;
+            }
+        }
+
+        // Configure PKI Role
+        try {
+            await got(`${vaultUrl}/v1/pki/roles/Test`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': vaultToken,
+                },
+                json: {
+                    allowed_domains: ['test'],
+                    allow_bare_domains: true,
+                    max_ttl: '1h',
+                },
+            });
+        } catch (error) {
+            const {response} = error;
+            if (response.statusCode === 400 && response.body.includes("already exists")) {
+                // Role might already be configured from previous test runs
+            } else {
+                throw error;
+            }
+        }
     });
 
     beforeEach(() => {
@@ -130,6 +193,12 @@ describe('integration', () => {
         when(core.getInput)
             .calledWith('secrets', expect.anything())
             .mockReturnValueOnce(secrets);
+    }
+
+    function mockPkiInput(pki) {
+        when(core.getInput)
+            .calledWith('pki', expect.anything())
+            .mockReturnValueOnce(pki);
     }
 
     function mockIgnoreNotFound(shouldIgnore) {
@@ -161,6 +230,19 @@ describe('integration', () => {
         expect(core.exportVariable).toBeCalledWith('SECRET', 'SUPERSECRET');
         expect(core.exportVariable).toBeCalledWith('NAMED_SECRET', 'SUPERSECRET');
     })
+
+    it('gets a pki certificate', async () => {
+        mockPkiInput('pki/issue/Test {"common_name":"test","ttl":"1h"}');
+
+        await exportSecrets();
+
+        expect(core.exportVariable).toBeCalledTimes(4);
+
+        expect(core.exportVariable).toBeCalledWith('TEST_KEY', expect.anything());
+        expect(core.exportVariable).toBeCalledWith('TEST_CERT', expect.anything());
+        expect(core.exportVariable).toBeCalledWith('TEST_CA', expect.anything());
+        expect(core.exportVariable).toBeCalledWith('TEST_CA_CHAIN', expect.anything());
+    });
 
     it('get simple secret', async () => {
         mockInput('secret/data/test secret');

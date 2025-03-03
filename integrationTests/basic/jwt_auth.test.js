@@ -97,6 +97,8 @@ describe('jwt auth', () => {
             }
         });
 
+        // write the jwt config, the jwt role will be written on a per-test
+        // basis since the audience may vary
         await got(`${vaultUrl}/v1/auth/jwt/config`, {
             method: 'POST',
             headers: {
@@ -105,22 +107,6 @@ describe('jwt auth', () => {
             json: {
                 jwt_validation_pubkeys: publicRsaKey,
                 default_role: "default"
-            }
-        });
-
-        await got(`${vaultUrl}/v1/auth/jwt/role/default`, {
-            method: 'POST',
-            headers: {
-                'X-Vault-Token': vaultToken,
-            },
-            json: {
-                role_type: 'jwt',
-                bound_audiences: null,
-                bound_claims: {
-                    iss: 'vault-action'
-                },
-                user_claim: 'iss',
-                policies: ['reader']
             }
         });
 
@@ -138,6 +124,24 @@ describe('jwt auth', () => {
     });
 
     describe('authenticate with private key', () => {
+        beforeAll(async () => {
+            await got(`${vaultUrl}/v1/auth/jwt/role/default`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': vaultToken,
+                },
+                json: {
+                    role_type: 'jwt',
+                    bound_audiences: null,
+                    bound_claims: {
+                        iss: 'vault-action'
+                    },
+                    user_claim: 'iss',
+                    policies: ['reader']
+                }
+            });
+        });
+
         beforeEach(() => {
             jest.resetAllMocks();
 
@@ -170,6 +174,22 @@ describe('jwt auth', () => {
 
     describe('authenticate with Github OIDC', () => {
         beforeAll(async () => {
+            await got(`${vaultUrl}/v1/auth/jwt/role/default`, {
+                method: 'POST',
+                headers: {
+                    'X-Vault-Token': vaultToken,
+                },
+                json: {
+                    role_type: 'jwt',
+                    bound_audiences: 'https://github.com/hashicorp/vault-action',
+                    bound_claims: {
+                        iss: 'vault-action'
+                    },
+                    user_claim: 'iss',
+                    policies: ['reader']
+                }
+            });
+
             await got(`${vaultUrl}/v1/auth/jwt/role/default-sigstore`, {
                 method: 'POST',
                 headers: {
@@ -177,7 +197,7 @@ describe('jwt auth', () => {
                 },
                 json: {
                     role_type: 'jwt',
-                    bound_audiences: null,
+                    bound_audiences: 'sigstore',
                     bound_claims: {
                         iss: 'vault-action',
                         aud: 'sigstore',
