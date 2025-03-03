@@ -18535,7 +18535,7 @@ const command = __nccwpck_require__(7351);
 const got = (__nccwpck_require__(3061)["default"]);
 const jsonata = __nccwpck_require__(4245);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
-const { WILDCARD } = __nccwpck_require__(4438);
+const { WILDCARD, WILDCARD_UPPERCASE } = __nccwpck_require__(4438);
 
 const { auth: { retrieveToken }, secrets: { getSecrets }, pki: { getCertificates } } = __nccwpck_require__(4351);
 
@@ -18752,7 +18752,7 @@ function parseSecretsInput(secretsInput) {
         const selectorAst = jsonata(selectorQuoted).ast();
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
-        if (selector !== WILDCARD && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
+        if (selector !== WILDCARD && selector !== WILDCARD_UPPERCASE && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {
             throw Error(`You must provide a name for the output key when using json selectors. Input: "${secret}"`);
         }
 
@@ -19005,11 +19005,14 @@ module.exports = {
 /***/ 4438:
 /***/ ((module) => {
 
-const WILDCARD = '*';
+const WILDCARD_UPPERCASE = '*';
+const WILDCARD = '**';
 
 module.exports = {
-    WILDCARD
+    WILDCARD,
+    WILDCARD_UPPERCASE,
 };
+
 
 /***/ }),
 
@@ -19114,7 +19117,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const jsonata = __nccwpck_require__(4245);
-const { WILDCARD } = __nccwpck_require__(4438);
+const { WILDCARD, WILDCARD_UPPERCASE} = __nccwpck_require__(4438);
 const { normalizeOutputKey } = __nccwpck_require__(1608);
 const core = __nccwpck_require__(2186);
 
@@ -19141,6 +19144,7 @@ const core = __nccwpck_require__(2186);
 async function getSecrets(secretRequests, client, ignoreNotFound) {
     const responseCache = new Map();
     let results = [];
+    let upperCaseEnv = false;
 
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
@@ -19174,7 +19178,8 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
 
         body = JSON.parse(body);
 
-        if (selector == WILDCARD) {
+        if (selector === WILDCARD || selector === WILDCARD_UPPERCASE) {
+            upperCaseEnv = selector === WILDCARD_UPPERCASE;
             let keys = body.data;
             if (body.data["data"] != undefined) {
                 keys = keys.data;
@@ -19193,7 +19198,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
                 }
 
                 newRequest.outputVarName = normalizeOutputKey(newRequest.outputVarName);
-                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName,true);
+                newRequest.envVarName = normalizeOutputKey(newRequest.envVarName, upperCaseEnv);
 
                 // JSONata field references containing reserved tokens should
                 // be enclosed in backticks
@@ -19302,12 +19307,12 @@ module.exports = {
  * @param {string} dataKey
  * @param {boolean=} isEnvVar
  */
-function normalizeOutputKey(dataKey, isEnvVar = false) {
+function normalizeOutputKey(dataKey, upperCase = false) {
   let outputKey = dataKey
     .replace(".", "__")
     .replace(new RegExp("-", "g"), "")
     .replace(/[^\p{L}\p{N}_-]/gu, "");
-  if (isEnvVar) {
+  if (upperCase) {
     outputKey = outputKey.toUpperCase();
   }
   return outputKey;

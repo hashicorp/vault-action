@@ -1,3 +1,8 @@
+## 3.3.0 (March 3, 2025)
+
+Features:
+* Wildcard secret imports can use `**` to retain case of exported env keys [GH-545](https://github.com/hashicorp/vault-action/pull/545)
+
 ## 3.2.0 (March 3, 2025)
 
 Improvements:

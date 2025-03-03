@@ -1,5 +1,7 @@
-const WILDCARD = '*';
+const WILDCARD_UPPERCASE = '*';
+const WILDCARD = '**';
 
 module.exports = {
-    WILDCARD
+    WILDCARD,
+    WILDCARD_UPPERCASE,
 };

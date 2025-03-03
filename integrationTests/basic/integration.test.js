@@ -395,7 +395,7 @@ describe('integration', () => {
             expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
         });
 
-        it('wildcard supports cubbyhole', async () => {            
+        it('wildcard supports cubbyhole with uppercase transform', async () => {
             mockInput('/cubbyhole/test *');
 
             await exportSecrets();
@@ -404,6 +404,32 @@ describe('integration', () => {
 
             expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
             expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+        });
+
+        it('wildcard supports cubbyhole with no change in case', async () => {
+            mockInput('/cubbyhole/test **');
+
+            await exportSecrets();
+
+            expect(core.exportVariable).toBeCalledTimes(2);
+
+            expect(core.exportVariable).toBeCalledWith('foo', 'bar');
+            expect(core.exportVariable).toBeCalledWith('zip', 'zap');
+        });
+
+        it('wildcard supports cubbyhole with mixed case change', async () => {
+            mockInput(`
+            /cubbyhole/test * ;
+            /cubbyhole/test **`);
+
+            await exportSecrets();
+
+            expect(core.exportVariable).toBeCalledTimes(4);
+
+            expect(core.exportVariable).toBeCalledWith('FOO', 'bar');
+            expect(core.exportVariable).toBeCalledWith('ZIP', 'zap');
+            expect(core.exportVariable).toBeCalledWith('foo', 'bar');
+            expect(core.exportVariable).toBeCalledWith('zip', 'zap');
         });
         
         it('caches responses', async () => {            
