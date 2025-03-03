@@ -1,6 +1,6 @@
 ## 3.2.0 (March 3, 2025)
 
-Bugs:
+Improvements:
 
 * Add retry for jwt auth login to fix intermittent login failures [GH-574](https://github.com/hashicorp/vault-action/pull/574)
 
