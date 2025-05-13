@@ -5,7 +5,7 @@
  */
 function normalizeOutputKey(dataKey, upperCase = false) {
   let outputKey = dataKey
-    .replace(".", "__")
+    .replaceAll(".", "__")
     .replace(new RegExp("-", "g"), "")
     .replace(/[^\p{L}\p{N}_-]/gu, "");
   if (upperCase) {
