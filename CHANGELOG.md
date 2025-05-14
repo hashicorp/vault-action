@@ -1,3 +1,9 @@
+## Unreleased
+
+Bugs:
+
+* replace all dot chars during normalization (https://github.com/hashicorp/vault-action/pull/580)
+
 ## 3.3.0 (March 3, 2025)
 
 Features:
