@@ -19271,7 +19271,7 @@ const selectAndAppendResults = async (
   secretRequest,
   results
 ) => {
-  if (!selector.match(/.*[\.].*/)) {
+  if (!selector.includes(".")) {
     selector = '"' + selector + '"';
   }
   selector = "data." + selector;
