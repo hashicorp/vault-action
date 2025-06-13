@@ -1,8 +1,14 @@
 ## Unreleased
 
+## 3.4.0 (June 13, 2025)
+
 Bugs:
 
 * replace all dot chars during normalization (https://github.com/hashicorp/vault-action/pull/580)
+
+Improvements:
+
+* Prevent possible DoS via polynomial regex (https://github.com/hashicorp/vault-action/pull/583)
 
 ## 3.3.0 (March 3, 2025)
 
