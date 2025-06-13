@@ -236,7 +236,7 @@ with:
 
 You can configure trust between your own OIDC Provider and Vault
 with the JWT auth method. Provide a `role` & `jwtPrivateKey` parameters,
-additionally you can pass `jwtKeyPassword` & `jwtTtl` parameters
+additionally you can pass `jwtKeyPassword`, `jwtTtl`, & `jwtIat` parameters.
 
 ```yaml
 with:
@@ -247,6 +247,7 @@ with:
   jwtPrivateKey: ${{ secrets.JWT_PRIVATE_KEY }}
   jwtKeyPassword: ${{ secrets.JWT_KEY_PASS }}
   jwtTtl: 3600 # 1 hour, default value
+  jwtIat: 60 # 1 min, default value.  Negative int postdates
 ```
 
 ### Kubernetes

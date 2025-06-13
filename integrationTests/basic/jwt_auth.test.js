@@ -44,7 +44,7 @@ function mockGithubOIDCResponse(aud= "https://github.com/hashicorp/vault-action"
         ref_type: "branch",
         job_workflow_ref: "hashicorp/vault-action/.github/workflows/workflow.yml@refs/heads/main",
         iss: 'vault-action',
-        iat: now,
+        iat: now - 60,
         nbf: now,
         exp: now + 3600,
     };
