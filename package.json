@@ -34,6 +34,7 @@
     },
     "homepage": "https://github.com/hashicorp/vault-action#readme",
     "dependencies": {
+        "global-agent": "^3.0.0",
         "got": "^11.8.6",
         "jsonata": "^2.0.3",
         "jsrsasign": "^11.1.0"

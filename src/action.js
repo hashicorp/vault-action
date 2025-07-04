@@ -5,7 +5,8 @@ const got = require('got').default;
 const jsonata = require('jsonata');
 const { normalizeOutputKey } = require('./utils');
 const { WILDCARD, WILDCARD_UPPERCASE } = require('./constants');
-
+const { enableProxy } = require('./proxy')
+enableProxy();
 const { auth: { retrieveToken }, secrets: { getSecrets }, pki: { getCertificates } } = require('./index');
 
 const AUTH_METHODS = ['approle', 'token', 'github', 'jwt', 'kubernetes', 'ldap', 'userpass'];
