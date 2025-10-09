@@ -51,6 +51,10 @@ inputs:
   extraHeaders:
     description: 'A string of newline separated extra headers to include on every request.'
     required: false
+  http2:
+    description: 'Whether or not to use HTTP/2 when communicating with the Vault server.'
+    default: 'false'
+    required: false
   exportEnv:
     description: 'Whether or not export secrets as environment variables.'
     default: 'true'

@@ -54,6 +54,11 @@ async function exportSecrets() {
         }
     }
 
+    const http2 = (core.getInput('http2', { required: false }) || 'false').toLowerCase() != 'false';
+    if (http2 === true) {
+        defaultOptions.http2 = true;
+    }
+
     const tlsSkipVerify = (core.getInput('tlsSkipVerify', { required: false }) || 'false').toLowerCase() != 'false';
     if (tlsSkipVerify === true) {
         defaultOptions.https.rejectUnauthorized = false;
