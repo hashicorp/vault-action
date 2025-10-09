@@ -1,5 +1,9 @@
 ## Unreleased
 
+Improvements:
+
+* Support for HTTP/2 via new `http2` input (default `false`) to opt in to HTTP/2 communication with Vault.
+
 ## 3.4.0 (June 13, 2025)
 
 Bugs:
