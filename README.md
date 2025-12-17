@@ -630,8 +630,7 @@ Password for key stored in `jwtPrivateKey` (if needed).
 
 ### `jwtGithubAudience`
 
-**Type: `string`**\
-**Default: `sigstore`**
+**Type: `string`**
 
 Identifies the recipient ("aud" claim) that the JWT is intended for.
 
