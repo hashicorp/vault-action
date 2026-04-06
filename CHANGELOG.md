@@ -1,5 +1,10 @@
 ## Unreleased
 
+Major (Breaking Change):
+
+* `exportEnv` now defaults to `false`. If you relied on that feature please switch it to `true` or reference via outputs.
+  This change was made to facilitate a better default supply chain security position. (https://github.com/hashicorp/vault-action/pull/598)
+
 ## 3.4.0 (June 13, 2025)
 
 Bugs:
