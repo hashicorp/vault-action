@@ -22,7 +22,7 @@ jobs:
 
     - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
       with:
-        node-version: '20.9.0'
+        node-version: '24.15.0'
 
     - name: NPM Install
       run: npm ci
@@ -33,7 +33,7 @@ jobs:
     - name: Setup Vault
       run: node ./integrationTests/e2e/setup.js
       env:
-        VAULT_HOST: localhost
+        VAULT_HOST: 127.0.0.1
         VAULT_PORT: 8200
 
     - name: Import Secrets
@@ -43,7 +43,7 @@ jobs:
       # run against a specific version of vault-action
       # uses: hashicorp/vault-action@v2.1.2
       with:
-        url: http://localhost:8200
+        url: http://127.0.0.1:8200
         method: token
         token: testtoken
         secrets: |

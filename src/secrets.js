@@ -36,7 +36,9 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
 
-        const requestPath = `v1/${path}`;
+        // Strip leading slashes to avoid double-slash in the request path 
+        // (e.g. /cubbyhole/test → v1/cubbyhole/test)
+        const requestPath = `v1/${path.replace(/^\/+/, '')}`;
         let body;
         let cachedResponse = false;
         if (responseCache.has(requestPath)) {
