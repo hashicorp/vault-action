@@ -17,7 +17,6 @@ ENVFILE="$REPO_ROOT/.build/e2e-tls.env"
 
 if ! command -v cfssl &>/dev/null || ! command -v cfssljson &>/dev/null; then
     echo "error: cfssl and cfssljson are required." >&2
-    echo "       Install with: brew install cfssl" >&2
     exit 1
 fi
 

@@ -203,11 +203,12 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Generate TLS certs
+      - name: Generate TLS Certificates
         if: ${{ !env.ACT }}
         run: |
           go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.5
           go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.5
+          export PATH="$(go env GOPATH)/bin:$PATH"
           ./scripts/gen-tls-certs.sh
           cat .build/e2e-tls.env >> "$GITHUB_ENV"
 
