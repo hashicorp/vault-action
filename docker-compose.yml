@@ -45,7 +45,12 @@ services:
     - 8200:8200
     privileged: true
     healthcheck:
-      test: ["CMD-SHELL", "VAULT_ADDR=https://127.0.0.1:8200 VAULT_CACERT=/etc/vault/ca.crt VAULT_CLIENT_CERT=/etc/vault/client.crt VAULT_CLIENT_KEY=/etc/vault/client.key vault status; s=$$?; [ $$s -eq 0 ]"]
+      # Exit 2 means sealed-but-running, which is acceptable during startup
+      test:
+        - CMD-SHELL
+        - |
+          export VAULT_ADDR=https://127.0.0.1:8200 VAULT_CACERT=/etc/vault/ca.crt VAULT_CLIENT_CERT=/etc/vault/client.crt VAULT_CLIENT_KEY=/etc/vault/client.key
+          vault status; s=$$?; [ $$s -eq 0 ] || [ $$s -eq 2 ]
       interval: 1s
       timeout: 5s
       retries: 30

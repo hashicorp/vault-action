@@ -89,6 +89,9 @@ mv client-key.pem client.key
 # ── Remove intermediates not needed at runtime ────────────────────────────────
 rm -f ca.csr server.csr client.csr ca-key.pem cfssl-config.json
 
+# Ensure files are readable by the vault container user
+chmod 644 ./*.crt ./*.key
+
 # ── Copy vault server config ──────────────────────────────────────────────────
 cp "$REPO_ROOT/integrationTests/e2e-tls/configs/config.hcl" config.hcl
 
