@@ -208,7 +208,8 @@ jobs:
         run: |
           go install github.com/cloudflare/cfssl/cmd/cfssl@v1.6.5
           go install github.com/cloudflare/cfssl/cmd/cfssljson@v1.6.5
-          export PATH="$(go env GOPATH)/bin:$PATH"
+          GOPATH_BIN="$(go env GOPATH)/bin"
+          export PATH="$GOPATH_BIN:$PATH"
           ./scripts/gen-tls-certs.sh
           cat .build/e2e-tls.env >> "$GITHUB_ENV"
 
