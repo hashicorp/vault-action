@@ -1,5 +1,16 @@
 ## Unreleased
 
+Improvements:
+
+* Bump node runtime from node20 to node24 [GH-604](https://github.com/hashicorp/vault-action/pull/604)
+* Fix leading slash in secret paths causing HTTP 400 errors (e.g. `/cubbyhole/test` → `v1/cubbyhole/test` instead of `v1//cubbyhole/test`) 
+* bump jsrsasign from 11.1.0 to 11.1.3
+* bump body-parser from 1.20.3 to 1.20.5
+* bump qs from 6.13.0 to 6.15.1
+* bump http-errors from 2.0.0 to 2.0.1
+* bump minimatch from 3.1.2 to 3.1.5
+* bump underscore from 1.13.4 to 1.13.8
+
 ## 3.4.0 (June 13, 2025)
 
 Bugs:
