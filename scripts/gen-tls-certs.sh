@@ -80,7 +80,7 @@ cfssl gencert \
 EOF
 
 # ── Rename to names expected by vault config ──────────────────────────────────
-mv ca.pem     ca.crt
+mv ca.pem ca.crt
 mv server.pem server.crt
 mv server-key.pem server.key
 mv client.pem client.crt
