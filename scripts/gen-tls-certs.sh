@@ -11,17 +11,19 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUTDIR="$REPO_ROOT/.build/certs"
-ENVFILE="$REPO_ROOT/.build/e2e-tls.env"
+pushd "$(git rev-parse --show-toplevel || echo .)" > /dev/null
+
+OUTDIR=".build/certs"
+ENVFILE=".build/e2e-tls.env"
 
 if ! command -v cfssl &>/dev/null || ! command -v cfssljson &>/dev/null; then
     echo "error: cfssl and cfssljson are required." >&2
+    popd > /dev/null
     exit 1
 fi
 
 mkdir -p "$OUTDIR"
-cd "$OUTDIR"
+pushd "$OUTDIR" > /dev/null
 
 # ── cfssl signing config ──────────────────────────────────────────────────────
 cat > cfssl-config.json <<'EOF'
@@ -92,15 +94,19 @@ rm -f ca.csr server.csr client.csr ca-key.pem cfssl-config.json
 # Ensure files are readable by the vault container user
 chmod 644 ./*.crt ./*.key
 
+popd > /dev/null
+
 # ── Copy vault server config ──────────────────────────────────────────────────
-cp "$REPO_ROOT/integrationTests/e2e-tls/configs/config.hcl" config.hcl
+cp "integrationTests/e2e-tls/configs/config.hcl" "$OUTDIR/config.hcl"
 
 # ── Write env file for local act usage ───────────────────────────────────────
 {
-    printf 'VAULTCA=%s\n'          "$(base64 < ca.crt     | tr -d '\n')"
-    printf 'VAULT_CLIENT_CERT=%s\n' "$(base64 < client.crt | tr -d '\n')"
-    printf 'VAULT_CLIENT_KEY=%s\n'  "$(base64 < client.key | tr -d '\n')"
+    printf 'VAULTCA=%s\n'          "$(base64 < "$OUTDIR/ca.crt"     | tr -d '\n')"
+    printf 'VAULT_CLIENT_CERT=%s\n' "$(base64 < "$OUTDIR/client.crt" | tr -d '\n')"
+    printf 'VAULT_CLIENT_KEY=%s\n'  "$(base64 < "$OUTDIR/client.key" | tr -d '\n')"
 } > "$ENVFILE"
 
 echo "Certs generated in $OUTDIR"
 echo "Env file written to $ENVFILE"
+
+popd > /dev/null

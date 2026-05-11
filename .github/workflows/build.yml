@@ -205,9 +205,14 @@ jobs:
 
       - name: Generate TLS Certificates
         if: ${{ !env.ACT }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_GET_RETRIES: 3
         run: |
-          curl -sSfL https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl_1.6.5_linux_amd64 -o /usr/local/bin/cfssl
-          curl -sSfL https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssljson_1.6.5_linux_amd64 -o /usr/local/bin/cfssljson
+          # Source the getGH function for authenticated GitHub downloads with retries
+          source ./scripts/.functions
+          getGH https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssl_1.6.5_linux_amd64 /usr/local/bin/cfssl
+          getGH https://github.com/cloudflare/cfssl/releases/download/v1.6.5/cfssljson_1.6.5_linux_amd64 /usr/local/bin/cfssljson
           chmod +x /usr/local/bin/cfssl /usr/local/bin/cfssljson
           ./scripts/gen-tls-certs.sh
           cat .build/e2e-tls.env >> "$GITHUB_ENV"
