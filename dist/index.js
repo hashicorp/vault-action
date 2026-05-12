@@ -1,7 +1,3 @@
-/**
- * Copyright IBM Corp. 2019, 2026
- */
-
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
@@ -18536,7 +18532,7 @@ function wrappy (fn, cb) {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -18822,7 +18818,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19022,7 +19018,7 @@ module.exports = {
 /***/ ((module) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19041,7 +19037,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19061,7 +19057,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19148,7 +19144,7 @@ module.exports = {
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19341,7 +19337,7 @@ module.exports = {
 /***/ ((module) => {
 
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
@@ -19546,7 +19542,7 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 /**
- * Copyright IBM Corp. 2019, 2025
+ * Copyright IBM Corp. 2019, 2026
  * SPDX-License-Identifier: MIT
  */
 
