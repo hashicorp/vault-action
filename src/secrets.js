@@ -36,7 +36,7 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
     for (const secretRequest of secretRequests) {
         let { path, selector } = secretRequest;
 
-        // Strip leading slashes to avoid double-slash in the request path 
+        // Strip leading slashes to avoid double-slash in the request path
         // (e.g. /cubbyhole/test → v1/cubbyhole/test)
         const requestPath = `v1/${path.replace(/^\/+/, '')}`;
         let body;
@@ -55,7 +55,9 @@ async function getSecrets(secretRequests, client, ignoreNotFound) {
                     notFoundMsg = `Unable to retrieve result for "${path}" because it was not found: ${response.body.trim()}`;
                     const ignoreNotFound = (core.getInput('ignoreNotFound', { required: false }) || 'false').toLowerCase() != 'false';
                     if (ignoreNotFound) {
-                        core.error(`✘ ${notFoundMsg}`);
+                        const severity = (core.getInput('ignoreNotFoundSeverity', { required: false }) || 'error').toLowerCase();
+                        const logFn = { info: core.info, warning: core.warning, error: core.error }[severity] || core.error;
+                        logFn(`✘ ${notFoundMsg}`);
                         continue;
                     } else {
                         throw Error(notFoundMsg)
