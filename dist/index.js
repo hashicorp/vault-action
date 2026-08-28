@@ -19069,7 +19069,7 @@ const outputMap = {
     cert: { key: 'certificate', tx: (v) => v },
     key: { key: 'private_key', tx: (v) => v },
     ca: { key: 'issuing_ca', tx: (v) => v },
-    ca_chain: { key: 'ca_chain', tx: (v) => v.join('\n') },
+    ca_chain: { key: 'ca_chain', tx: (v) => v.join('\n'), optional: true },
 };
 
 /**
@@ -19118,7 +19118,12 @@ async function getCertificates(pkiRequests, client) {
         core.info(`✔ Successfully generated certificate (serial number ${body.data.serial_number})`);
 
         Object.entries(outputMap).forEach(([key, value]) => {
-            const val = value.tx(body.data[value.key]);
+            const rawValue = body.data[value.key];
+            if (value.optional && rawValue == null) {
+                return;
+            }
+
+            const val = value.tx(rawValue);
             results.push({
                 request: {
                     ...pkiRequest,
@@ -19137,6 +19142,7 @@ async function getCertificates(pkiRequests, client) {
 module.exports = {
     getCertificates,
 };
+
 
 /***/ }),
 
