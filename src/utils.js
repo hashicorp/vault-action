@@ -11,7 +11,6 @@
 function normalizeOutputKey(dataKey, upperCase = false) {
   let outputKey = dataKey
     .replaceAll(".", "__")
-    .replace(new RegExp("-", "g"), "")
     .replace(/[^\p{L}\p{N}_-]/gu, "");
   if (upperCase) {
     outputKey = outputKey.toUpperCase();
