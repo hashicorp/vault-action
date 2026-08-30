@@ -672,6 +672,13 @@ The JSON payload to be sent to Vault when using a custom authentication method.
 
 A string of newline separated extra headers to include on every request.
 
+### `http2`
+
+**Type: `string`**\
+**Default: `false`**
+
+Whether or not to use HTTP/2 when communicating with the Vault server.
+
 ### `exportEnv`
 
 **Type: `string`**\
