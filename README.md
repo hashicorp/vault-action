@@ -357,7 +357,7 @@ steps:
     run: "my-cli --token '${{ steps.secrets.outputs.npmToken }}'"
 ```
 
-_**Note:** If you'd like to only use outputs and disable automatic environment variables, you can set the `exportEnv` option to `false`._
+_**Note:** By default, environment variable export is disabled. If you’d like to enable automatic environment variables, you can set the `exportEnv` option to `true`._
 
 ### Set Output Variable Name
 
@@ -403,7 +403,7 @@ with:
     secret/data/ci/aws * | MYAPP_ ;
 ```
 
-When using the `exportEnv` option all exported keys will be normalized to uppercase. For example, the key `SecretKey` would be exported as `MYAPP_SECRETKEY`.
+When using the `exportEnv` option (when enabled), all exported keys will be normalized to uppercase. For example, the key `SecretKey` would be exported as `MYAPP_SECRETKEY`.
 You can disable uppercase normalization by specifying double asterisks `**` in the selector path:
 
 ```yaml
@@ -675,9 +675,9 @@ A string of newline separated extra headers to include on every request.
 ### `exportEnv`
 
 **Type: `string`**\
-**Default: `true`**
+**Default: `false`**
 
-Whether or not to export secrets as environment variables.
+Whether or not to export secrets as environment variables.  This is disabled by default and must be explicitly enabled if environment variable export is desired.
 
 ### `exportToken`
 

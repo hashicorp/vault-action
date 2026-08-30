@@ -11,6 +11,11 @@ Improvements:
 * bump minimatch from 3.1.2 to 3.1.5
 * bump underscore from 1.13.4 to 1.13.8
 
+Major (Breaking Change):
+
+* `exportEnv` now defaults to `false`. If you relied on that feature please switch it to `true` or reference via outputs.
+  This change was made to facilitate a better default supply chain security position. (https://github.com/hashicorp/vault-action/pull/598)
+
 ## 3.4.0 (June 13, 2025)
 
 Bugs:

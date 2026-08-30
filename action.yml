@@ -56,7 +56,7 @@ inputs:
     required: false
   exportEnv:
     description: 'Whether or not export secrets as environment variables.'
-    default: 'true'
+    default: 'false'
     required: false
   exportToken:
     description: 'Whether or not export Vault token as environment variables.'
