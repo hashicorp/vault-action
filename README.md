@@ -33,6 +33,7 @@ is not meant to modify Vault’s state.
     - [KV secrets engine version 2](#kv-secrets-engine-version-2)
   - [Other Secret Engines](#other-secret-engines)
   - [Adding Extra Headers](#adding-extra-headers)
+  - [Proxy Support](#proxy-support)
   - [HashiCorp Cloud Platform or Vault Enterprise](#hashicorp-cloud-platform-or-vault-enterprise)
     - [Namespace](#namespace)
   - [Reference](#reference)
@@ -501,6 +502,36 @@ with:
 ```
 
 This will automatically add the `x-secure-id` and `x-secure-secret` headers to every request to Vault.
+
+## Proxy Support
+
+If your action runs on a self-hosted GitHub Runner behind a proxy, you can enable proxy support through [global-agent environment variables](https://github.com/gajus/global-agent?tab=readme-ov-file#environment-variables),
+which supports the `got` request library (https://github.com/gajus/global-agent?tab=readme-ov-file#supported-libraries)
+
+```yaml
+steps:
+  # ...
+  - name: Import Secrets
+    uses: hashicorp/vault-action
+    with:
+      url: https://vault-enterprise.mycompany.com:8200
+      method: token
+      token: ${{ secrets.VAULT_TOKEN }}
+      namespace: admin
+      secrets: |
+        secret/data/ci/aws accessKey | AWS_ACCESS_KEY_ID ;
+        secret/data/ci/aws secretKey | AWS_SECRET_ACCESS_KEY ;
+        secret/data/ci npm_token
+    env:
+      GLOBAL_AGENT_HTTP_PROXY: "http://replace-with-your-proxy-host-and-port"
+```
+
+- The `GLOBAL_AGENT_HTTP_PROXY` environment variable will manage HTTP and HTTPS requests.
+- The URL protocol must be "http:", otherwise an `UNEXPECTED_STATE_ERROR` will be thrown; empty/undefined values will be gracefully ignored.
+- With the `GLOBAL_AGENT_HTTPS_PROXY` environment variable it is possible to set a distinct proxy for HTTPS requests.
+- Proxy support will be only available for Node.js v10 and above.
+
+For further information, see [global-agent library](https://github.com/gajus/global-agent?tab=readme-ov-file#global-agent)
 
 ## HashiCorp Cloud Platform or Vault Enterprise
 
