@@ -725,6 +725,19 @@ When set to true, disables verification of server certificates when testing the 
 
 When set to true, prevents the action from failing when a secret does not exist.
 
+### `ignoreNotFoundSeverity`
+
+**Type: `string`**\
+**Default: `error`**
+
+Adjust the severity for messages produced by `ignoreNotFound`. Can be used to accept failure more silently.
+
+Supported values:
+
+- `error`: default, no change in behavior
+- `warning`: Warning annotation is added to the Workflow summary
+- `info`: No annotation is added to the Workflow summary
+
 ## Masking - Hiding Secrets from Logs
 
 This action uses GitHub Action's built-in masking, so all variables will automatically be masked (aka hidden) if printed to the console or to logs.

@@ -99,6 +99,10 @@ inputs:
     description: 'Whether or not the action should exit successfully if some requested secrets were not found.'
     required: false
     default: 'false'
+  ignoreNotFoundSeverity:
+    description: 'The severity level of the log message when a secret is not found and ignoreNotFound is set to true. Supported values: info, warning, error'
+    required: false
+    default: 'error'
 runs:
   using: 'node24'
   main: 'dist/index.js'
