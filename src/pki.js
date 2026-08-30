@@ -11,7 +11,7 @@ const outputMap = {
     cert: { key: 'certificate', tx: (v) => v },
     key: { key: 'private_key', tx: (v) => v },
     ca: { key: 'issuing_ca', tx: (v) => v },
-    ca_chain: { key: 'ca_chain', tx: (v) => v.join('\n') },
+    ca_chain: { key: 'ca_chain', tx: (v) => v?.join('\n') ?? '' },
 };
 
 /**
