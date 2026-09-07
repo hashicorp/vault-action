@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright IBM Corp. 2019, 2025
+# Copyright IBM Corp. 2019, 2026
 # SPDX-License-Identifier: MIT
 #
 # Generates a PKI chain (CA, server cert, client cert) using cfssl.
