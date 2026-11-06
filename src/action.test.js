@@ -60,6 +60,17 @@ describe('parseSecretsInput', () => {
         });
     });
 
+    it('preserves a KV v2 version query on the path', () => {
+        const output = parseSecretsInput('secret/data/ci/aws?version=2 api_key | AWS_API_KEY');
+
+        expect(output).toHaveLength(1);
+        expect(output[0]).toMatchObject({
+            path: 'secret/data/ci/aws?version=2',
+            selector: 'api_key',
+            envVarName: 'AWS_API_KEY',
+        });
+    });
+
     it('parses multiple complex secret input', () => {
         const output = parseSecretsInput('first a;second b|secondName');
 
