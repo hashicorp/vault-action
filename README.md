@@ -429,6 +429,16 @@ secret/data/test
 
 Note that the full path is not `secret/test`, but `secret/data/test`.
 
+To read a specific version of a KV v2 secret, append the `version` query
+parameter to the path. Vault Action passes the query string through to Vault,
+so the same syntax as the Vault API works:
+
+```yaml
+with:
+    secrets: |
+        secret/data/ci/aws?version=2 api_key | AWS_API_KEY ;
+```
+
 ## PKI Certificate Requests
 
 You can use the `pki` option to generate a certificate and private key for a given role.
