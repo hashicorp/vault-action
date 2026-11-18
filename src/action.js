@@ -223,7 +223,18 @@ function parseSecretsInput(secretsInput) {
         const [path, selectorQuoted] = pathParts;
 
         /** @type {any} */
-        const selectorAst = jsonata(selectorQuoted).ast();
+        let selectorAst;
+        try {
+            selectorAst = jsonata(selectorQuoted).ast();
+        } catch (error) {
+            // A key without a dot is looked up as a plain key name (see
+            // selectAndAppendResults), so a name such as "key-2fa" that is
+            // not valid JSONata on its own is still fine.
+            if (selectorQuoted.includes('.')) {
+                throw error;
+            }
+            selectorAst = { type: 'string' };
+        }
         const selector = selectorQuoted.replace(new RegExp('"', 'g'), '');
 
         if (selector !== WILDCARD && selector !== WILDCARD_UPPERCASE && (selectorAst.type !== "path" || selectorAst.steps[0].stages) && selectorAst.type !== "string" && !outputVarName) {

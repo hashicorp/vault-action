@@ -1,3 +1,9 @@
+## Unreleased
+
+Bugs:
+
+* accept secret keys that are not valid JSONata on their own, such as `key-2fa` (https://github.com/hashicorp/vault-action/issues/581)
+
 ## 4.0.0 (May 12, 2026)
 
 Improvements:
