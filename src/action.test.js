@@ -38,6 +38,31 @@ describe('parseSecretsInput', () => {
         });
     });
 
+    it('parses a key with a digit run followed by letters', () => {
+        const output = parseSecretsInput('test some-secret-with-123digits | TECH_USER');
+        expect(output).toContainEqual({
+            path: 'test',
+            selector: 'some-secret-with-123digits',
+            outputVarName: 'TECH_USER',
+            envVarName: 'TECH_USER'
+        });
+    });
+
+    it('parses an unmapped key with a digit run followed by letters', () => {
+        const output = parseSecretsInput('test key-2fa');
+        expect(output).toContainEqual({
+            path: 'test',
+            selector: 'key-2fa',
+            outputVarName: 'key2fa',
+            envVarName: 'KEY2FA'
+        });
+    });
+
+    it('still fails on an invalid selector with a dot', () => {
+        expect(() => parseSecretsInput('test data.2fa | OUT'))
+            .toThrowError('Syntax error');
+    });
+
     it('fails on invalid mapped name', () => {
         expect(() => parseSecretsInput('test key|'))
             .toThrowError(`You must provide a value when mapping a secret to a name. Input: "test key|"`)
